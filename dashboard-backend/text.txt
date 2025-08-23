@@ -1,0 +1,6 @@
+curl -X POST https://authapi.flattrade.in/trade/apitoken ^
+     -H "Content-Type: application/json" ^
+     -d "{\"api_key\":\"36bbad2d3dfe44d2a6e4cde1381f5371\",\"request_code\":\"185e0bcb40d3c04c.7b7bfab128457d8f2c41b43abb374afdccec5b984590f4ed0e6fc5903c87829d\",\"api_secret\":\"87ed1c53c41c7e1176c711f847dbb25bc5ffa9f90dd36ae59cf50a82f2460072\"}"
+
+
+
