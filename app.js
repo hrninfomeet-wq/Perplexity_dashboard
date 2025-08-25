@@ -1,839 +1,1460 @@
-// NSE Trading Dashboard JavaScript
+// Enhanced NSE Trading Dashboard - Frontend with Real-time Features
+// Advanced UI feedback, adaptive refresh, and enhanced data visualization
 
-let marketData = {
-    indices: [
-        { "name": "NIFTY 50", "symbol": "NIFTY", "price": 24350.45, "change": 125.30, "change_pct": 0.52, "high": 24420.80, "low": 24280.15, "volume": 15234567 },
-        { "name": "BANK NIFTY", "symbol": "BANKNIFTY", "price": 51245.60, "change": -89.45, "change_pct": -0.17, "high": 51398.75, "low": 51100.20, "volume": 8901234 },
-        { "name": "NIFTY IT", "symbol": "NIFTYIT", "price": 34567.89, "change": 234.56, "change_pct": 0.68, "high": 34650.45, "low": 34320.12, "volume": 3456789 },
-        { "name": "NIFTY PHARMA", "symbol": "NIFTYPHARMA", "price": 15432.10, "change": -45.67, "change_pct": -0.29, "high": 15500.78, "low": 15380.45, "volume": 2345678 },
-        { "name": "NIFTY FMCG", "symbol": "NIFTYFMCG", "price": 56789.34, "change": 67.89, "change_pct": 0.12, "high": 56850.23, "low": 56650.78, "volume": 1876543 },
-        { "name": "NIFTY MIDCAP", "symbol": "NIFTYMIDCAP", "price": 12345.67, "change": 89.12, "change_pct": 0.73, "high": 12389.45, "low": 12234.56, "volume": 4567890 },
-        { "name": "NIFTY SMALLCAP", "symbol": "NIFTYSMALLCAP", "price": 17890.23, "change": -23.45, "change_pct": -0.13, "high": 17945.67, "low": 17834.12, "volume": 3789012 }
-    ],
-    btstStocks: [
-        { "name": "RELIANCE", "ltp": 2456.75, "change_pct": 2.34, "volume_ratio": 1.45, "signal": "Bullish Breakout", "rsi": 68.4, "price_action": "Above Resistance", "btst_score": 8.2 },
-        { "name": "TCS", "ltp": 3789.40, "change_pct": 1.89, "volume_ratio": 1.23, "signal": "Momentum Build", "rsi": 72.1, "price_action": "Trend Continuation", "btst_score": 7.8 },
-        { "name": "INFY", "ltp": 1654.30, "change_pct": 3.12, "volume_ratio": 1.67, "signal": "Volume Surge", "rsi": 75.6, "price_action": "Gap Up", "btst_score": 8.5 },
-        { "name": "HDFCBANK", "ltp": 1789.65, "change_pct": -1.23, "volume_ratio": 1.34, "signal": "Oversold Bounce", "rsi": 32.8, "price_action": "Support Hold", "btst_score": 6.9 },
-        { "name": "ITC", "ltp": 456.80, "change_pct": 2.67, "volume_ratio": 1.89, "signal": "Bullish Flag", "rsi": 69.3, "price_action": "Breakout", "btst_score": 7.6 }
-    ],
-    tradingAlerts: [
-        { "timestamp": "15:24:32", "stock": "RELIANCE", "signal": "BUY", "entry": 2456.75, "target": 2510.00, "stoploss": 2420.00, "type": "BTST" },
-        { "timestamp": "15:18:45", "stock": "INFY", "signal": "BUY", "entry": 1654.30, "target": 1685.00, "stoploss": 1635.00, "type": "Intraday" },
-        { "timestamp": "15:12:18", "stock": "BANKNIFTY", "signal": "SELL", "entry": 51245.60, "target": 51100.00, "stoploss": 51350.00, "type": "F&O" },
-        { "timestamp": "15:08:22", "stock": "TCS", "signal": "BUY", "entry": 3789.40, "target": 3825.00, "stoploss": 3765.00, "type": "BTST" },
-        { "timestamp": "15:03:56", "stock": "HDFCBANK", "signal": "BUY", "entry": 1789.65, "target": 1820.00, "stoploss": 1770.00, "type": "Swing" }
-    ],
-    topGainers: [
-        { "name": "ADANIPORTS", "ltp": 789.45, "change_pct": 4.56 },
-        { "name": "TATASTEEL", "ltp": 145.67, "change_pct": 3.89 },
-        { "name": "JSWSTEEL", "ltp": 567.89, "change_pct": 3.45 },
-        { "name": "HINDALCO", "ltp": 234.56, "change_pct": 3.12 },
-        { "name": "COALINDIA", "ltp": 345.67, "change_pct": 2.89 }
-    ],
-    topLosers: [
-        { "name": "BAJFINANCE", "ltp": 6789.12, "change_pct": -2.34 },
-        { "name": "HCLTECH", "ltp": 1234.56, "change_pct": -1.89 },
-        { "name": "WIPRO", "ltp": 456.78, "change_pct": -1.67 },
-        { "name": "TECHM", "ltp": 987.65, "change_pct": -1.45 },
-        { "name": "LTIM", "ltp": 3456.78, "change_pct": -1.23 }
-    ]
-};
-let sectorData = [
-    { name: "IT", change_pct: +0.68 },
-    { name: "MIDCAP", change_pct: +0.73 },
-    { name: "FMCG", change_pct: +0.12 },
-    { name: "BANKING", change_pct: -0.17 },
-    { name: "PHARMA", change_pct: -0.29 },
-    { name: "SMALLCAP", change_pct: -0.13 }
-];
-let scalpingOpportunities = [
-    { instrument: "NIFTY 50", type: "Option CE", spot: 24350, strike: 24400, direction: "Buy", target: 24455, stoploss: 24315, probability: 87 },
-    { instrument: "BANKNIFTY", type: "Option PE", spot: 51100, strike: 51000, direction: "Sell", target: 50920, stoploss: 51150, probability: 83 },
-    { instrument: "NIFTY MIDCAP", type: "Future", spot: 12345, strike: "-", direction: "Buy", target: 12415, stoploss: 12290, probability: 81 }
-];
-// --- SCALPING TRADES MANAGER ---
+class EnhancedTradingDashboard {
+    constructor() {
+        this.dataSource = 'mock';
+        this.refreshInterval = 5000;
+        this.refreshTimer = null;
+        this.websocket = null;
+        this.backendUrl = 'http://localhost:5000';
+        this.isBackendConnected = false;
+        this.authCheckInterval = null;
+        
+        // Enhanced properties
+        this.adaptiveRefreshRates = new Map();
+        this.dataTimestamps = new Map();
+        this.changedCells = new Set();
+        this.alertThresholds = {
+            priceChange: 2.0,
+            volumeSpike: 2.5,
+            btstScore: 8.0
+        };
+        this.volatilityIndex = 1.0;
+        this.lastUpdateTimes = new Map();
 
-// List of all index instruments for scalability and rolling log
-const scalpingInstruments = [
-    {
-        code: "NIFTY 50",
-        expiry: "WEEKLY"
-    },
-    {
-        code: "BANKNIFTY",
-        expiry: "MONTHLY"
-    },
-    {
-        code: "FINNIFTY",
-        expiry: "MONTHLY"
-    },
-    {
-        code: "SENSEX",
-        expiry: "WEEKLY"
+        // UI Enhancement properties
+        this.blinkingElements = new Set();
+        this.fadeTimeouts = new Map();
+        
+        this.init();
     }
-];
 
-// Session rolling log storage
-let scalpingLog = []; // Array of trade objects, each keeps status
+    init() {
+        console.log('🚀 Initializing Enhanced NSE Trading Dashboard...');
+        
+        this.setupEventListeners();
+        this.setupAdvancedUIFeatures();
+        this.updateDateTime();
+        this.updateConnectionStatus('Mock Mode Active', 'mock');
+        this.updateLiveIndicator('mock');
+        
+        // Start with mock data
+        this.renderAllMockData();
+        this.startAdaptiveRefresh();
+        
+        // Update time every second
+        setInterval(() => this.updateDateTime(), 1000);
+        
+        // Setup enhanced UI updates
+        this.initializeUIEnhancements();
+        
+        console.log('✅ Enhanced Dashboard initialized successfully');
 
-// Active trade managers per instrument
-let activeScalp = {
-    "NIFTY 50": null,
-    "BANKNIFTY": null,
-    "FINNIFTY": null,
-    "SENSEX": null
-};
+        // Listen for postMessage from auth popup
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'auth-success') {
+                console.log('✅ Authentication successful via postMessage!');
+                this.checkAuthStatusAndConnect();
+            } else if (event.data && event.data.type === 'auth-error') {
+                console.error('❌ Authentication failed via postMessage:', event.data.error);
+                this.showErrorModal('Authentication Failed', event.data.error);
+            }
+        });
+    }
 
-// Demo helper: randomly pseudo-generates VWAP, ADX, MA, probability, etc. (plug API here later!)
-function getDemoMarketContext(instrument) {
-    // Simulate ADX, MA Slope, Bollinger width for the market state
-    const adx = Math.floor(10 + Math.random() * 40);
-    const maSlope = parseFloat((Math.random() * 2 - 1).toFixed(3));
-    const bandFactor = parseFloat((Math.random() * 2.8).toFixed(3));
-    // Market type score
-    const score = (adx / 25) + (Math.abs(maSlope) / 0.8) + bandFactor;
-    let marketType;
-    if (score < 1.5) marketType = "Range-bound";
-    else if (score < 2.5) marketType = "Weak Trend";
-    else marketType = "Trending";
-    // Simulate option price (ATM, OTM1), OI/volume spikes, PV structure
-    const spot = 24000 + Math.floor(Math.random() * 5000);
-    const atmStrike = Math.round(spot / 50) * 50;
-    const otm1Strike = atmStrike + (Math.random() > 0.5 ? 50 : -50);
-    return {
-        adx, maSlope, bandFactor, score, marketType,
-        spot, atmStrike, otm1Strike,
-        premium: Math.round(80 + Math.random() * 40),  // "ATM premium"
-        vwap: Math.round(atmStrike + (Math.random() - 0.5) * 30),
-        PCR: parseFloat((Math.random() * 2).toFixed(2)),
-        volumeSpikeCE: Math.random() > 0.7,
-        volumeSpikePE: Math.random() > 0.7,
-        oiSpurtCE: Math.random() > 0.6,
-        oiSpurtPE: Math.random() > 0.6,
-        rsi: Math.round(10 + Math.random() * 90)
-    };
-}
-// --- SIGNAL GENERATION AND STATE MANAGER ---
+    setupEventListeners() {
+        // Mock/Live toggle handlers
+        const mockRadio = document.getElementById('mockData');
+        const liveRadio = document.getElementById('liveData');
 
-// Utility: Create timestamp string (HH:MM:SS)
-function nowTimeStr() {
-    const now = new Date();
-    return now.toLocaleTimeString('en-IN', { hour12: false });
-}
-
-// Main: Called every refresh (or use internally) to update all instruments
-function updateScalpingSignals() {
-    scalpingInstruments.forEach(ins => {
-        // Only generate if inactive or previous is closed
-        if (activeScalp[ins.code] && activeScalp[ins.code].status === 'in progress') {
-            return; // Skip if there's an active trade for this instrument
+        if (mockRadio) {
+            mockRadio.addEventListener('change', () => {
+                if (mockRadio.checked) {
+                    console.log('User selected Mock mode');
+                    this.switchToMockMode();
+                }
+            });
         }
 
-        // Get fake context/market and "logic match"
-        const ctx = getDemoMarketContext(ins.code);
-
-        // Determine market type and signal logic to apply
-        let useStrategy = (ctx.marketType === 'Trending') ? 'VW' : 'SMC';
-
-        // Build candidate trade with computed probability
-        // (Simulates logic filters: strike, OI/Vol/VWAP, entry confirm, etc.)
-        let candidate = null;
-        let struck = "--";
-        let dir = "--";
-        let prob = 0;
-        if (useStrategy === "SMC") {
-            // Rangebound: SMC (option chain smart money)
-            if (ctx.oiSpurtCE && ctx.volumeSpikeCE && ctx.premium < 110 && ctx.PCR < 1.3) {
-                candidate = {
-                    instrument: ins.code,
-                    type: `Option CE (${ins.expiry})`,
-                    strike: ctx.atmStrike,
-                    direction: "Buy",
-                    time: nowTimeStr(),
-                    strategy: "SMC",
-                    probability: 90 + Math.floor(Math.random() * 5),
-                    entry: ctx.premium,
-                    target: "--",
-                    stoploss: "--",
-                    status: "in progress",
-                    exitTime: "--"
-                };
-                struck = ctx.atmStrike;
-                dir = "Buy";
-                prob = candidate.probability;
-            }
-            else if (ctx.oiSpurtPE && ctx.volumeSpikePE && ctx.premium < 110 && ctx.PCR > 0.5) {
-                candidate = {
-                    instrument: ins.code,
-                    type: `Option PE (${ins.expiry})`,
-                    strike: ctx.atmStrike,
-                    direction: "Sell",
-                    time: nowTimeStr(),
-                    strategy: "SMC",
-                    probability: 90 + Math.floor(Math.random() * 5),
-                    entry: ctx.premium,
-                    target: "--",
-                    stoploss: "--",
-                    status: "in progress",
-                    exitTime: "--"
-                };
-                struck = ctx.atmStrike;
-                dir = "Sell";
-                prob = candidate.probability;
-            }
-        } else {
-            // Trending: VWAP Bounce
-            let bullishVWAPBounce = ctx.spot > ctx.vwap && ctx.rsi < 70 && ctx.premium >= 80 && ctx.premium <= 110;
-            if (bullishVWAPBounce) {
-                candidate = {
-                    instrument: ins.code,
-                    type: `Option CE (${ins.expiry})`,
-                    strike: ctx.atmStrike,
-                    direction: "Buy",
-                    time: nowTimeStr(),
-                    strategy: "VW",
-                    probability: 92 + Math.floor(Math.random() * 4),
-                    entry: ctx.premium,
-                    target: "--",
-                    stoploss: "--",
-                    status: "in progress",
-                    exitTime: "--"
-                };
-                struck = ctx.atmStrike;
-                dir = "Buy";
-                prob = candidate.probability;
-            }
-            let bearishVWAPBounce = ctx.spot < ctx.vwap && ctx.rsi > 30 && ctx.premium >= 80 && ctx.premium <= 110;
-            if (!candidate && bearishVWAPBounce) {
-                candidate = {
-                    instrument: ins.code,
-                    type: `Option PE (${ins.expiry})`,
-                    strike: ctx.atmStrike,
-                    direction: "Sell",
-                    time: nowTimeStr(),
-                    strategy: "VW",
-                    probability: 92 + Math.floor(Math.random() * 4),
-                    entry: ctx.premium,
-                    target: "--",
-                    stoploss: "--",
-                    status: "in progress",
-                    exitTime: "--"
-                };
-                struck = ctx.atmStrike;
-                dir = "Sell";
-                prob = candidate.probability;
-            }
+        if (liveRadio) {
+            liveRadio.addEventListener('change', () => {
+                if (liveRadio.checked) {
+                    console.log('User selected Live mode - showing confirmation');
+                    this.showLiveDataConfirmation();
+                }
+            });
         }
 
-        // Add only ONE: ATM has priority, otherwise OTM1 if ATM not matched.
-        if (candidate) {
-            activeScalp[ins.code] = candidate;
-            scalpingLog.unshift(candidate); // Add to log (newest at top)
+        // Modal handlers
+        this.setupModalHandlers();
+        
+        // Settings handlers
+        const refreshInterval = document.getElementById('refresh-interval');
+        if (refreshInterval) {
+            refreshInterval.addEventListener('change', (e) => {
+                this.refreshInterval = parseInt(e.target.value);
+                this.restartRefreshCycle();
+            });
         }
-    });
 
-    // Demo: Auto-complete signals after N intervals for rolling log effect
-    scalpingLog.forEach(signal => {
-        if (signal.status === "in progress") {
-            if (!signal._lifetime) signal._lifetime = 0;
-            signal._lifetime++;
-            // After X refreshes (~2-4 demo minutes), mark as complete and record exit time
-            if (signal._lifetime > 6 + Math.floor(Math.random() * 6)) {
-                signal.status = "completed";
-                signal.exitTime = nowTimeStr();
-                activeScalp[signal.instrument] = null;
-                // Assign "Passed" or "Failed"
-                signal.result = (Math.random() > 0.27) ? "Passed" : "Failed";
-            }
+        // Enhanced: Add threshold controls
+        this.setupThresholdControls();
+    }
+
+    setupAdvancedUIFeatures() {
+        // Add data freshness indicators
+        this.addDataFreshnessIndicators();
+        
+        // Add volatility meter
+        this.addVolatilityMeter();
+        
+        // Add performance metrics
+        this.addPerformanceMetrics();
+    }
+
+    addDataFreshnessIndicators() {
+        const sections = document.querySelectorAll('.section-header');
+        sections.forEach(section => {
+            const timestamp = document.createElement('span');
+            timestamp.className = 'data-timestamp';
+            timestamp.textContent = 'Updated: Never';
+            timestamp.style.fontSize = '11px';
+            timestamp.style.color = 'var(--color-text-secondary)';
+            timestamp.style.marginLeft = '10px';
+            section.appendChild(timestamp);
+        });
+    }
+
+    addVolatilityMeter() {
+        const header = document.querySelector('.header-right');
+        if (header) {
+            const volatilityMeter = document.createElement('div');
+            volatilityMeter.className = 'volatility-meter';
+            volatilityMeter.innerHTML = `
+                <div class="volatility-label">Market Volatility</div>
+                <div class="volatility-bar">
+                    <div class="volatility-fill" id="volatility-fill"></div>
+                </div>
+                <div class="volatility-value" id="volatility-value">Normal</div>
+            `;
+            header.appendChild(volatilityMeter);
         }
-    });
+    }
 
-    // To avoid memory bloat, keep log at most ~30 signals per session:
-    if (scalpingLog.length > 30) scalpingLog = scalpingLog.slice(0, 30);
-}
-
-// --- Sector Heatmap and Scalping Table Rendering ---
-
-function renderSectorHeatmap() {
-    const grid = document.querySelector(".sector-grid");
-    if (!grid) return;
-    grid.innerHTML = ""; // Clear old
-    // Find trending sector (absolute biggest % move)
-    let trending = sectorData.reduce((max, s) => Math.abs(s.change_pct) > Math.abs(max.change_pct) ? s : max, sectorData[0]);
-    sectorData.forEach(sector => {
-        const item = document.createElement("div");
-        item.className = "sector-item " + (sector.change_pct >= 0 ? "positive" : "negative");
-        if (sector === trending) item.style.boxShadow = "0 0 12px #3fc75d, 0 0 4px #fff"; // highlight trending
-        item.innerHTML = `
-      <div class="sector-name">${sector.name}</div>
-      <div class="sector-change">${sector.change_pct > 0 ? "+" : ""}${sector.change_pct.toFixed(2)}%</div>
-    `;
-        grid.appendChild(item);
-    });
-}
-function renderScalpingTable() {
-    const tbody = document.getElementById("scalping-tbody");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-
-    scalpingLog.forEach(signal => {
-        const row = document.createElement("tr");
-        row.className = (signal.status === "completed") ? "scalping-closed" : "scalping-active";
-        row.innerHTML = `
-            <td>${signal.time || "--"}</td>
-            <td>${signal.instrument || "--"}</td>
-            <td>${signal.type || "--"}</td>
-            <td>${signal.strike || "--"}</td>
-            <td class="${signal.direction === "Buy" ? "price-positive" : "price-negative"}">${signal.direction || "--"}</td>
-            <td>${signal.strategy === "VW" ? "VWAP BOUNCE" : (signal.strategy || "--")}</td>
-            <td><b>${signal.probability || "--"}%</b></td>
-            <td>${signal.status === "in progress" ? '<span style="color:#2bf542;font-weight:bold;">IN PROGRESS</span>' : '<span style="color:#999">COMPLETED</span>'}</td>
-            <td>${signal.exitTime || "--"}</td>
-            <td>
-                ${signal.status === "completed" 
-                ? (signal.result === "Passed" 
-                    ? "<span style='color:#0bf548;font-weight:600;'>Passed</span>"
-                    : "<span style='color:#ff355e;font-weight:600;'>Failed</span>")
-                : "--"}
-            </td>
+    addPerformanceMetrics() {
+        const container = document.createElement('div');
+        container.className = 'performance-metrics';
+        container.innerHTML = `
+            <div class="metric">
+                <span class="metric-label">API Calls:</span>
+                <span class="metric-value" id="api-calls">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Last Update:</span>
+                <span class="metric-value" id="last-update">Never</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Refresh Rate:</span>
+                <span class="metric-value" id="refresh-rate">5000ms</span>
+            </div>
         `;
-        tbody.appendChild(row);
-    });
-}
-// --- Global variables for refresh and sorting ---
-let refreshInterval;
-let currentRefreshRate = 5000; // 5 seconds default
-let currentSortColumn = null;
-let currentSortDirection = 'asc';
+        
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.appendChild(container);
+        }
+    }
 
-// --- Chart Switch Logic ---
-let chartType = 'candlestick'; // 'candlestick' or 'line'
-let niftyChart = null;
+    setupThresholdControls() {
+        // Add custom threshold controls to settings
+        const settingsContent = document.querySelector('.settings-content');
+        if (settingsContent) {
+            const thresholdControls = document.createElement('div');
+            thresholdControls.innerHTML = `
+                <div class="setting-item">
+                    <label for="price-threshold">Price Change Alert (%):</label>
+                    <input type="number" class="form-control" id="price-threshold" value="${this.alertThresholds.priceChange}" min="0.5" max="10" step="0.1">
+                </div>
+                <div class="setting-item">
+                    <label for="volume-threshold">Volume Spike Alert (x):</label>
+                    <input type="number" class="form-control" id="volume-threshold" value="${this.alertThresholds.volumeSpike}" min="1.0" max="5.0" step="0.1">
+                </div>
+                <div class="setting-item">
+                    <label for="btst-threshold">BTST Score Alert:</label>
+                    <input type="number" class="form-control" id="btst-threshold" value="${this.alertThresholds.btstScore}" min="6.0" max="10.0" step="0.1">
+                </div>
+            `;
+            settingsContent.appendChild(thresholdControls);
 
-// Sample candlestick data for demonstration
-const candlestickData = {
-    datasets: [{
-        label: 'NIFTY (Candlestick)',
-        data: [
-            { x: new Date('2025-08-21T09:00:00'), o: 24300, h: 24400, l: 24200, c: 24350 },
-            { x: new Date('2025-08-21T10:00:00'), o: 24350, h: 24480, l: 24300, c: 24400 },
-            { x: new Date('2025-08-21T11:00:00'), o: 24400, h: 24550, l: 24380, c: 24500 },
-            { x: new Date('2025-08-21T12:00:00'), o: 24500, h: 24550, l: 24400, c: 24450 },
-            { x: new Date('2025-08-21T13:00:00'), o: 24450, h: 24510, l: 24400, c: 24430 },
-        ]
-    }]
-};
+            // Add event listeners for threshold changes
+            document.getElementById('price-threshold').addEventListener('change', (e) => {
+                this.alertThresholds.priceChange = parseFloat(e.target.value);
+            });
+        }
+    }
 
-// Sample line data for demonstration
-const lineData = {
-    labels: ['09:00', '10:00', '11:00', '12:00', '13:00'],
-    datasets: [{
-        label: 'NIFTY (Line)',
-        data: [24350, 24400, 24500, 24450, 24430],
-        borderColor: '#3fc75d',
-        backgroundColor: 'rgba(63, 199, 93, 0.2)',
-        tension: 0.3,
-        fill: true,
-        pointRadius: 2
-    }]
-};
-// --- Chart rendering and toggle logic ---
-function renderNiftyChart() {
-    const ctx = document.getElementById('nifty-candlestick-chart').getContext('2d');
-    if (niftyChart) niftyChart.destroy();
-    if (chartType === 'candlestick') {
-        niftyChart = new Chart(ctx, {
-            type: 'candlestick',
-            data: candlestickData,
-            options: {
-                plugins: { legend: { display: true } },
-                scales: { x: { type: 'time', time: { unit: 'hour' } }, y: {} }
-            }
+    setupModalHandlers() {
+        const connectBtn = document.getElementById('connect-live-data');
+        const cancelBtn = document.getElementById('cancel-live-data');
+        const retryBtn = document.getElementById('retry-connection');
+        const mockFallbackBtn = document.getElementById('use-mock-fallback');
+
+        if (connectBtn) {
+            connectBtn.addEventListener('click', () => {
+                this.hideLiveConfirmationModal();
+                this.connectToLiveData();
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                this.hideLiveConfirmationModal();
+                const mockRadio = document.getElementById('mockData');
+                if (mockRadio) mockRadio.checked = true;
+                this.switchToMockMode();
+            });
+        }
+
+        if (retryBtn) {
+            retryBtn.addEventListener('click', () => {
+                this.hideErrorModal();
+                this.connectToLiveData();
+            });
+        }
+
+        if (mockFallbackBtn) {
+            mockFallbackBtn.addEventListener('click', () => {
+                this.hideErrorModal();
+                const mockRadio = document.getElementById('mockData');
+                if (mockRadio) mockRadio.checked = true;
+                this.switchToMockMode();
+            });
+        }
+
+        // Close modal handlers
+        document.querySelectorAll('.modal-close').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const modal = e.target.closest('.modal');
+                if (modal) modal.classList.add('hidden');
+            });
         });
-    } else {
-        niftyChart = new Chart(ctx, {
-            type: 'line',
-            data: lineData,
-            options: {
-                plugins: { legend: { display: true } },
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { x: {}, y: {} }
+
+        // Refresh button
+        const refreshBtn = document.getElementById('refresh-indices');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.refreshData();
+            });
+        }
+    }
+
+    initializeUIEnhancements() {
+        // Add CSS for enhanced features
+        const style = document.createElement('style');
+        style.textContent = `
+            .data-update-highlight {
+                background-color: var(--color-primary) !important;
+                opacity: 0.3;
+                animation: highlightFade 0.8s ease-out;
+            }
+            
+            @keyframes highlightFade {
+                0% { opacity: 0.6; }
+                100% { opacity: 0.1; }
+            }
+            
+            .volatility-meter {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                min-width: 120px;
+            }
+            
+            .volatility-label {
+                font-size: 11px;
+                color: var(--color-text-secondary);
+                text-align: center;
+            }
+            
+            .volatility-bar {
+                height: 8px;
+                background: var(--color-secondary);
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            
+            .volatility-fill {
+                height: 100%;
+                background: linear-gradient(to right, var(--color-success), var(--color-warning), var(--color-error));
+                width: 30%;
+                transition: width 0.5s ease;
+            }
+            
+            .volatility-value {
+                font-size: 10px;
+                color: var(--color-text-secondary);
+                text-align: center;
+                font-weight: 500;
+            }
+            
+            .performance-metrics {
+                background: var(--color-surface);
+                border-radius: var(--radius-md);
+                padding: var(--space-12);
+                border: 1px solid var(--color-border);
+                margin-top: var(--space-16);
+            }
+            
+            .metric {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: var(--space-8);
+                font-size: var(--font-size-xs);
+            }
+            
+            .metric-label {
+                color: var(--color-text-secondary);
+            }
+            
+            .metric-value {
+                color: var(--color-text);
+                font-weight: 500;
+            }
+            
+            .data-timestamp {
+                font-size: 10px;
+                color: var(--color-text-secondary);
+                margin-left: 10px;
+            }
+            
+            .threshold-alert {
+                border-left: 4px solid var(--color-warning) !important;
+                background: rgba(var(--color-warning-rgb), 0.1) !important;
+            }
+            
+            .extreme-alert {
+                border-left: 4px solid var(--color-error) !important;
+                background: rgba(var(--color-error-rgb), 0.1) !important;
+                animation: pulse 1.5s infinite;
+            }
+            
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.8; }
+            }
+            
+            .stale-data {
+                opacity: 0.6;
+                border: 2px dashed var(--color-warning);
+            }
+            
+            .fresh-data {
+                border-left: 3px solid var(--color-success);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    updateDateTime() {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-IN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        const timeStr = now.toLocaleTimeString('en-IN', { hour12: true });
+
+        const dateEl = document.getElementById('current-date');
+        const timeEl = document.getElementById('current-time');
+
+        if (dateEl) dateEl.textContent = dateStr;
+        if (timeEl) timeEl.textContent = timeStr;
+    }
+
+    updateConnectionStatus(message, type) {
+        const statusEl = document.getElementById('connection-status');
+        if (statusEl) {
+            statusEl.textContent = message;
+            statusEl.className = `status-indicator ${type}`;
+        }
+    }
+
+    updateLiveIndicator(mode) {
+        const dot = document.getElementById('updates-dot');
+        const text = document.getElementById('updates-text');
+        
+        if (dot && text) {
+            if (mode === 'live') {
+                dot.className = 'updates-dot live';
+                text.textContent = 'Live Updates';
+            } else {
+                dot.className = 'updates-dot mock';
+                text.textContent = 'Live Updates';
+            }
+        }
+    }
+
+    updateMarketTrend(trend) {
+        const trendElement = document.getElementById('trend-direction');
+        const summaryElement = document.getElementById('trend-summary');
+        
+        if (trendElement && summaryElement) {
+            let trendText = '';
+            let className = '';
+            let summaryClass = 'flat';
+            
+            switch (trend.toLowerCase()) {
+                case 'bullish':
+                case 'bull':
+                    trendText = '📈 BULLISH';
+                    className = 'trend-bullish';
+                    summaryClass = 'bullish';
+                    break;
+                case 'bearish':
+                case 'bear':
+                    trendText = '📉 BEARISH';
+                    className = 'trend-bearish';
+                    summaryClass = 'bearish';
+                    break;
+                default:
+                    trendText = '🥱 SIDEWAYS';
+                    className = 'trend-sideways';
+                    summaryClass = 'flat';
+            }
+            
+            trendElement.textContent = trendText;
+            trendElement.className = className;
+            summaryElement.className = summaryClass;
+        }
+    }
+
+    updateVolatilityMeter(volatility) {
+        this.volatilityIndex = volatility;
+        const fill = document.getElementById('volatility-fill');
+        const value = document.getElementById('volatility-value');
+        
+        if (fill && value) {
+            const percentage = Math.min(volatility * 20, 100); // Scale to 100%
+            fill.style.width = `${percentage}%`;
+            
+            let status = 'Low';
+            if (volatility > 2) status = 'High';
+            else if (volatility > 1) status = 'Medium';
+            
+            value.textContent = status;
+            value.className = `volatility-value ${status.toLowerCase()}`;
+        }
+    }
+
+    updatePerformanceMetrics() {
+        const apiCalls = document.getElementById('api-calls');
+        const lastUpdate = document.getElementById('last-update');
+        const refreshRate = document.getElementById('refresh-rate');
+        
+        if (apiCalls) {
+            const currentCalls = parseInt(apiCalls.textContent) + 1;
+            apiCalls.textContent = currentCalls;
+        }
+        
+        if (lastUpdate) {
+            lastUpdate.textContent = new Date().toLocaleTimeString('en-IN', { hour12: false });
+        }
+        
+        if (refreshRate) {
+            refreshRate.textContent = `${this.getAdaptiveRefreshRate()}ms`;
+        }
+    }
+
+    // Enhanced refresh strategy based on volatility and data type
+    getAdaptiveRefreshRate(dataType = 'default') {
+        const baseRates = {
+            indices: 5000,
+            quotes: 3000,
+            options: 8000,
+            alerts: 15000,
+            default: 5000
+        };
+        
+        const volatilityMultiplier = this.volatilityIndex > 2 ? 0.5 : 
+                                   this.volatilityIndex > 1 ? 0.7 : 1.0;
+        
+        return Math.max(baseRates[dataType] * volatilityMultiplier, 1000);
+    }
+
+    startAdaptiveRefresh() {
+        if (this.refreshTimer) clearInterval(this.refreshTimer);
+
+        // Different refresh rates for different data types
+        const refreshIndices = () => {
+            if (this.dataSource === 'live') {
+                this.fetchData('indices').then(data => this.renderIndices(data));
+            }
+        };
+
+        const refreshOptions = () => {
+            if (this.dataSource === 'live') {
+                this.fetchData('fno-analysis').then(data => this.renderFOAnalysis(data));
+            }
+        };
+
+        // Set up adaptive intervals
+        setInterval(refreshIndices, this.getAdaptiveRefreshRate('indices'));
+        setInterval(refreshOptions, this.getAdaptiveRefreshRate('options'));
+        
+        // Main refresh cycle
+        this.refreshTimer = setInterval(() => {
+            if (this.dataSource === 'mock') {
+                this.refreshData();
+            }
+        }, this.refreshInterval);
+    }
+
+    // Enhanced data fetching with caching and staleness detection
+    async fetchData(endpoint) {
+        if (this.dataSource === 'mock') {
+            return this.getMockData(endpoint);
+        } else {
+            return await this.getLiveData(endpoint);
+        }
+    }
+
+    async getLiveData(endpoint) {
+        try {
+            const startTime = Date.now();
+            const response = await fetch(`${this.backendUrl}/api/${endpoint}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const responseTime = Date.now() - startTime;
+            
+            // Update performance metrics
+            this.updatePerformanceMetrics();
+            console.log(`📊 ${endpoint} fetched in ${responseTime}ms`);
+            
+            // Update data timestamps for staleness detection
+            this.dataTimestamps.set(endpoint, Date.now());
+            
+            return data;
+        } catch (error) {
+            console.error(`❌ Error fetching live data for ${endpoint}:`, error);
+            throw error;
+        }
+    }
+
+    getMockData(endpoint) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                switch (endpoint) {
+                    case 'indices':
+                        resolve(this.generateEnhancedIndices());
+                        break;
+                    case 'btst':
+                        resolve(this.generateEnhancedBTST());
+                        break;
+                    case 'alerts':
+                        resolve(this.generateEnhancedAlerts());
+                        break;
+                    case 'gainers':
+                        resolve(this.generateEnhancedGainers());
+                        break;
+                    case 'losers':
+                        resolve(this.generateEnhancedLosers());
+                        break;
+                    case 'sectors':
+                        resolve(this.generateEnhancedSectors());
+                        break;
+                    case 'scalping':
+                        resolve(this.generateEnhancedScalping());
+                        break;
+                    case 'fno-analysis':
+                        resolve(this.generateEnhancedFOAnalysis());
+                        break;
+                    default:
+                        resolve([]);
+                }
+            }, 100 + Math.random() * 300);
+        });
+    }
+
+    // Enhanced mock data generators with more realistic variations
+    generateEnhancedIndices() {
+        const baseData = [
+            {
+                "name": "NIFTY 50",
+                "symbol": "NIFTY",
+                "price": 24350.45,
+                "change": 125.30,
+                "change_pct": 0.52,
+                "high": 24420.80,
+                "low": 24280.15,
+                "volume": 15234567
+            },
+            {
+                "name": "BANK NIFTY",
+                "symbol": "BANKNIFTY", 
+                "price": 51245.60,
+                "change": -89.45,
+                "change_pct": -0.17,
+                "high": 51398.75,
+                "low": 51100.20,
+                "volume": 8901234
+            }
+        ];
+
+        return baseData.map(index => ({
+            ...index,
+            price: index.price + (Math.random() - 0.5) * 20,
+            change: index.change + (Math.random() - 0.5) * 10,
+            change_pct: index.change_pct + (Math.random() - 0.5) * 0.8,
+            volume: index.volume + Math.floor((Math.random() - 0.5) * 1000000),
+            timestamp: Date.now()
+        }));
+    }
+
+    generateEnhancedBTST() {
+        return [
+            {
+                "name": "RELIANCE",
+                "ltp": 2456.75 + (Math.random() - 0.5) * 50,
+                "change_pct": 2.34 + (Math.random() - 0.5) * 2,
+                "volume_ratio": 1.45 + (Math.random() - 0.5) * 0.5,
+                "signal": "Bullish Breakout",
+                "rsi": 68.4 + (Math.random() - 0.5) * 10,
+                "price_action": "Above Resistance",
+                "btst_score": 8.2 + (Math.random() - 0.5) * 0.5
+            },
+            {
+                "name": "TCS",
+                "ltp": 3789.40 + (Math.random() - 0.5) * 80,
+                "change_pct": 1.89 + (Math.random() - 0.5) * 1.5,
+                "volume_ratio": 1.23 + (Math.random() - 0.5) * 0.4,
+                "signal": "Momentum Build",
+                "rsi": 72.1 + (Math.random() - 0.5) * 8,
+                "price_action": "Trend Continuation",
+                "btst_score": 7.8 + (Math.random() - 0.5) * 0.4
+            }
+        ];
+    }
+
+    generateEnhancedFOAnalysis() {
+        return {
+            pcr: 1.02 + (Math.random() - 0.5) * 0.4,
+            maxPain: 24300 + Math.floor((Math.random() - 0.5) * 200),
+            vix: 13.45 + (Math.random() - 0.5) * 3,
+            recommendedCE: {
+                strike: 24400,
+                ltp: 85 + (Math.random() - 0.5) * 20
+            },
+            recommendedPE: {
+                strike: 24300,
+                ltp: 78 + (Math.random() - 0.5) * 15
+            },
+            timestamp: Date.now()
+        };
+    }
+
+    generateEnhancedAlerts() {
+        const alerts = [
+            {
+                "timestamp": new Date().toLocaleTimeString('en-IN', { hour12: false }),
+                "stock": "RELIANCE",
+                "signal": "BUY",
+                "entry": 2456.75,
+                "target": 2510.00,
+                "stoploss": 2420.00,
+                "type": "BTST",
+                "probability": 85
+            },
+            {
+                "timestamp": new Date().toLocaleTimeString('en-IN', { hour12: false }),
+                "stock": "NIFTY",
+                "signal": "SELL",
+                "entry": 24375,
+                "target": 24320,
+                "stoploss": 24420,
+                "type": "Scalping",
+                "probability": 78
+            }
+        ];
+
+        return alerts;
+    }
+
+    generateEnhancedGainers() {
+        return [
+            {
+                "name": "ADANIPORTS",
+                "ltp": 789.45 + (Math.random() - 0.5) * 20,
+                "change_pct": 4.56 + (Math.random() - 0.5) * 2
+            },
+            {
+                "name": "TATASTEEL", 
+                "ltp": 145.67 + (Math.random() - 0.5) * 10,
+                "change_pct": 3.89 + (Math.random() - 0.5) * 1.5
+            }
+        ];
+    }
+
+    generateEnhancedLosers() {
+        return [
+            {
+                "name": "BAJFINANCE",
+                "ltp": 6789.12 + (Math.random() - 0.5) * 100,
+                "change_pct": -2.34 + (Math.random() - 0.5) * 1
+            },
+            {
+                "name": "HCLTECH",
+                "ltp": 1234.56 + (Math.random() - 0.5) * 30,
+                "change_pct": -1.89 + (Math.random() - 0.5) * 0.8
+            }
+        ];
+    }
+
+    generateEnhancedSectors() {
+        return [
+            { name: "IT", change_pct: 0.68 + (Math.random() - 0.5) * 1 },
+            { name: "MIDCAP", change_pct: 0.73 + (Math.random() - 0.5) * 1.2 },
+            { name: "FMCG", change_pct: 0.12 + (Math.random() - 0.5) * 0.8 },
+            { name: "BANKING", change_pct: -0.17 + (Math.random() - 0.5) * 0.9 },
+            { name: "PHARMA", change_pct: -0.29 + (Math.random() - 0.5) * 0.7 },
+            { name: "SMALLCAP", change_pct: -0.13 + (Math.random() - 0.5) * 1.5 }
+        ];
+    }
+
+    generateEnhancedScalping() {
+        return [
+            {
+                instrument: "NIFTY 50",
+                type: "Option CE",
+                strike: 24400,
+                direction: "Buy", 
+                target: 24450,
+                stoploss: 24370,
+                strategy: "VW",
+                probability: 87 + Math.floor(Math.random() * 10),
+                time: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+                status: "active"
+            },
+            {
+                instrument: "BANKNIFTY",
+                type: "Option PE",
+                strike: 51200,
+                direction: "Sell",
+                target: 51150,
+                stoploss: 51250,
+                strategy: "SMC", 
+                probability: 83 + Math.floor(Math.random() * 12),
+                time: new Date().toLocaleTimeString('en-IN', { hour12: false }),
+                status: Math.random() > 0.7 ? "completed" : "active"
+            }
+        ];
+    }
+
+    // Enhanced rendering methods with UI feedback
+    renderIndices(response) {
+        const data = response.data || response;
+        const tbody = document.getElementById('indices-tbody');
+        if (!tbody) return;
+
+        const previousData = this.lastUpdateTimes.get('indices') || new Map();
+        tbody.innerHTML = '';
+
+        data.forEach(index => {
+            const row = document.createElement('tr');
+            const isChanged = this.hasDataChanged(index, previousData.get(index.symbol));
+            
+            row.innerHTML = `
+                <td>${index.name}</td>
+                <td class="${isChanged ? 'data-update-highlight' : ''}">${index.price.toFixed(2)}</td>
+                <td class="${index.change >= 0 ? 'price-positive' : 'price-negative'} ${isChanged ? 'data-update-highlight' : ''}">${index.change.toFixed(2)}</td>
+                <td class="${index.change_pct >= 0 ? 'price-positive' : 'price-negative'}">${index.change_pct.toFixed(2)}%</td>
+                <td>${index.high.toFixed(2)}</td>
+                <td>${index.low.toFixed(2)}</td>
+                <td>${(index.volume / 1000000).toFixed(1)}M</td>
+            `;
+
+            // Add alert styling for extreme moves
+            if (Math.abs(index.change_pct) > this.alertThresholds.priceChange) {
+                row.classList.add('threshold-alert');
+            }
+            if (Math.abs(index.change_pct) > this.alertThresholds.priceChange * 2) {
+                row.classList.add('extreme-alert');
+            }
+
+            tbody.appendChild(row);
+            previousData.set(index.symbol, { ...index });
+        });
+
+        this.lastUpdateTimes.set('indices', previousData);
+        this.updateDataTimestamp('indices');
+        
+        // Update volatility based on NIFTY movement
+        const niftyData = data.find(idx => idx.symbol === 'NIFTY');
+        if (niftyData) {
+            this.updateVolatilityMeter(Math.abs(niftyData.change_pct) / 0.5);
+        }
+    }
+
+    renderBTSTStocks(response) {
+        const data = response.data || response;
+        const tbody = document.getElementById('btst-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        data.forEach(stock => {
+            const row = document.createElement('tr');
+            const isHighScore = stock.btst_score >= this.alertThresholds.btstScore;
+            
+            row.innerHTML = `
+                <td>${stock.name}</td>
+                <td>${stock.ltp.toFixed(2)}</td>
+                <td class="${stock.change_pct >= 0 ? 'price-positive' : 'price-negative'}">${stock.change_pct.toFixed(2)}%</td>
+                <td>${stock.volume_ratio.toFixed(2)}x</td>
+                <td>${stock.signal}</td>
+                <td>${stock.rsi.toFixed(1)}</td>
+                <td>${stock.price_action}</td>
+                <td><span class="btst-score ${this.getBTSTClass(stock.btst_score)} ${isHighScore ? 'threshold-alert' : ''}">${stock.btst_score.toFixed(1)}</span></td>
+            `;
+
+            if (isHighScore) {
+                row.classList.add('threshold-alert');
+            }
+
+            tbody.appendChild(row);
+        });
+
+        this.updateDataTimestamp('btst');
+    }
+
+    renderFOAnalysis(response) {
+        const data = response.data || response;
+        
+        // Update F&O values
+        const pcrValue = document.getElementById('pcr-value');
+        const maxPainValue = document.getElementById('max-pain');
+        const vixValue = document.getElementById('vix-value');
+
+        if (pcrValue) pcrValue.textContent = data.pcr.toFixed(2);
+        if (maxPainValue) maxPainValue.textContent = data.maxPain;
+        if (vixValue) vixValue.textContent = data.vix.toFixed(2);
+
+        // Update recommended options
+        const optionHighlights = document.querySelector('.option-highlights');
+        if (optionHighlights && data.recommendedCE && data.recommendedPE) {
+            optionHighlights.innerHTML = `
+                <div class="highlight-item">
+                    <span class="option-type call">CE</span>
+                    <span class="strike">${data.recommendedCE.strike}</span>
+                    <span class="premium">₹${data.recommendedCE.ltp.toFixed(0)}</span>
+                </div>
+                <div class="highlight-item">
+                    <span class="option-type put">PE</span>
+                    <span class="strike">${data.recommendedPE.strike}</span>
+                    <span class="premium">₹${data.recommendedPE.ltp.toFixed(0)}</span>
+                </div>
+            `;
+        }
+
+        this.updateDataTimestamp('fno');
+    }
+
+    renderAlerts(response) {
+        const data = response.data || response;
+        const container = document.getElementById('alerts-list');
+        if (!container) return;
+
+        container.innerHTML = '';
+        data.forEach(alert => {
+            const div = document.createElement('div');
+            div.className = `alert-item ${alert.signal.toLowerCase()}`;
+            
+            const probability = alert.probability ? `<div>Probability: ${alert.probability}%</div>` : '';
+            
+            div.innerHTML = `
+                <div class="alert-header">
+                    <span class="alert-stock">${alert.stock}</span>
+                    <span class="alert-signal ${alert.signal.toLowerCase()}">${alert.signal}</span>
+                </div>
+                <div class="alert-details">
+                    <div>Entry: ₹${alert.entry}</div>
+                    <div>Target: ₹${alert.target}</div>
+                    <div>SL: ₹${alert.stoploss}</div>
+                    <div>Type: ${alert.type}</div>
+                    ${probability}
+                </div>
+            `;
+            
+            container.appendChild(div);
+        });
+
+        this.updateDataTimestamp('alerts');
+    }
+
+    renderGainersLosers(gainersResponse, losersResponse) {
+        const gainers = gainersResponse.data || gainersResponse;
+        const losers = losersResponse.data || losersResponse;
+
+        // Gainers
+        const gainersContainer = document.getElementById('gainers-list');
+        if (gainersContainer) {
+            gainersContainer.innerHTML = '';
+            gainers.forEach(stock => {
+                const div = document.createElement('div');
+                div.className = 'gainer-item';
+                
+                const isExtremeMove = stock.change_pct > this.alertThresholds.priceChange * 1.5;
+                if (isExtremeMove) {
+                    div.classList.add('extreme-alert');
+                }
+                
+                div.innerHTML = `
+                    <span class="stock-name">${stock.name}</span>
+                    <span class="stock-change">+${stock.change_pct.toFixed(2)}%</span>
+                `;
+                gainersContainer.appendChild(div);
+            });
+        }
+
+        // Losers
+        const losersContainer = document.getElementById('losers-list');
+        if (losersContainer) {
+            losersContainer.innerHTML = '';
+            losers.forEach(stock => {
+                const div = document.createElement('div');
+                div.className = 'loser-item';
+                
+                const isExtremeMove = Math.abs(stock.change_pct) > this.alertThresholds.priceChange * 1.5;
+                if (isExtremeMove) {
+                    div.classList.add('extreme-alert');
+                }
+                
+                div.innerHTML = `
+                    <span class="stock-name">${stock.name}</span>
+                    <span class="stock-change">${stock.change_pct.toFixed(2)}%</span>
+                `;
+                losersContainer.appendChild(div);
+            });
+        }
+
+        this.updateDataTimestamp('movers');
+    }
+
+    renderSectors(response) {
+        const data = response.data || response;
+        const grid = document.getElementById('sector-grid');
+        if (!grid) return;
+
+        grid.innerHTML = '';
+        data.forEach(sector => {
+            const div = document.createElement('div');
+            div.className = `sector-item ${sector.change_pct >= 0 ? 'positive' : 'negative'}`;
+            
+            const isExtremeMove = Math.abs(sector.change_pct) > 2;
+            if (isExtremeMove) {
+                div.classList.add('extreme-alert');
+            }
+            
+            div.innerHTML = `
+                <div class="sector-name">${sector.name}</div>
+                <div class="sector-change">${sector.change_pct >= 0 ? '+' : ''}${sector.change_pct.toFixed(2)}%</div>
+            `;
+            grid.appendChild(div);
+        });
+
+        this.updateDataTimestamp('sectors');
+    }
+
+    renderScalping(response) {
+        const data = response.data || response;
+        const tbody = document.getElementById('scalping-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        data.forEach(opp => {
+            const row = document.createElement('tr');
+            const isHighProbability = opp.probability > 85;
+            
+            row.innerHTML = `
+                <td>${opp.time || new Date().toLocaleTimeString('en-IN', { hour12: false })}</td>
+                <td>${opp.instrument}</td>
+                <td>${opp.type}</td>
+                <td>${opp.strike || '--'}</td>
+                <td>${opp.direction}</td>
+                <td>${opp.strategy || 'VW'}</td>
+                <td class="${isHighProbability ? 'threshold-alert' : ''}">${opp.probability}%</td>
+                <td><span class="status-badge">${opp.status || 'Active'}</span></td>
+                <td>${opp.result || '--'}</td>
+            `;
+            
+            if (isHighProbability) {
+                row.classList.add('threshold-alert');
+            }
+            
+            tbody.appendChild(row);
+        });
+
+        this.updateDataTimestamp('scalping');
+    }
+
+    updateHeaderSummary(data) {
+        const indices = data.data || data;
+        const nifty = indices.find(idx => idx.symbol === 'NIFTY');
+        const bankNifty = indices.find(idx => idx.symbol === 'BANKNIFTY');
+
+        if (nifty) {
+            const priceEl = document.getElementById('nifty-price');
+            const changeEl = document.getElementById('nifty-change');
+            if (priceEl) {
+                this.animatePriceChange(priceEl, nifty.price.toFixed(2));
+            }
+            if (changeEl) {
+                const changeText = `${nifty.change >= 0 ? '+' : ''}${nifty.change.toFixed(2)} (${nifty.change_pct.toFixed(2)}%)`;
+                this.animatePriceChange(changeEl, changeText);
+                changeEl.className = `change ${nifty.change >= 0 ? 'positive' : 'negative'}`;
+            }
+        }
+
+        if (bankNifty) {
+            const priceEl = document.getElementById('banknifty-price');
+            const changeEl = document.getElementById('banknifty-change');
+            if (priceEl) {
+                this.animatePriceChange(priceEl, bankNifty.price.toFixed(2));
+            }
+            if (changeEl) {
+                const changeText = `${bankNifty.change >= 0 ? '+' : ''}${bankNifty.change.toFixed(2)} (${bankNifty.change_pct.toFixed(2)}%)`;
+                this.animatePriceChange(changeEl, changeText);
+                changeEl.className = `change ${bankNifty.change >= 0 ? 'positive' : 'negative'}`;
+            }
+        }
+    }
+
+    animatePriceChange(element, newValue) {
+        if (element.textContent !== newValue) {
+            element.classList.add('data-update-highlight');
+            element.textContent = newValue;
+            
+            setTimeout(() => {
+                element.classList.remove('data-update-highlight');
+            }, 800);
+        }
+    }
+
+    updateDataTimestamp(section) {
+        const timestamp = document.querySelector(`#${section}-timestamp, .section-header .data-timestamp`);
+        if (timestamp) {
+            timestamp.textContent = `Updated: ${new Date().toLocaleTimeString('en-IN', { hour12: false })}`;
+        }
+    }
+
+    hasDataChanged(newData, oldData) {
+        if (!oldData) return true;
+        return JSON.stringify(newData) !== JSON.stringify(oldData);
+    }
+
+    getBTSTClass(score) {
+        if (score >= 8) return 'high';
+        if (score >= 7) return 'medium';
+        return 'low';
+    }
+
+    // Enhanced WebSocket handling
+    async initWebSocketConnection() {
+        return new Promise((resolve, reject) => {
+            try {
+                const wsUrl = `ws://localhost:5000`;
+                this.websocket = new WebSocket(wsUrl);
+
+                this.websocket.onopen = () => {
+                    console.log('✅ Enhanced WebSocket connected');
+                    
+                    // Subscribe to real-time data
+                    this.websocket.send(JSON.stringify({
+                        action: 'subscribe',
+                        instruments: ['NIFTY', 'BANKNIFTY', 'NIFTYIT']
+                    }));
+                    
+                    resolve();
+                };
+
+                this.websocket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    this.handleEnhancedLiveDataUpdate(data);
+                };
+
+                this.websocket.onerror = (error) => {
+                    console.error('Enhanced WebSocket error:', error);
+                    reject(new Error('WebSocket connection failed'));
+                };
+
+                this.websocket.onclose = () => {
+                    console.log('Enhanced WebSocket connection closed');
+                    // Attempt reconnection
+                    if (this.dataSource === 'live') {
+                        setTimeout(() => this.initWebSocketConnection(), 5000);
+                    }
+                };
+
+                setTimeout(() => {
+                    if (this.websocket.readyState === WebSocket.CONNECTING) {
+                        this.websocket.close();
+                        reject(new Error('WebSocket connection timeout'));
+                    }
+                }, 10000);
+
+            } catch (error) {
+                reject(error);
             }
         });
     }
+
+    handleEnhancedLiveDataUpdate(data) {
+        console.log('📊 Enhanced live data update:', data);
+        
+        switch (data.type) {
+            case 'realtime_quote':
+                this.updateRealTimeQuote(data.data);
+                break;
+            case 'market_trend':
+                this.updateMarketTrend(data.trend);
+                this.updateVolatilityMeter(data.volatilityIndex);
+                break;
+            case 'data_update':
+                this.handleDataUpdate(data);
+                break;
+            case 'auth_success':
+                this.updateConnectionStatus('Connected to Live API', 'success');
+                break;
+        }
+    }
+
+    updateRealTimeQuote(quoteData) {
+        // Update header summary with real-time data
+        const symbol = quoteData.symbol;
+        const priceElement = document.getElementById(`${symbol.toLowerCase()}-price`);
+        const changeElement = document.getElementById(`${symbol.toLowerCase()}-change`);
+        
+        if (priceElement) {
+            this.animatePriceChange(priceElement, quoteData.price.toFixed(2));
+        }
+        
+        if (changeElement) {
+            const changeText = `${quoteData.change >= 0 ? '+' : ''}${quoteData.change.toFixed(2)} (${quoteData.change_pct.toFixed(2)}%)`;
+            this.animatePriceChange(changeElement, changeText);
+            changeElement.className = `change ${quoteData.change >= 0 ? 'positive' : 'negative'}`;
+        }
+    }
+
+    handleDataUpdate(updateData) {
+        switch (updateData.category) {
+            case 'indices':
+                this.renderIndices(updateData.data);
+                break;
+            case 'btst':
+                this.renderBTSTStocks(updateData.data);
+                break;
+            case 'alerts':
+                this.renderAlerts(updateData.data);
+                break;
+        }
+    }
+
+    // Rest of the existing methods with enhancements...
+    async renderAllMockData() {
+        console.log('🎨 Rendering enhanced initial mock data...');
+        
+        try {
+            const [indices, btst, alerts, gainers, losers, sectors, scalping, foAnalysis] = await Promise.all([
+                this.getMockData('indices'),
+                this.getMockData('btst'),
+                this.getMockData('alerts'),
+                this.getMockData('gainers'),
+                this.getMockData('losers'),
+                this.getMockData('sectors'),
+                this.getMockData('scalping'),
+                this.getMockData('fno-analysis')
+            ]);
+
+            this.renderIndices(indices);
+            this.renderBTSTStocks(btst);
+            this.renderAlerts(alerts);
+            this.renderGainersLosers(gainers, losers);
+            this.renderSectors(sectors);
+            this.renderScalping(scalping);
+            this.renderFOAnalysis(foAnalysis);
+            this.updateHeaderSummary(indices);
+
+        } catch (error) {
+            console.error('❌ Error rendering enhanced mock data:', error);
+        }
+    }
+
+    async refreshData() {
+        console.log(`🔄 Enhanced refresh: ${this.dataSource} mode...`);
+
+        try {
+            const promises = [
+                this.fetchData('indices'),
+                this.fetchData('btst'),
+                this.fetchData('alerts'),
+                this.fetchData('gainers'),
+                this.fetchData('losers'),
+                this.fetchData('sectors'),
+                this.fetchData('scalping')
+            ];
+
+            if (this.dataSource === 'live') {
+                promises.push(this.fetchData('fno-analysis'));
+            }
+
+            const [indices, btst, alerts, gainers, losers, sectors, scalping, foAnalysis] = await Promise.all(promises);
+
+            this.renderIndices(indices);
+            this.renderBTSTStocks(btst);
+            this.renderAlerts(alerts);
+            this.renderGainersLosers(gainers, losers);
+            this.renderSectors(sectors);
+            this.renderScalping(scalping);
+            this.updateHeaderSummary(indices);
+
+            if (foAnalysis) {
+                this.renderFOAnalysis(foAnalysis);
+            }
+
+        } catch (error) {
+            console.error('❌ Enhanced data refresh failed:', error);
+            if (this.dataSource === 'live') {
+                this.showErrorModal('Data Refresh Failed', 'Failed to refresh live data. Would you like to switch to mock mode?');
+            }
+        }
+    }
+
+    // Modal, connection, and other existing methods remain the same...
+    showLiveDataConfirmation() {
+        const modal = document.getElementById('live-confirmation-modal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    hideLiveConfirmationModal() {
+        const modal = document.getElementById('live-confirmation-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    showErrorModal(title, message) {
+        const modal = document.getElementById('error-modal');
+        const titleEl = document.getElementById('error-modal-title');
+        const messageEl = document.getElementById('error-message');
+
+        if (titleEl) titleEl.textContent = title;
+        if (messageEl) messageEl.textContent = message;
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    hideErrorModal() {
+        const modal = document.getElementById('error-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    showLoading(message) {
+        const overlay = document.getElementById('loading-overlay');
+        const messageEl = document.getElementById('loading-message');
+        
+        if (messageEl) messageEl.textContent = message;
+        if (overlay) overlay.classList.remove('hidden');
+    }
+
+    hideLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.classList.add('hidden');
+    }
+
+    async connectToLiveData() {
+        console.log('🔄 Enhanced connection to live data...');
+        this.showLoading('Checking backend connection...');
+
+        try {
+            const isBackendRunning = await this.testBackendConnection();
+            if (!isBackendRunning) {
+                throw new Error('Backend server is not running. Please start the backend server first.');
+            }
+
+            this.hideLoading();
+            await this.openAuthPopup();
+
+        } catch (error) {
+            console.error('❌ Enhanced live data connection failed:', error);
+            this.hideLoading();
+            this.showErrorModal('Connection Failed', error.message);
+            
+            const mockRadio = document.getElementById('mockData');
+            if (mockRadio) mockRadio.checked = true;
+            this.switchToMockMode();
+        }
+    }
+
+    async openAuthPopup() {
+        try {
+            console.log('🔗 Opening enhanced authentication popup...');
+            
+            const response = await fetch(`${this.backendUrl}/api/login/url`);
+            if (!response.ok) {
+                throw new Error('Failed to get login URL');
+            }
+            
+            const data = await response.json();
+            
+            const popup = window.open(
+                data.loginUrl,
+                'flattrade_auth',
+                'width=600,height=700,scrollbars=yes,resizable=yes'
+            );
+            
+            if (!popup) {
+                throw new Error('Popup blocked. Please allow popups for this site and try again.');
+            }
+            
+            console.log('✅ Enhanced authentication popup opened successfully');
+            
+            const checkClosed = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(checkClosed);
+                    console.log('🔍 Popup closed, checking authentication status...');
+                    this.checkAuthStatusAndConnect();
+                }
+            }, 1000);
+
+            setTimeout(() => {
+                clearInterval(checkClosed);
+                if (!popup.closed) {
+                    popup.close();
+                }
+            }, 600000);
+            
+        } catch (error) {
+            console.error('❌ Enhanced popup error:', error);
+            throw error;
+        }
+    }
+
+    async testBackendConnection() {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(`${this.backendUrl}/api/health`, {
+                method: 'GET',
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            return response.ok;
+        } catch (error) {
+            console.error('Backend connection test failed:', error);
+            return false;
+        }
+    }
+
+    async checkAuthStatusAndConnect() {
+        try {
+            console.log('🔍 Enhanced authentication status check...');
+            this.updateConnectionStatus('Checking authentication...', 'connecting');
+            
+            const response = await fetch(`${this.backendUrl}/api/auth/status`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.authenticated) {
+                    console.log('✅ Enhanced authentication confirmed! Switching to live mode...');
+                    await this.switchToLiveMode();
+                    return;
+                }
+            }
+            
+            console.log('❌ Not authenticated yet');
+            this.updateConnectionStatus('Authentication required', 'error');
+            
+        } catch (error) {
+            console.error('Enhanced auth status check error:', error);
+            this.updateConnectionStatus('Connection error', 'error');
+        }
+    }
+
+    async switchToLiveMode() {
+        console.log('🔄 Enhanced switch to live data mode...');
+        this.showLoading('Initializing enhanced live data connection...');
+
+        try {
+            this.dataSource = 'live';
+            
+            await this.initWebSocketConnection();
+            await this.refreshData();
+            
+            this.updateConnectionStatus('Connected to Live API', 'success');
+            this.updateLiveIndicator('live');
+            this.updateMarketTrend('sideways');
+            this.hideLoading();
+            
+            console.log('✅ Enhanced live mode activated successfully');
+
+        } catch (error) {
+            console.error('❌ Enhanced live mode switch failed:', error);
+            this.hideLoading();
+            this.showErrorModal('Live Mode Failed', 'Failed to establish enhanced live data connection. Please try again.');
+            
+            const mockRadio = document.getElementById('mockData');
+            if (mockRadio) mockRadio.checked = true;
+            this.switchToMockMode();
+        }
+    }
+
+    switchToMockMode() {
+        console.log('🔄 Enhanced switch to mock data mode...');
+        
+        this.dataSource = 'mock';
+        this.disconnectWebSocket();
+        
+        if (this.authCheckInterval) {
+            clearInterval(this.authCheckInterval);
+            this.authCheckInterval = null;
+        }
+        
+        this.updateConnectionStatus('Mock Mode Active', 'mock');
+        this.updateLiveIndicator('mock');
+        this.updateMarketTrend('sideways');
+        
+        if (this.refreshTimer) {
+            clearInterval(this.refreshTimer);
+        }
+        
+        this.refreshData();
+        this.startAdaptiveRefresh();
+        
+        console.log('✅ Enhanced mock mode activated successfully');
+    }
+
+    disconnectWebSocket() {
+        if (this.websocket) {
+            console.log('🔌 Disconnecting enhanced WebSocket...');
+            this.websocket.close();
+            this.websocket = null;
+        }
+    }
+
+    restartRefreshCycle() {
+        this.startAdaptiveRefresh();
+    }
 }
 
-function setupChartTypeToggle() {
-    document.querySelectorAll('input[name="chart-type"]').forEach((el) =>
-        el.addEventListener('change', function () {
-            chartType = this.value;
-            renderNiftyChart();
-        })
-    );
-}
-
-// --- Dashboard Initialization ---
-document.addEventListener('DOMContentLoaded', function () {
-    initializeDashboard();
-    showLoading();
-    setTimeout(() => {
-        hideLoading();
-    }, 1500);
+// Initialize enhanced dashboard when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🌟 DOM loaded, starting enhanced dashboard...');
+    window.dashboard = new EnhancedTradingDashboard();
 });
-
-function initializeDashboard() {
-    updateDateTime();
-    updateMarketStatus();
-    renderIndicesTable();
-    renderSectorHeatmap();
-    renderBTSTTable();
-    renderTradingAlerts();
-    renderGainersLosers();
-    renderNiftyChart();
-    setupChartTypeToggle();
-    setupEventListeners();
-    updateScalpingSignals();     // <-- Create initial signals/log
-    renderScalpingTable();       // <-- Render them immediately
-    startAutoRefresh();          // <-- Begin the periodic updates
-}
-
-// Date and time updates
-function updateDateTime() {
-    const now = new Date();
-    const timeOptions = {
-        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-    };
-    const dateOptions = {
-        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
-    };
-    document.getElementById('current-time').textContent = now.toLocaleTimeString('en-IN', timeOptions);
-    document.getElementById('current-date').textContent = now.toLocaleDateString('en-IN', dateOptions);
-}
-
-// Market status updates
-function updateMarketStatus() {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const currentTime = currentHour * 60 + currentMinute;
-    // Market hours: 9:15 AM to 3:30 PM IST
-    const marketOpen = 9 * 60 + 15;
-    const marketClose = 15 * 60 + 30;
-    const statusElement = document.getElementById('market-status');
-    if (currentTime >= marketOpen && currentTime <= marketClose) {
-        statusElement.textContent = 'OPEN';
-        statusElement.style.background = 'var(--color-success)';
-    } else {
-        statusElement.textContent = 'CLOSED';
-        statusElement.style.background = 'var(--color-error)';
-    }
-}
-
-// Render indices table
-function renderIndicesTable() {
-    const tbody = document.getElementById('indices-tbody');
-    tbody.innerHTML = '';
-    marketData.indices.forEach(index => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><strong>${index.name}</strong></td>
-            <td>₹${formatNumber(index.price)}</td>
-            <td class="${index.change >= 0 ? 'price-positive' : 'price-negative'}">
-                ${index.change >= 0 ? '+' : ''}₹${formatNumber(index.change)}
-            </td>
-            <td class="${index.change_pct >= 0 ? 'price-positive' : 'price-negative'}">
-                ${index.change_pct >= 0 ? '+' : ''}${index.change_pct.toFixed(2)}%
-            </td>
-            <td>₹${formatNumber(index.high)}</td>
-            <td>₹${formatNumber(index.low)}</td>
-            <td>${formatVolume(index.volume)}</td>
-        `;
-        tbody.appendChild(row);
-    });
-
-    // Update header summary
-    const nifty = marketData.indices.find(idx => idx.symbol === 'NIFTY');
-    const bankNifty = marketData.indices.find(idx => idx.symbol === 'BANKNIFTY');
-    if (nifty) {
-        document.getElementById('nifty-value').textContent = `₹${formatNumber(nifty.price)}`;
-        const niftyChange = document.getElementById('nifty-change');
-        niftyChange.textContent = `${nifty.change >= 0 ? '+' : ''}₹${formatNumber(nifty.change)} (${nifty.change_pct >= 0 ? '+' : ''}${nifty.change_pct.toFixed(2)}%)`;
-        niftyChange.className = `change ${nifty.change >= 0 ? 'positive' : 'negative'}`;
-    }
-    if (bankNifty) {
-        document.getElementById('banknifty-value').textContent = `₹${formatNumber(bankNifty.price)}`;
-        const bankNiftyChange = document.getElementById('banknifty-change');
-        bankNiftyChange.textContent = `${bankNifty.change >= 0 ? '+' : ''}₹${formatNumber(bankNifty.change)} (${bankNifty.change_pct >= 0 ? '+' : ''}${bankNifty.change_pct.toFixed(2)}%)`;
-        bankNiftyChange.className = `change ${bankNifty.change >= 0 ? 'positive' : 'negative'}`;
-    }
-}
-
-// Render BTST table
-function renderBTSTTable() {
-    const tbody = document.getElementById('btst-tbody');
-    tbody.innerHTML = '';
-    marketData.btstStocks.forEach(stock => {
-        const row = document.createElement('tr');
-        const scoreClass = stock.btst_score >= 8 ? 'high' : stock.btst_score >= 7 ? 'medium' : 'low';
-        row.innerHTML = `
-            <td><strong>${stock.name}</strong></td>
-            <td>₹${formatNumber(stock.ltp)}</td>
-            <td class="${stock.change_pct >= 0 ? 'price-positive' : 'price-negative'}">
-                ${stock.change_pct >= 0 ? '+' : ''}${stock.change_pct.toFixed(2)}%
-            </td>
-            <td>${stock.volume_ratio.toFixed(2)}x</td>
-            <td><span class="status status--info">${stock.signal}</span></td>
-            <td>${stock.rsi.toFixed(1)}</td>
-            <td>${stock.price_action}</td>
-            <td><span class="btst-score ${scoreClass}">${stock.btst_score.toFixed(1)}</span></td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-// --- RENDER SCALPING LOG TABLE ---
-function renderScalpingTable() {
-    const tbody = document.getElementById("scalping-tbody");
-    if (!tbody) return;
-    tbody.innerHTML = ""; // Clear old
-
-    scalpingLog.forEach(signal => {
-        const row = document.createElement("tr");
-        row.className = (signal.status === "completed") ? "scalping-closed" : "scalping-active";
-        row.innerHTML = `
-      <td>${signal.time || "--"}</td>
-      <td>${signal.instrument || "--"}</td>
-      <td>${signal.type || "--"}</td>
-      <td>${signal.strike || "--"}</td>
-      <td class="${signal.direction === "Buy" ? "price-positive" : "price-negative"}">${signal.direction || "--"}</td>
-      <td>${signal.strategy === "VW" ? "VWAP BOUNCE" : (signal.strategy || "--")}</td>
-      <td><b>${signal.probability || "--"}%</b></td>
-      <td>${signal.status === "in progress" ? '<span style="color:#2bf542;font-weight:bold;">IN PROGRESS</span>' : '<span style="color:#999">COMPLETED</span>'}</td>
-      <td>${signal.exitTime || "--"}</td>
-    `;
-        tbody.appendChild(row);
-    });
-}
-
-// Render trading alerts
-function renderTradingAlerts() {
-    const alertsList = document.getElementById('alerts-list');
-    alertsList.innerHTML = '';
-    marketData.tradingAlerts.slice(-10).reverse().forEach(alert => {
-        const alertElement = document.createElement('div');
-        alertElement.className = `alert-item ${alert.signal.toLowerCase()}`;
-        alertElement.innerHTML = `
-            <div class="alert-header">
-                <span class="alert-stock">${alert.stock}</span>
-                <span class="alert-signal ${alert.signal.toLowerCase()}">${alert.signal}</span>
-            </div>
-            <div class="alert-details">
-                <span>Entry: ₹${formatNumber(alert.entry)}</span>
-                <span>Target: ₹${formatNumber(alert.target)}</span>
-                <span>SL: ₹${formatNumber(alert.stoploss)}</span>
-            </div>
-            <div class="alert-timestamp">${alert.timestamp} • ${alert.type}</div>
-        `;
-        alertsList.appendChild(alertElement);
-    });
-}
-
-// Render gainers and losers
-function renderGainersLosers() {
-    const gainersList = document.getElementById('gainers-list');
-    const losersList = document.getElementById('losers-list');
-    gainersList.innerHTML = '';
-    losersList.innerHTML = '';
-    marketData.topGainers.forEach(stock => {
-        const item = document.createElement('div');
-        item.className = 'gainer-item';
-        item.innerHTML = `
-            <span class="stock-name">${stock.name}</span>
-            <div>
-                <span class="stock-change">+${stock.change_pct.toFixed(2)}%</span>
-                <div style="font-size: 11px; color: var(--color-text-secondary);">₹${formatNumber(stock.ltp)}</div>
-            </div>
-        `;
-        gainersList.appendChild(item);
-    });
-    marketData.topLosers.forEach(stock => {
-        const item = document.createElement('div');
-        item.className = 'loser-item';
-        item.innerHTML = `
-            <span class="stock-name">${stock.name}</span>
-            <div>
-                <span class="stock-change">${stock.change_pct.toFixed(2)}%</span>
-                <div style="font-size: 11px; color: var(--color-text-secondary);">₹${formatNumber(stock.ltp)}</div>
-            </div>
-        `;
-        losersList.appendChild(item);
-    });
-}
-// --- Event listeners, Tab, Table, Chart Helpers ---
-
-function setupEventListeners() {
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const tabId = e.target.getAttribute('data-tab');
-            switchTab(tabId);
-        });
-    });
-
-    // Timeframe switching (optional: demo purpose with random values)
-    document.querySelectorAll('.timeframe-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            updateChartTimeframe(e.target.getAttribute('data-timeframe'));
-        });
-    });
-
-    // Table sorting
-    document.querySelectorAll('th[data-sort]').forEach(th => {
-        th.addEventListener('click', (e) => {
-            const column = e.target.getAttribute('data-sort');
-            sortTable(column);
-        });
-    });
-
-    // Refresh buttons
-    document.getElementById('refresh-indices').addEventListener('click', () => {
-        simulateDataUpdate();
-        renderIndicesTable();
-    });
-
-    // Clear alerts
-    document.getElementById('clear-alerts').addEventListener('click', () => {
-        marketData.tradingAlerts = [];
-        renderTradingAlerts();
-    });
-
-    // Settings
-    document.getElementById('refresh-rate').addEventListener('change', (e) => {
-        currentRefreshRate = parseInt(e.target.value) * 1000;
-        startAutoRefresh();
-    });
-
-    // Export data
-    document.getElementById('export-data').addEventListener('click', exportData);
-
-    // Sound alerts checkbox (you can ignore/mute in demo)
-    document.getElementById('sound-alerts').addEventListener('change', (e) => {
-        if (e.target.checked) {
-            console.log('Sound alerts enabled');
-        }
-    });
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && !e.target.matches('input, textarea, select')) {
-            e.preventDefault();
-            simulateDataUpdate();
-            renderIndicesTable();
-        }
-        if (e.code === 'Escape') {
-            console.log('Escape pressed');
-        }
-    });
-}
-
-// --- Tab helper
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-    document.getElementById(tabId).classList.add('active');
-}
-
-// --- Timeframe update (random demo data)
-function updateChartTimeframe(timeframe) {
-    // Demo: just randomize line chart for now
-    const chartData = generateCandlestickData();
-    if (chartType === 'line' && niftyChart && niftyChart.data) {
-        niftyChart.data.labels = chartData.labels;
-        niftyChart.data.datasets[0].data = chartData.prices;
-        niftyChart.update();
-    }
-    // For candlestick, you could apply similar logic with ohlc demo
-}
-
-// --- Sort table
-function sortTable(column) {
-    if (currentSortColumn === column) {
-        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-        currentSortColumn = column;
-        currentSortDirection = 'asc';
-    }
-    marketData.indices.sort((a, b) => {
-        let aVal = a[column];
-        let bVal = b[column];
-        if (typeof aVal === 'string') {
-            aVal = aVal.toLowerCase();
-            bVal = bVal.toLowerCase();
-        }
-        if (currentSortDirection === 'asc') {
-            return aVal > bVal ? 1 : -1;
-        } else {
-            return aVal < bVal ? 1 : -1;
-        }
-    });
-    renderIndicesTable();
-}
-
-// --- Data/Chart randomization for demo
-function generateCandlestickData() {
-    const labels = [];
-    const prices = [];
-    const basePrice = 24350;
-    for (let i = 30; i >= 0; i--) {
-        const date = new Date();
-        date.setMinutes(date.getMinutes() - i * 5);
-        labels.push(date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
-        const randomChange = (Math.random() - 0.5) * 100;
-        const price = basePrice + randomChange + (Math.sin(i / 5) * 50);
-        prices.push(price.toFixed(2));
-    }
-    return { labels, prices };
-}
-// --- Real-time simulation, refresh, export, and utilities ---
-
-// Simulate real-time data updates
-function simulateDataUpdate() {
-    marketData.indices.forEach(index => {
-        const changePercent = (Math.random() - 0.5) * 0.5; // ±0.25%
-        const priceChange = index.price * (changePercent / 100);
-        index.price += priceChange;
-        index.change += priceChange;
-        index.change_pct = (index.change / (index.price - index.change)) * 100;
-        if (index.price > index.high) index.high = index.price;
-        if (index.price < index.low) index.low = index.price;
-        index.volume += Math.floor(Math.random() * 100000);
-    });
-
-    marketData.btstStocks.forEach(stock => {
-        const changePercent = (Math.random() - 0.5) * 1;
-        stock.ltp += stock.ltp * (changePercent / 100);
-        stock.change_pct += changePercent;
-        stock.rsi += (Math.random() - 0.5) * 2;
-        stock.rsi = Math.max(0, Math.min(100, stock.rsi));
-    });
-
-    // Occasionally add new alerts
-    if (Math.random() > 0.7) {
-        addRandomAlert();
-    }
-}
-
-function addRandomAlert() {
-    const stocks = ['RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ITC', 'WIPRO', 'BAJFINANCE'];
-    const signals = ['BUY', 'SELL'];
-    const types = ['BTST', 'Intraday', 'F&O', 'Swing'];
-    const now = new Date();
-    const timestamp = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const newAlert = {
-        timestamp: timestamp,
-        stock: stocks[Math.floor(Math.random() * stocks.length)],
-        signal: signals[Math.floor(Math.random() * signals.length)],
-        entry: Math.random() * 3000 + 100,
-        target: 0,
-        stoploss: 0,
-        type: types[Math.floor(Math.random() * types.length)]
-    };
-    newAlert.target = newAlert.entry * (1 + (Math.random() * 0.05 + 0.01));
-    newAlert.stoploss = newAlert.entry * (1 - (Math.random() * 0.03 + 0.01));
-    marketData.tradingAlerts.push(newAlert);
-    renderTradingAlerts();
-}
-
-// --- Auto-refresh management
-function startAutoRefresh() {
-    clearInterval(refreshInterval);
-    refreshInterval = setInterval(() => {
-        simulateDataUpdate();
-        renderIndicesTable();
-        renderBTSTTable();
-        updateDateTime();
-        updateMarketStatus();
-        updateScalpingSignals();
-        renderScalpingTable();
-        // Simulate chart update occasionally
-        if (Math.random() > 0.7) {
-            updateChartTimeframe('1m');
-        }
-    }, currentRefreshRate);
-
-    // Update datetime every second
-    setInterval(updateDateTime, 1000);
-}
-
-// --- Export functionality
-function exportData() {
-    const data = {
-        timestamp: new Date().toISOString(),
-        indices: marketData.indices,
-        btstStocks: marketData.btstStocks,
-        tradingAlerts: marketData.tradingAlerts
-    };
-    const csvContent = convertToCSV(marketData.indices);
-    downloadCSV(csvContent, 'nse_market_data.csv');
-}
-
-function convertToCSV(data) {
-    const headers = ['Name', 'Price', 'Change', 'Change %', 'High', 'Low', 'Volume'];
-    const rows = data.map(item => [
-        item.name,
-        item.price.toFixed(2),
-        item.change.toFixed(2),
-        item.change_pct.toFixed(2),
-        item.high.toFixed(2),
-        item.low.toFixed(2),
-        item.volume
-    ]);
-    const csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    return csvContent;
-}
-
-function downloadCSV(content, filename) {
-    const blob = new Blob([content], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.setAttribute('hidden', '');
-    a.setAttribute('href', url);
-    a.setAttribute('download', filename);
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-}
-
-// --- Formatting utilities
-function formatNumber(num) {
-    return new Intl.NumberFormat('en-IN', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(num);
-}
-function formatVolume(volume) {
-    if (volume >= 10000000) {
-        return (volume / 10000000).toFixed(1) + 'Cr';
-    } else if (volume >= 100000) {
-        return (volume / 100000).toFixed(1) + 'L';
-    } else if (volume >= 1000) {
-        return (volume / 1000).toFixed(1) + 'K';
-    }
-    return volume.toString();
-}
-
-// --- Loading overlays
-function showLoading() {
-    document.getElementById('loading-overlay').classList.add('show');
-}
-function hideLoading() {
-    document.getElementById('loading-overlay').classList.remove('show');
-}
-
-// --- Initialize loading state at startup
-showLoading();
