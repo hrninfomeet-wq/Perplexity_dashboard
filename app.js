@@ -1,48 +1,53 @@
-// Enhanced NSE Trading Dashboard - Frontend with Real-time Features
-// Advanced UI feedback, adaptive refresh, and enhanced data visualization
+// Enhanced NSE Trading Dashboard - FIXED VERSION
+// Complete corrected implementation with proper modal functionality
 
 class EnhancedTradingDashboard {
     constructor() {
-        this.dataSource = 'mock';
-        this.refreshInterval = 5000;
+        this.dataSource = 'placeholder';
+        this.refreshInterval = 10000;
         this.refreshTimer = null;
         this.websocket = null;
         this.backendUrl = 'http://localhost:5000';
         this.isBackendConnected = false;
         this.authCheckInterval = null;
-        
+
         // Enhanced properties
         this.adaptiveRefreshRates = new Map();
         this.dataTimestamps = new Map();
         this.changedCells = new Set();
-        this.alertThresholds = {
-            priceChange: 2.0,
-            volumeSpike: 2.5,
-            btstScore: 8.0
-        };
+        this.alertThresholds = { priceChange: 2.0, volumeSpike: 2.5, btstScore: 5.5 };
         this.volatilityIndex = 1.0;
         this.lastUpdateTimes = new Map();
 
         // UI Enhancement properties
         this.blinkingElements = new Set();
         this.fadeTimeouts = new Map();
-        
+
         this.init();
     }
 
     init() {
         console.log('🚀 Initializing Enhanced NSE Trading Dashboard...');
         
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initializeDashboard());
+        } else {
+            this.initializeDashboard();
+        }
+    }
+
+    initializeDashboard() {
         this.setupEventListeners();
         this.setupAdvancedUIFeatures();
         this.updateDateTime();
-        this.updateConnectionStatus('Mock Mode Active', 'mock');
-        this.updateLiveIndicator('mock');
-        
-        // Start with mock data
-        this.renderAllMockData();
+        this.updateConnectionStatus('No Data Available', 'placeholder');
+        this.updateLiveIndicator('placeholder');
+
+        // Check backend first, then fallback to placeholder data
+        this.checkBackendAndAuthentication();
         this.startAdaptiveRefresh();
-        
+
         // Update time every second
         setInterval(() => this.updateDateTime(), 1000);
         
@@ -64,6 +69,8 @@ class EnhancedTradingDashboard {
     }
 
     setupEventListeners() {
+        console.log('🔧 Setting up event listeners...');
+        
         // Mock/Live toggle handlers
         const mockRadio = document.getElementById('mockData');
         const liveRadio = document.getElementById('liveData');
@@ -72,23 +79,33 @@ class EnhancedTradingDashboard {
             mockRadio.addEventListener('change', () => {
                 if (mockRadio.checked) {
                     console.log('User selected Mock mode');
-                    this.switchToMockMode();
+                    // Mock is disabled, so this shouldn't happen
                 }
             });
         }
 
         if (liveRadio) {
             liveRadio.addEventListener('change', () => {
+                console.log('🔘 Live radio button changed. Checked:', liveRadio.checked);
                 if (liveRadio.checked) {
-                    console.log('User selected Live mode - showing confirmation');
+                    console.log('✅ User selected Live mode - showing confirmation modal');
                     this.showLiveDataConfirmation();
+                } else {
+                    console.log('⭕ Live mode deselected');
                 }
             });
+
+            // Also add click listener for debugging
+            liveRadio.addEventListener('click', () => {
+                console.log('🖱️ Live radio button clicked');
+            });
+        } else {
+            console.error('❌ Live radio button not found!');
         }
 
-        // Modal handlers
+        // Modal handlers - CRITICAL FIX
         this.setupModalHandlers();
-        
+
         // Settings handlers
         const refreshInterval = document.getElementById('refresh-interval');
         if (refreshInterval) {
@@ -98,17 +115,160 @@ class EnhancedTradingDashboard {
             });
         }
 
-        // Enhanced: Add threshold controls
+        // Threshold controls
         this.setupThresholdControls();
+
+        // Connect to live data button
+        const connectLiveBtn = document.getElementById('connect-live-btn');
+        if (connectLiveBtn) {
+            connectLiveBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                console.log('🔗 Connect Live button clicked');
+
+                // Update button state
+                connectLiveBtn.disabled = true;
+                connectLiveBtn.textContent = '🔄 Connecting...';
+
+                // Check radio button to live
+                const liveRadio = document.getElementById('liveData');
+                if (liveRadio) liveRadio.checked = true;
+
+                // Initiate live data flow
+                await this.initiateLiveDataFlow();
+
+                // Reset button state
+                setTimeout(() => {
+                    connectLiveBtn.disabled = false;
+                    connectLiveBtn.textContent = '🔗 Connect to Live Market Data';
+                }, 3000);
+            });
+        }
+
+        console.log('✅ Event listeners setup complete');
+    }
+
+    // CRITICAL FIX: Modal handlers
+    setupModalHandlers() {
+        console.log('🔧 Setting up modal handlers...');
+        
+        // Live data confirmation modal
+        const modal = document.getElementById('live-data-modal');
+        const closeBtn = modal?.querySelector('.modal-close');
+        const proceedBtn = document.getElementById('proceed-live');
+        const cancelBtn = document.getElementById('cancel-live');
+        const modalOverlay = modal?.querySelector('.modal-overlay');
+
+        // Close modal when clicking X button
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Modal close button clicked');
+                this.closeLiveDataModal();
+            });
+        }
+
+        // Close modal when clicking overlay
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Modal overlay clicked');
+                this.closeLiveDataModal();
+            });
+        }
+
+        // Cancel button
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Cancel button clicked');
+                this.closeLiveDataModal();
+            });
+        }
+
+        // Proceed button
+        if (proceedBtn) {
+            proceedBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                console.log('Proceed button clicked');
+                modal.style.display = 'none';
+                await this.initiateLiveDataFlow();
+            });
+        }
+
+        // Error modal handlers
+        const errorModal = document.getElementById('error-modal');
+        const errorCloseBtn = errorModal?.querySelector('.modal-close');
+        const errorOkBtn = document.getElementById('close-error');
+
+        if (errorCloseBtn) {
+            errorCloseBtn.addEventListener('click', () => {
+                errorModal.style.display = 'none';
+            });
+        }
+
+        if (errorOkBtn) {
+            errorOkBtn.addEventListener('click', () => {
+                errorModal.style.display = 'none';
+            });
+        }
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (modal && modal.style.display === 'block') {
+                    this.closeLiveDataModal();
+                }
+                if (errorModal && errorModal.style.display === 'block') {
+                    errorModal.style.display = 'none';
+                }
+            }
+        });
+        
+        console.log('✅ Modal handlers setup complete');
+    }
+
+    closeLiveDataModal() {
+        const modal = document.getElementById('live-data-modal');
+        const mockRadio = document.getElementById('mockData');
+        
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        
+        // Reset to mock mode (which is disabled)
+        if (mockRadio) {
+            mockRadio.checked = true;
+        }
+        
+        console.log('✅ Live data modal closed');
+    }
+
+    showLiveDataConfirmation() {
+        console.log('📱 Showing live data confirmation modal...');
+        const modal = document.getElementById('live-data-modal');
+        console.log('🔍 Modal element found:', modal);
+
+        if (modal) {
+            console.log('📊 Modal current display style:', modal.style.display);
+            modal.style.display = 'block';
+            console.log('✅ Modal display set to block');
+            console.log('🎯 Modal computed display:', window.getComputedStyle(modal).display);
+
+            // Additional check if modal is visible
+            const rect = modal.getBoundingClientRect();
+            console.log('📐 Modal dimensions:', rect);
+        } else {
+            console.error('❌ Modal element not found! Available modals:');
+            const allModals = document.querySelectorAll('.modal');
+            console.log('📋 All modal elements:', allModals);
+        }
     }
 
     setupAdvancedUIFeatures() {
         // Add data freshness indicators
         this.addDataFreshnessIndicators();
-        
         // Add volatility meter
         this.addVolatilityMeter();
-        
         // Add performance metrics
         this.addPerformanceMetrics();
     }
@@ -116,1345 +276,1169 @@ class EnhancedTradingDashboard {
     addDataFreshnessIndicators() {
         const sections = document.querySelectorAll('.section-header');
         sections.forEach(section => {
-            const timestamp = document.createElement('span');
-            timestamp.className = 'data-timestamp';
-            timestamp.textContent = 'Updated: Never';
-            timestamp.style.fontSize = '11px';
-            timestamp.style.color = 'var(--color-text-secondary)';
-            timestamp.style.marginLeft = '10px';
-            section.appendChild(timestamp);
+            const existingTimestamp = section.querySelector('.data-timestamp');
+            if (!existingTimestamp) {
+                const timestamp = document.createElement('span');
+                timestamp.className = 'data-timestamp';
+                timestamp.textContent = 'Updated: Never';
+                timestamp.style.fontSize = '11px';
+                timestamp.style.color = 'var(--color-text-secondary)';
+                timestamp.style.marginLeft = '10px';
+                section.appendChild(timestamp);
+            }
         });
     }
 
     addVolatilityMeter() {
         const header = document.querySelector('.header-right');
-        if (header) {
+        if (header && !header.querySelector('.volatility-meter')) {
             const volatilityMeter = document.createElement('div');
             volatilityMeter.className = 'volatility-meter';
             volatilityMeter.innerHTML = `
-                <div class="volatility-label">Market Volatility</div>
-                <div class="volatility-bar">
-                    <div class="volatility-fill" id="volatility-fill"></div>
+                <div class="volatility-gauge">
+                    <span class="volatility-label">Market Volatility</span>
+                    <div class="volatility-bar">
+                        <div class="volatility-fill" id="volatility-fill"></div>
+                    </div>
+                    <span class="volatility-value" id="volatility-value">1.0x</span>
                 </div>
-                <div class="volatility-value" id="volatility-value">Normal</div>
             `;
             header.appendChild(volatilityMeter);
         }
     }
 
     addPerformanceMetrics() {
-        const container = document.createElement('div');
-        container.className = 'performance-metrics';
-        container.innerHTML = `
-            <div class="metric">
-                <span class="metric-label">API Calls:</span>
-                <span class="metric-value" id="api-calls">0</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">Last Update:</span>
-                <span class="metric-value" id="last-update">Never</span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">Refresh Rate:</span>
-                <span class="metric-value" id="refresh-rate">5000ms</span>
-            </div>
-        `;
-        
         const sidebar = document.querySelector('.sidebar');
-        if (sidebar) {
-            sidebar.appendChild(container);
-        }
-    }
-
-    setupThresholdControls() {
-        // Add custom threshold controls to settings
-        const settingsContent = document.querySelector('.settings-content');
-        if (settingsContent) {
-            const thresholdControls = document.createElement('div');
-            thresholdControls.innerHTML = `
-                <div class="setting-item">
-                    <label for="price-threshold">Price Change Alert (%):</label>
-                    <input type="number" class="form-control" id="price-threshold" value="${this.alertThresholds.priceChange}" min="0.5" max="10" step="0.1">
+        if (sidebar && !sidebar.querySelector('.performance-metrics')) {
+            const metricsSection = document.createElement('div');
+            metricsSection.className = 'section performance-metrics';
+            metricsSection.innerHTML = `
+                <div class="section-header">
+                    <h3>Performance Metrics</h3>
                 </div>
-                <div class="setting-item">
-                    <label for="volume-threshold">Volume Spike Alert (x):</label>
-                    <input type="number" class="form-control" id="volume-threshold" value="${this.alertThresholds.volumeSpike}" min="1.0" max="5.0" step="0.1">
-                </div>
-                <div class="setting-item">
-                    <label for="btst-threshold">BTST Score Alert:</label>
-                    <input type="number" class="form-control" id="btst-threshold" value="${this.alertThresholds.btstScore}" min="6.0" max="10.0" step="0.1">
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">Data Freshness</span>
+                        <span class="metric-value" id="data-freshness">Unknown</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">API Calls</span>
+                        <span class="metric-value" id="api-calls">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Uptime</span>
+                        <span class="metric-value" id="uptime">0s</span>
+                    </div>
                 </div>
             `;
-            settingsContent.appendChild(thresholdControls);
-
-            // Add event listeners for threshold changes
-            document.getElementById('price-threshold').addEventListener('change', (e) => {
-                this.alertThresholds.priceChange = parseFloat(e.target.value);
-            });
-        }
-    }
-
-    setupModalHandlers() {
-        const connectBtn = document.getElementById('connect-live-data');
-        const cancelBtn = document.getElementById('cancel-live-data');
-        const retryBtn = document.getElementById('retry-connection');
-        const mockFallbackBtn = document.getElementById('use-mock-fallback');
-
-        if (connectBtn) {
-            connectBtn.addEventListener('click', () => {
-                this.hideLiveConfirmationModal();
-                this.connectToLiveData();
-            });
-        }
-
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
-                this.hideLiveConfirmationModal();
-                const mockRadio = document.getElementById('mockData');
-                if (mockRadio) mockRadio.checked = true;
-                this.switchToMockMode();
-            });
-        }
-
-        if (retryBtn) {
-            retryBtn.addEventListener('click', () => {
-                this.hideErrorModal();
-                this.connectToLiveData();
-            });
-        }
-
-        if (mockFallbackBtn) {
-            mockFallbackBtn.addEventListener('click', () => {
-                this.hideErrorModal();
-                const mockRadio = document.getElementById('mockData');
-                if (mockRadio) mockRadio.checked = true;
-                this.switchToMockMode();
-            });
-        }
-
-        // Close modal handlers
-        document.querySelectorAll('.modal-close').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const modal = e.target.closest('.modal');
-                if (modal) modal.classList.add('hidden');
-            });
-        });
-
-        // Refresh button
-        const refreshBtn = document.getElementById('refresh-indices');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                this.refreshData();
-            });
+            sidebar.appendChild(metricsSection);
         }
     }
 
     initializeUIEnhancements() {
-        // Add CSS for enhanced features
-        const style = document.createElement('style');
-        style.textContent = `
-            .data-update-highlight {
-                background-color: var(--color-primary) !important;
-                opacity: 0.3;
-                animation: highlightFade 0.8s ease-out;
+        // Start uptime counter
+        const startTime = Date.now();
+        setInterval(() => {
+            const uptimeElement = document.getElementById('uptime');
+            if (uptimeElement) {
+                const uptime = Math.floor((Date.now() - startTime) / 1000);
+                uptimeElement.textContent = `${uptime}s`;
             }
-            
-            @keyframes highlightFade {
-                0% { opacity: 0.6; }
-                100% { opacity: 0.1; }
-            }
-            
-            .volatility-meter {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                min-width: 120px;
-            }
-            
-            .volatility-label {
-                font-size: 11px;
-                color: var(--color-text-secondary);
-                text-align: center;
-            }
-            
-            .volatility-bar {
-                height: 8px;
-                background: var(--color-secondary);
-                border-radius: 4px;
-                overflow: hidden;
-            }
-            
-            .volatility-fill {
-                height: 100%;
-                background: linear-gradient(to right, var(--color-success), var(--color-warning), var(--color-error));
-                width: 30%;
-                transition: width 0.5s ease;
-            }
-            
-            .volatility-value {
-                font-size: 10px;
-                color: var(--color-text-secondary);
-                text-align: center;
-                font-weight: 500;
-            }
-            
-            .performance-metrics {
-                background: var(--color-surface);
-                border-radius: var(--radius-md);
-                padding: var(--space-12);
-                border: 1px solid var(--color-border);
-                margin-top: var(--space-16);
-            }
-            
-            .metric {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: var(--space-8);
-                font-size: var(--font-size-xs);
-            }
-            
-            .metric-label {
-                color: var(--color-text-secondary);
-            }
-            
-            .metric-value {
-                color: var(--color-text);
-                font-weight: 500;
-            }
-            
-            .data-timestamp {
-                font-size: 10px;
-                color: var(--color-text-secondary);
-                margin-left: 10px;
-            }
-            
-            .threshold-alert {
-                border-left: 4px solid var(--color-warning) !important;
-                background: rgba(var(--color-warning-rgb), 0.1) !important;
-            }
-            
-            .extreme-alert {
-                border-left: 4px solid var(--color-error) !important;
-                background: rgba(var(--color-error-rgb), 0.1) !important;
-                animation: pulse 1.5s infinite;
-            }
-            
-            @keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.8; }
-            }
-            
-            .stale-data {
-                opacity: 0.6;
-                border: 2px dashed var(--color-warning);
-            }
-            
-            .fresh-data {
-                border-left: 3px solid var(--color-success);
-            }
-        `;
-        document.head.appendChild(style);
+        }, 1000);
+
+        // Setup enhanced hover effects
+        this.setupEnhancedHoverEffects();
     }
 
-    updateDateTime() {
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('en-IN', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+    setupEnhancedHoverEffects() {
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.closest('tr')) {
+                const row = e.target.closest('tr');
+                if (row.parentElement.tagName === 'TBODY') {
+                    row.style.backgroundColor = 'var(--color-bg-3)';
+                }
+            }
         });
-        const timeStr = now.toLocaleTimeString('en-IN', { hour12: true });
 
-        const dateEl = document.getElementById('current-date');
-        const timeEl = document.getElementById('current-time');
+        document.addEventListener('mouseout', (e) => {
+            if (e.target.closest('tr')) {
+                const row = e.target.closest('tr');
+                if (row.parentElement.tagName === 'TBODY') {
+                    row.style.backgroundColor = '';
+                }
+            }
+        });
+    }
 
-        if (dateEl) dateEl.textContent = dateStr;
-        if (timeEl) timeEl.textContent = timeStr;
+    // Check backend first, show real data or ???? placeholders
+    async checkBackendAndAuthentication() {
+        console.log('🔍 Checking backend connection and authentication status...');
+        
+        try {
+            // Check if backend is running
+            const healthResponse = await fetch(`${this.backendUrl}/api/health`, {
+                timeout: 5000
+            });
+
+            if (healthResponse.ok) {
+                const healthData = await healthResponse.json();
+                console.log('✅ Backend is running:', healthData);
+                this.isBackendConnected = true;
+
+                // Check authentication status
+                const authResponse = await fetch(`${this.backendUrl}/api/auth/status`);
+                if (authResponse.ok) {
+                    const authData = await authResponse.json();
+                    
+                    if (authData.authenticated) {
+                        console.log('✅ Already authenticated - switching to live mode');
+                        this.switchToLiveMode();
+                    } else {
+                        console.log('⚠️ Backend running but not authenticated - showing placeholders');
+                        this.showPlaceholderData();
+                    }
+                } else {
+                    console.log('⚠️ Cannot check auth status - showing placeholders');
+                    this.showPlaceholderData();
+                }
+            } else {
+                console.log('⚠️ Backend not responding - showing placeholders');
+                this.isBackendConnected = false;
+                this.showPlaceholderData();
+            }
+        } catch (error) {
+            console.error('❌ Backend connection failed:', error.message);
+            this.isBackendConnected = false;
+            this.showPlaceholderData();
+        }
+    }
+
+    // Show ???? placeholders when no data available
+    showPlaceholderData() {
+        console.log('📊 Showing ???? placeholders for unavailable data');
+        this.dataSource = 'placeholder';
+        
+        // Update UI to show placeholders
+        this.updateConnectionStatus('No Data Available', 'placeholder');
+        this.updateLiveIndicator('placeholder');
+        
+        // Render placeholder data
+        this.renderPlaceholderIndices();
+        this.renderPlaceholderMovers();
+        this.renderPlaceholderSectors();
+        this.renderPlaceholderBTST();
+        this.renderPlaceholderScalping();
+        this.renderPlaceholderFnO();
+        this.renderPlaceholderAlerts();
+    }
+
+    renderPlaceholderIndices() {
+        const tbody = document.getElementById('indices-tbody');
+        if (!tbody) return;
+
+        const indices = [
+            { name: 'NIFTY 50', symbol: 'NIFTY' },
+            { name: 'BANK NIFTY', symbol: 'BANKNIFTY' },
+            { name: 'FINNIFTY', symbol: 'FINNIFTY' },
+            { name: 'NIFTY IT', symbol: 'NIFTYIT' },
+            { name: 'NIFTY AUTO', symbol: 'NIFTYAUTO' },
+            { name: 'NIFTY PHARMA', symbol: 'NIFTYPHARMA' },
+            { name: 'NIFTY METAL', symbol: 'NIFTYMETAL' },
+            { name: 'NIFTY FMCG', symbol: 'NIFTYFMCG' }
+        ];
+
+        tbody.innerHTML = indices.map(index => `
+            <tr data-symbol="${index.symbol}">
+                <td><strong>${index.name}</strong></td>
+                <td class="price-cell">????</td>
+                <td class="change-cell">????</td>
+                <td class="change-pct-cell">????</td>
+                <td>????</td>
+                <td>????</td>
+                <td>????</td>
+            </tr>
+        `).join('');
+
+        this.updateTimestamp('indices-timestamp');
+        console.log('📊 Rendered placeholder indices data');
+    }
+
+    renderPlaceholderMovers() {
+        // Gainers
+        const gainersContainer = document.getElementById('gainers-tbody');
+        if (gainersContainer) {
+            gainersContainer.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center">???? No data available</td>
+                </tr>
+            `;
+        }
+
+        // Losers
+        const losersContainer = document.getElementById('losers-tbody');
+        if (losersContainer) {
+            losersContainer.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center">???? No data available</td>
+                </tr>
+            `;
+        }
+
+        this.updateTimestamp('movers-timestamp');
+        console.log('📊 Rendered placeholder market movers data');
+    }
+
+    renderPlaceholderSectors() {
+        const sectorsGrid = document.getElementById('sectors-grid');
+        if (!sectorsGrid) return;
+
+        const sectors = ['IT', 'BANKING', 'FMCG', 'PHARMA', 'METALS', 'AUTO', 'ENERGY'];
+        
+        sectorsGrid.innerHTML = sectors.map(sector => `
+            <div class="sector-item">
+                <div class="sector-name">${sector}</div>
+                <div class="sector-change">????</div>
+            </div>
+        `).join('');
+
+        this.updateTimestamp('sectors-timestamp');
+        console.log('📊 Rendered placeholder sectors data');
+    }
+
+    renderPlaceholderBTST() {
+        const tbody = document.getElementById('btst-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center">???? No BTST data available</td>
+            </tr>
+        `;
+
+        this.updateTimestamp('btst-timestamp');
+        console.log('📊 Rendered placeholder BTST data');
+    }
+
+    renderPlaceholderScalping() {
+        const tbody = document.getElementById('scalping-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10" class="text-center">???? No scalping data available</td>
+            </tr>
+        `;
+
+        this.updateTimestamp('scalping-timestamp');
+        console.log('📊 Rendered placeholder scalping data');
+    }
+
+    renderPlaceholderFnO() {
+        // Update F&O analysis section
+        const elements = {
+            'fno-pcr': '????',
+            'fno-max-pain': '????',
+            'fno-vix': '????',
+            'fno-support': '????',
+            'fno-resistance': '????',
+            'fno-recommended-ce-strike': '????',
+            'fno-recommended-ce-ltp': '????',
+            'fno-recommended-pe-strike': '????',
+            'fno-recommended-pe-ltp': '????'
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        });
+
+        this.updateTimestamp('fno-timestamp');
+        console.log('📊 Rendered placeholder F&O data');
+    }
+
+    renderPlaceholderAlerts() {
+        const alertsContainer = document.getElementById('alerts-list');
+        if (!alertsContainer) return;
+
+        alertsContainer.innerHTML = `
+            <div class="alert-item">
+                <div class="alert-time">????</div>
+                <div class="alert-content">
+                    <span class="alert-stock">No alerts available</span>
+                    <span class="alert-signal">Connect to live data</span>
+                </div>
+            </div>
+        `;
+
+        this.updateTimestamp('alerts-timestamp');
+        console.log('📊 Rendered placeholder alerts data');
+    }
+
+    // Live data methods (simplified for this fix)
+    switchToLiveMode() {
+        if (!this.isBackendConnected) {
+            this.showErrorModal('Backend Unavailable', 'Cannot switch to live mode. Backend server is not running.');
+            return;
+        }
+
+        console.log('📡 Switching to LIVE mode...');
+        this.dataSource = 'live';
+
+        const liveRadio = document.getElementById('liveData');
+        if (liveRadio) liveRadio.checked = true;
+
+        // Update authentication status display
+        const authStatus = document.getElementById('auth-status');
+        if (authStatus) {
+            authStatus.textContent = '✅ Authenticated - Live data active';
+            authStatus.style.color = '#28a745';
+        }
+
+        // Update connect button
+        const connectBtn = document.getElementById('connect-live-btn');
+        if (connectBtn) {
+            connectBtn.textContent = '✅ Connected to Live Data';
+            connectBtn.disabled = true;
+            connectBtn.style.background = '#28a745';
+        }
+
+        this.updateConnectionStatus('Live Data Active', 'live');
+        this.updateLiveIndicator('live');
+
+        this.restartRefreshCycle();
+        this.setupWebSocket();
+
+        // Start fetching real data
+        this.fetchAllData();
+    }
+
+    async initiateLiveDataFlow() {
+        console.log('🚀 Initiating live data flow...');
+
+        // Show loading overlay
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
+
+        try {
+            // First check if already authenticated
+            const authStatus = await fetch(`${this.backendUrl}/api/auth/status`);
+            const authData = await authStatus.json();
+
+            if (authData.authenticated) {
+                console.log('✅ Already authenticated, switching to live mode');
+                if (loadingOverlay) loadingOverlay.style.display = 'none';
+                this.switchToLiveMode();
+                return;
+            }
+
+            // Get login URL
+            const loginResponse = await fetch(`${this.backendUrl}/api/login/url`);
+            const loginData = await loginResponse.json();
+
+            if (loginData.loginUrl) {
+                console.log('🔗 Login URL obtained:', loginData.loginUrl);
+
+                if (loadingOverlay) loadingOverlay.style.display = 'none';
+
+                // Check if we're in an iframe (Builder.io environment)
+                const isInIframe = window.self !== window.top;
+
+                console.log('🔍 Environment check:', {
+                    isInIframe: isInIframe,
+                    userAgent: navigator.userAgent.substring(0, 50),
+                    windowTop: window.top === window.self
+                });
+
+                if (isInIframe) {
+                    console.log('📱 Detected iframe environment (Builder.io) - will use new tab method');
+                    // In iframe, show instructions to open in new tab
+                    this.showIframeAuthInstructions(loginData.loginUrl);
+                } else {
+                    console.log('🪟 Standard browser environment - attempting popup method');
+                    // Try popup first
+                    const popup = window.open(
+                        loginData.loginUrl,
+                        'flattradeLogin',
+                        'width=600,height=700,scrollbars=yes,resizable=yes'
+                    );
+
+                    // Check if popup was blocked
+                    setTimeout(() => {
+                        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+                            console.log('❌ Popup blocked by browser - falling back to new tab method');
+                            this.showIframeAuthInstructions(loginData.loginUrl);
+                        } else {
+                            console.log('✅ Popup opened successfully - starting auth check');
+                            // Start checking auth status periodically
+                            this.startAuthCheck(popup);
+                        }
+                    }, 1000);
+                }
+            } else {
+                throw new Error('No login URL received from backend');
+            }
+
+        } catch (error) {
+            console.error('❌ Error initiating live data flow:', error);
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+            this.showErrorModal('Connection Error', error.message);
+
+            // Reset to mock mode
+            const mockRadio = document.getElementById('mockData');
+            if (mockRadio) mockRadio.checked = true;
+        }
+    }
+
+    startAuthCheck(popup) {
+        if (this.authCheckInterval) clearInterval(this.authCheckInterval);
+        
+        this.authCheckInterval = setInterval(async () => {
+            // Check if popup is closed
+            if (popup.closed) {
+                console.log('🔒 Login popup closed');
+                clearInterval(this.authCheckInterval);
+                return;
+            }
+
+            // Check authentication status
+            try {
+                const response = await fetch(`${this.backendUrl}/api/auth/status`);
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    console.log('✅ Authentication successful!');
+                    clearInterval(this.authCheckInterval);
+                    popup.close();
+                    this.switchToLiveMode();
+                }
+            } catch (error) {
+                console.error('❌ Error checking auth status:', error);
+            }
+        }, 2000);
+
+        // Auto cleanup after 5 minutes
+        setTimeout(() => {
+            if (this.authCheckInterval) {
+                clearInterval(this.authCheckInterval);
+                if (!popup.closed) popup.close();
+            }
+        }, 300000);
+    }
+
+    setupWebSocket() {
+        if (this.websocket) return;
+
+        console.log('📡 Establishing WebSocket connection...');
+        this.websocket = new WebSocket(`ws://${window.location.hostname}:${window.location.port || '5000'}`);
+
+        this.websocket.onopen = () => {
+            console.log('✅ WebSocket connected');
+        };
+
+        this.websocket.onmessage = (event) => {
+            try {
+                const message = JSON.parse(event.data);
+                this.handleWebSocketMessage(message);
+            } catch (error) {
+                console.error('❌ Invalid WebSocket message:', error);
+            }
+        };
+
+        this.websocket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        this.websocket.onclose = () => {
+            console.log('⚠️ WebSocket disconnected');
+            this.websocket = null;
+        };
+    }
+
+    handleWebSocketMessage(message) {
+        switch (message.type) {
+            case 'data_update':
+                if (message.category === 'indices') {
+                    this.renderIndicesData(message.data);
+                }
+                break;
+            default:
+                console.log('Unknown WebSocket message type:', message.type);
+        }
+    }
+
+    // Data fetching methods
+    async fetchAllData() {
+        if (this.dataSource !== 'live') return;
+        
+        this.fetchIndicesData();
+        this.fetchMoversData();
+        this.fetchSectorData();
+        this.fetchBTSTData();
+        this.fetchScalpingData();
+        this.fetchFnOData();
+        this.fetchAlertsData();
+    }
+
+    async fetchIndicesData() {
+        if (!this.isBackendConnected || this.dataSource !== 'live') return;
+
+        try {
+            console.log('📡 Fetching indices data from backend...');
+            const response = await fetch(`${this.backendUrl}/api/indices`);
+
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    console.log('🔐 Authentication expired, prompting for re-login...');
+                    this.handleAuthenticationExpired();
+                    return;
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Received indices data:', result);
+
+            if (result.data && Array.isArray(result.data)) {
+                // Check if data contains mostly ???? values
+                const validDataCount = result.data.filter(item => item.price !== '????').length;
+                const totalDataCount = result.data.length;
+
+                if (validDataCount < totalDataCount * 0.3) { // Less than 30% valid data
+                    console.log('⚠️ Most data showing ????, suggesting API issues');
+                    this.updateConnectionStatus('API Issues - Data Unavailable', 'error');
+                } else {
+                    this.updateConnectionStatus('Live Data Active', 'live');
+                }
+
+                this.renderIndicesData(result.data);
+                this.updateDataFreshness('indices');
+            }
+
+        } catch (error) {
+            console.error('❌ Error fetching indices data:', error.message);
+            this.updateConnectionStatus('Connection Error', 'error');
+        }
+    }
+
+    async fetchMoversData() {
+        if (!this.isBackendConnected || this.dataSource !== 'live') return;
+
+        try {
+            // Fetch gainers
+            const gainersResponse = await fetch(`${this.backendUrl}/api/gainers`);
+            if (gainersResponse.ok) {
+                const gainersResult = await gainersResponse.json();
+                this.renderGainersData(gainersResult.data);
+            }
+
+            // Fetch losers
+            const losersResponse = await fetch(`${this.backendUrl}/api/losers`);
+            if (losersResponse.ok) {
+                const losersResult = await losersResponse.json();
+                this.renderLosersData(losersResult.data);
+            }
+
+            this.updateDataFreshness('movers');
+
+        } catch (error) {
+            console.error('❌ Error fetching movers data:', error.message);
+        }
+    }
+
+    async fetchSectorData() {
+        if (!this.isBackendConnected || this.dataSource !== 'live') return;
+
+        try {
+            const response = await fetch(`${this.backendUrl}/api/sectors`);
+            if (response.ok) {
+                const result = await response.json();
+                this.renderSectorData(result.data);
+                this.updateDataFreshness('sectors');
+            }
+        } catch (error) {
+            console.error('❌ Error fetching sector data:', error.message);
+        }
+    }
+
+    async fetchBTSTData() {
+        if (!this.isBackendConnected || this.dataSource !== 'live') return;
+
+        try {
+            const response = await fetch(`${this.backendUrl}/api/btst`);
+            if (response.ok) {
+                const result = await response.json();
+                this.renderBTSTData(result.data);
+                this.updateDataFreshness('btst');
+            }
+        } catch (error) {
+            console.error('❌ Error fetching BTST data:', error.message);
+        }
+    }
+
+    async fetchScalpingData() {
+        if (!this.isBackendConnected || this.dataSource !== 'live') return;
+
+        try {
+            const response = await fetch(`${this.backendUrl}/api/scalping`);
+            if (response.ok) {
+                const result = await response.json();
+                this.renderScalpingData(result.data);
+                this.updateDataFreshness('scalping');
+            }
+        } catch (error) {
+            console.error('❌ Error fetching scalping data:', error.message);
+        }
+    }
+
+    async fetchFnOData() {
+        if (!this.isBackendConnected || this.dataSource !== 'live') return;
+
+        try {
+            const response = await fetch(`${this.backendUrl}/api/fno-analysis?symbol=NIFTY`);
+            if (response.ok) {
+                const result = await response.json();
+                this.renderFnOData(result.data);
+                this.updateDataFreshness('fno');
+            }
+        } catch (error) {
+            console.error('❌ Error fetching F&O data:', error.message);
+        }
+    }
+
+    async fetchAlertsData() {
+        if (!this.isBackendConnected || this.dataSource !== 'live') return;
+
+        try {
+            const response = await fetch(`${this.backendUrl}/api/alerts`);
+            if (response.ok) {
+                const result = await response.json();
+                this.renderAlertsData(result.data);
+                this.updateDataFreshness('alerts');
+            }
+        } catch (error) {
+            console.error('❌ Error fetching alerts data:', error.message);
+        }
+    }
+
+    // Rendering methods
+    renderIndicesData(data) {
+        const tbody = document.getElementById('indices-tbody');
+        if (!tbody || !Array.isArray(data)) return;
+
+        tbody.innerHTML = data.map(item => {
+            const changeClass = this.determineChangeClass(item.change_pct);
+            return `
+                <tr data-symbol="${item.symbol}">
+                    <td><strong>${item.name}</strong></td>
+                    <td class="price-cell">${this.formatValue(item.price, 'price')}</td>
+                    <td class="change-cell ${changeClass}">${this.formatValue(item.change, 'change')}</td>
+                    <td class="change-pct-cell ${changeClass}">${this.formatValue(item.change_pct, 'percentage')}</td>
+                    <td>${this.formatValue(item.high, 'price')}</td>
+                    <td>${this.formatValue(item.low, 'price')}</td>
+                    <td>${this.formatValue(item.prev_close, 'price')}</td>
+                </tr>
+            `;
+        }).join('');
+
+        this.updateTimestamp('indices-timestamp');
+        console.log('✅ Rendered real indices data');
+    }
+
+    renderGainersData(data) {
+        const tbody = document.getElementById('gainers-tbody');
+        if (!tbody || !Array.isArray(data) || data.length === 0) {
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No gainers data available</td></tr>';
+            }
+            return;
+        }
+
+        tbody.innerHTML = data.slice(0, 10).map(item => `
+            <tr>
+                <td><strong>${item.name}</strong></td>
+                <td>${this.formatValue(item.ltp, 'price')}</td>
+                <td class="price-positive">${this.formatValue(item.change_pct, 'percentage')}</td>
+                <td>${this.formatValue(item.high, 'price')}</td>
+                <td>${this.formatValue(item.low, 'price')}</td>
+                <td>${this.formatValue(item.prev_close, 'price')}</td>
+                <td class="${this.determineChangeClass(item.oi_change_pct)}">${this.formatValue(item.oi_change_pct, 'percentage')}</td>
+            </tr>
+        `).join('');
+
+        console.log('✅ Rendered gainers data');
+    }
+
+    renderLosersData(data) {
+        const tbody = document.getElementById('losers-tbody');
+        if (!tbody || !Array.isArray(data) || data.length === 0) {
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No losers data available</td></tr>';
+            }
+            return;
+        }
+
+        tbody.innerHTML = data.slice(0, 10).map(item => `
+            <tr>
+                <td><strong>${item.name}</strong></td>
+                <td>${this.formatValue(item.ltp, 'price')}</td>
+                <td class="price-negative">${this.formatValue(item.change_pct, 'percentage')}</td>
+                <td>${this.formatValue(item.high, 'price')}</td>
+                <td>${this.formatValue(item.low, 'price')}</td>
+                <td>${this.formatValue(item.prev_close, 'price')}</td>
+                <td class="${this.determineChangeClass(item.oi_change_pct)}">${this.formatValue(item.oi_change_pct, 'percentage')}</td>
+            </tr>
+        `).join('');
+
+        console.log('✅ Rendered losers data');
+    }
+
+    renderSectorData(data) {
+        const sectorsGrid = document.getElementById('sectors-grid');
+        if (!sectorsGrid || !Array.isArray(data)) return;
+
+        sectorsGrid.innerHTML = data.map(sector => {
+            const changeClass = this.determineChangeClass(sector.change_pct);
+            return `
+                <div class="sector-item ${changeClass === 'price-positive' ? 'positive' : 'negative'}">
+                    <div class="sector-name">${sector.name}</div>
+                    <div class="sector-change">${this.formatValue(sector.change_pct, 'percentage')}</div>
+                </div>
+            `;
+        }).join('');
+
+        console.log('✅ Rendered sector data');
+    }
+
+    renderBTSTData(data) {
+        const tbody = document.getElementById('btst-tbody');
+        if (!tbody || !Array.isArray(data) || data.length === 0) {
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No BTST opportunities available</td></tr>';
+            }
+            return;
+        }
+
+        tbody.innerHTML = data.slice(0, 10).map(item => `
+            <tr>
+                <td><strong>${item.name}</strong></td>
+                <td>${this.formatValue(item.ltp, 'price')}</td>
+                <td class="${this.determineChangeClass(item.change_pct)}">${this.formatValue(item.change_pct, 'percentage')}</td>
+                <td>${this.formatValue(item.volume_ratio, 'ratio')}</td>
+                <td><span class="signal-badge">${item.signal}</span></td>
+                <td>${this.formatValue(item.rsi, 'number')}</td>
+                <td>${item.price_action}</td>
+                <td><span class="score-badge">${this.formatValue(item.btst_score, 'score')}</span></td>
+            </tr>
+        `).join('');
+
+        console.log('✅ Rendered BTST data');
+    }
+
+    renderScalpingData(data) {
+        const tbody = document.getElementById('scalping-tbody');
+        if (!tbody || !Array.isArray(data) || data.length === 0) {
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center">No scalping opportunities available</td></tr>';
+            }
+            return;
+        }
+
+        tbody.innerHTML = data.map(item => {
+            if (!item.signal) return '';
+            
+            return `
+                <tr class="${item.signal.status === 'active' ? 'scalping-active' : 'scalping-closed'}">
+                    <td><strong>${item.signal.instrument}</strong></td>
+                    <td>${item.signal.type}</td>
+                    <td>${item.signal.strike}</td>
+                    <td><span class="direction-badge direction-${item.signal.direction.toLowerCase()}">${item.signal.direction}</span></td>
+                    <td>${this.formatValue(item.signal.entry, 'price')}</td>
+                    <td>${this.formatValue(item.signal.target, 'price')}</td>
+                    <td>${this.formatValue(item.signal.stoploss, 'price')}</td>
+                    <td>${item.signal.strategy}</td>
+                    <td>${item.signal.probability}%</td>
+                    <td>${item.signal.time}</td>
+                </tr>
+            `;
+        }).filter(row => row !== '').join('');
+
+        console.log('✅ Rendered scalping data');
+    }
+
+    renderFnOData(data) {
+        if (!data) return;
+
+        const elements = {
+            'fno-pcr': this.formatValue(data.pcr, 'ratio'),
+            'fno-max-pain': this.formatValue(data.maxPain, 'price'),
+            'fno-vix': this.formatValue(data.vix, 'number'),
+            'fno-support': this.formatValue(data.support || '????', 'price'),
+            'fno-resistance': this.formatValue(data.resistance || '????', 'price'),
+            'fno-recommended-ce-strike': data.recommendedCE ? data.recommendedCE.strike : '????',
+            'fno-recommended-ce-ltp': data.recommendedCE ? this.formatValue(data.recommendedCE.ltp, 'price') : '????',
+            'fno-recommended-pe-strike': data.recommendedPE ? data.recommendedPE.strike : '????',
+            'fno-recommended-pe-ltp': data.recommendedPE ? this.formatValue(data.recommendedPE.ltp, 'price') : '????'
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        });
+
+        console.log('✅ Rendered F&O data');
+    }
+
+    renderAlertsData(data) {
+        const alertsContainer = document.getElementById('alerts-list');
+        if (!alertsContainer || !Array.isArray(data) || data.length === 0) {
+            if (alertsContainer) {
+                alertsContainer.innerHTML = '<div class="text-center">No alerts available</div>';
+            }
+            return;
+        }
+
+        alertsContainer.innerHTML = data.slice(0, 10).map(alert => `
+            <div class="alert-item">
+                <div class="alert-time">${alert.timestamp}</div>
+                <div class="alert-content">
+                    <span class="alert-stock">${alert.stock}</span>
+                    <span class="alert-signal signal-${alert.signal.toLowerCase()}">${alert.signal}</span>
+                    <span class="alert-price">Entry: ${this.formatValue(alert.entry, 'price')}</span>
+                    <span class="alert-target">Target: ${this.formatValue(alert.target, 'price')}</span>
+                </div>
+                <div class="alert-type">${alert.type}</div>
+            </div>
+        `).join('');
+
+        console.log('✅ Rendered alerts data');
+    }
+
+    // Helper methods
+    formatValue(value, type) {
+        if (value === '????' || value === null || value === undefined) {
+            return '????';
+        }
+
+        if (typeof value !== 'number') {
+            return '????';
+        }
+
+        switch (type) {
+            case 'price':
+                return `₹${value.toFixed(2)}`;
+            case 'change':
+                return value >= 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
+            case 'percentage':
+                return value >= 0 ? `+${value.toFixed(2)}%` : `${value.toFixed(2)}%`;
+            case 'ratio':
+                return value.toFixed(2);
+            case 'number':
+                return value.toFixed(1);
+            case 'score':
+                return value.toFixed(1);
+            default:
+                return value.toString();
+        }
+    }
+
+    determineChangeClass(changePct) {
+        if (changePct === '????') return '';
+        if (typeof changePct !== 'number') return '';
+        return changePct >= 0 ? 'price-positive' : 'price-negative';
     }
 
     updateConnectionStatus(message, type) {
-        const statusEl = document.getElementById('connection-status');
-        if (statusEl) {
-            statusEl.textContent = message;
-            statusEl.className = `status-indicator ${type}`;
+        // Update header connection status
+        const statusElement = document.querySelector('.connection-status .status-indicator');
+        if (statusElement) {
+            statusElement.textContent = message;
+            statusElement.className = `status-indicator ${type}`;
+        }
+
+        // Update sidebar connection status
+        const sidebarConnectionStatus = document.querySelector('.connection-info .connection-status');
+        if (sidebarConnectionStatus) {
+            sidebarConnectionStatus.textContent = message;
+        }
+
+        // Also update the settings connection display
+        const settingsConnectionStatus = document.querySelector('.status-display .connection-status');
+        if (settingsConnectionStatus) {
+            settingsConnectionStatus.textContent = message;
         }
     }
 
     updateLiveIndicator(mode) {
-        const dot = document.getElementById('updates-dot');
-        const text = document.getElementById('updates-text');
-        
-        if (dot && text) {
-            if (mode === 'live') {
-                dot.className = 'updates-dot live';
-                text.textContent = 'Live Updates';
-            } else {
-                dot.className = 'updates-dot mock';
-                text.textContent = 'Live Updates';
+        const dot = document.querySelector('.updates-dot');
+        if (dot) {
+            dot.className = `updates-dot ${mode}`;
+        }
+
+        const text = document.querySelector('.live-updates-text');
+        if (text) {
+            switch (mode) {
+                case 'live':
+                    text.textContent = 'Live Updates Active';
+                    break;
+                case 'placeholder':
+                    text.textContent = 'No Data Available';
+                    break;
             }
         }
     }
 
-    updateMarketTrend(trend) {
-        const trendElement = document.getElementById('trend-direction');
-        const summaryElement = document.getElementById('trend-summary');
+    updateDateTime() {
+        const dateElement = document.getElementById('current-date');
+        const timeElement = document.getElementById('current-time');
         
-        if (trendElement && summaryElement) {
-            let trendText = '';
-            let className = '';
-            let summaryClass = 'flat';
-            
-            switch (trend.toLowerCase()) {
-                case 'bullish':
-                case 'bull':
-                    trendText = '📈 BULLISH';
-                    className = 'trend-bullish';
-                    summaryClass = 'bullish';
-                    break;
-                case 'bearish':
-                case 'bear':
-                    trendText = '📉 BEARISH';
-                    className = 'trend-bearish';
-                    summaryClass = 'bearish';
-                    break;
-                default:
-                    trendText = '🥱 SIDEWAYS';
-                    className = 'trend-sideways';
-                    summaryClass = 'flat';
-            }
-            
-            trendElement.textContent = trendText;
-            trendElement.className = className;
-            summaryElement.className = summaryClass;
+        if (dateElement && timeElement) {
+            const now = new Date();
+            dateElement.textContent = now.toLocaleDateString('en-IN');
+            timeElement.textContent = now.toLocaleTimeString('en-IN', { hour12: false });
         }
     }
 
-    updateVolatilityMeter(volatility) {
-        this.volatilityIndex = volatility;
-        const fill = document.getElementById('volatility-fill');
-        const value = document.getElementById('volatility-value');
-        
-        if (fill && value) {
-            const percentage = Math.min(volatility * 20, 100); // Scale to 100%
-            fill.style.width = `${percentage}%`;
-            
-            let status = 'Low';
-            if (volatility > 2) status = 'High';
-            else if (volatility > 1) status = 'Medium';
-            
-            value.textContent = status;
-            value.className = `volatility-value ${status.toLowerCase()}`;
+    updateTimestamp(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
         }
     }
 
-    updatePerformanceMetrics() {
-        const apiCalls = document.getElementById('api-calls');
-        const lastUpdate = document.getElementById('last-update');
-        const refreshRate = document.getElementById('refresh-rate');
+    updateDataFreshness(key) {
+        this.lastUpdateTimes.set(key, Date.now());
         
-        if (apiCalls) {
-            const currentCalls = parseInt(apiCalls.textContent) + 1;
-            apiCalls.textContent = currentCalls;
+        const apiCallsElement = document.getElementById('api-calls');
+        if (apiCallsElement) {
+            const count = parseInt(apiCallsElement.textContent) || 0;
+            apiCallsElement.textContent = count + 1;
         }
-        
-        if (lastUpdate) {
-            lastUpdate.textContent = new Date().toLocaleTimeString('en-IN', { hour12: false });
-        }
-        
-        if (refreshRate) {
-            refreshRate.textContent = `${this.getAdaptiveRefreshRate()}ms`;
+
+        const freshnessElement = document.getElementById('data-freshness');
+        if (freshnessElement) {
+            freshnessElement.textContent = 'Fresh';
         }
     }
 
-    // Enhanced refresh strategy based on volatility and data type
-    getAdaptiveRefreshRate(dataType = 'default') {
-        const baseRates = {
-            indices: 5000,
-            quotes: 3000,
-            options: 8000,
-            alerts: 15000,
-            default: 5000
-        };
-        
-        const volatilityMultiplier = this.volatilityIndex > 2 ? 0.5 : 
-                                   this.volatilityIndex > 1 ? 0.7 : 1.0;
-        
-        return Math.max(baseRates[dataType] * volatilityMultiplier, 1000);
+    setupThresholdControls() {
+        const btstControl = document.getElementById('btst-threshold');
+        if (btstControl) {
+            btstControl.addEventListener('input', (e) => {
+                this.alertThresholds.btstScore = parseFloat(e.target.value);
+                const valueDisplay = document.querySelector('.threshold-value');
+                if (valueDisplay) {
+                    valueDisplay.textContent = e.target.value;
+                }
+                console.log('BTST threshold set to', this.alertThresholds.btstScore);
+            });
+        }
     }
 
     startAdaptiveRefresh() {
         if (this.refreshTimer) clearInterval(this.refreshTimer);
 
-        // Different refresh rates for different data types
-        const refreshIndices = () => {
-            if (this.dataSource === 'live') {
-                this.fetchData('indices').then(data => this.renderIndices(data));
-            }
-        };
-
-        const refreshOptions = () => {
-            if (this.dataSource === 'live') {
-                this.fetchData('fno-analysis').then(data => this.renderFOAnalysis(data));
-            }
-        };
-
-        // Set up adaptive intervals
-        setInterval(refreshIndices, this.getAdaptiveRefreshRate('indices'));
-        setInterval(refreshOptions, this.getAdaptiveRefreshRate('options'));
-        
-        // Main refresh cycle
         this.refreshTimer = setInterval(() => {
-            if (this.dataSource === 'mock') {
-                this.refreshData();
+            if (this.dataSource === 'live') {
+                this.fetchAllData();
+                console.log(`🔄 Adaptive refresh: ${this.refreshInterval}ms`);
             }
         }, this.refreshInterval);
-    }
-
-    // Enhanced data fetching with caching and staleness detection
-    async fetchData(endpoint) {
-        if (this.dataSource === 'mock') {
-            return this.getMockData(endpoint);
-        } else {
-            return await this.getLiveData(endpoint);
-        }
-    }
-
-    async getLiveData(endpoint) {
-        try {
-            const startTime = Date.now();
-            const response = await fetch(`${this.backendUrl}/api/${endpoint}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const responseTime = Date.now() - startTime;
-            
-            // Update performance metrics
-            this.updatePerformanceMetrics();
-            console.log(`📊 ${endpoint} fetched in ${responseTime}ms`);
-            
-            // Update data timestamps for staleness detection
-            this.dataTimestamps.set(endpoint, Date.now());
-            
-            return data;
-        } catch (error) {
-            console.error(`❌ Error fetching live data for ${endpoint}:`, error);
-            throw error;
-        }
-    }
-
-    getMockData(endpoint) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                switch (endpoint) {
-                    case 'indices':
-                        resolve(this.generateEnhancedIndices());
-                        break;
-                    case 'btst':
-                        resolve(this.generateEnhancedBTST());
-                        break;
-                    case 'alerts':
-                        resolve(this.generateEnhancedAlerts());
-                        break;
-                    case 'gainers':
-                        resolve(this.generateEnhancedGainers());
-                        break;
-                    case 'losers':
-                        resolve(this.generateEnhancedLosers());
-                        break;
-                    case 'sectors':
-                        resolve(this.generateEnhancedSectors());
-                        break;
-                    case 'scalping':
-                        resolve(this.generateEnhancedScalping());
-                        break;
-                    case 'fno-analysis':
-                        resolve(this.generateEnhancedFOAnalysis());
-                        break;
-                    default:
-                        resolve([]);
-                }
-            }, 100 + Math.random() * 300);
-        });
-    }
-
-    // Enhanced mock data generators with more realistic variations
-    generateEnhancedIndices() {
-        const baseData = [
-            {
-                "name": "NIFTY 50",
-                "symbol": "NIFTY",
-                "price": 24350.45,
-                "change": 125.30,
-                "change_pct": 0.52,
-                "high": 24420.80,
-                "low": 24280.15,
-                "volume": 15234567
-            },
-            {
-                "name": "BANK NIFTY",
-                "symbol": "BANKNIFTY", 
-                "price": 51245.60,
-                "change": -89.45,
-                "change_pct": -0.17,
-                "high": 51398.75,
-                "low": 51100.20,
-                "volume": 8901234
-            }
-        ];
-
-        return baseData.map(index => ({
-            ...index,
-            price: index.price + (Math.random() - 0.5) * 20,
-            change: index.change + (Math.random() - 0.5) * 10,
-            change_pct: index.change_pct + (Math.random() - 0.5) * 0.8,
-            volume: index.volume + Math.floor((Math.random() - 0.5) * 1000000),
-            timestamp: Date.now()
-        }));
-    }
-
-    generateEnhancedBTST() {
-        return [
-            {
-                "name": "RELIANCE",
-                "ltp": 2456.75 + (Math.random() - 0.5) * 50,
-                "change_pct": 2.34 + (Math.random() - 0.5) * 2,
-                "volume_ratio": 1.45 + (Math.random() - 0.5) * 0.5,
-                "signal": "Bullish Breakout",
-                "rsi": 68.4 + (Math.random() - 0.5) * 10,
-                "price_action": "Above Resistance",
-                "btst_score": 8.2 + (Math.random() - 0.5) * 0.5
-            },
-            {
-                "name": "TCS",
-                "ltp": 3789.40 + (Math.random() - 0.5) * 80,
-                "change_pct": 1.89 + (Math.random() - 0.5) * 1.5,
-                "volume_ratio": 1.23 + (Math.random() - 0.5) * 0.4,
-                "signal": "Momentum Build",
-                "rsi": 72.1 + (Math.random() - 0.5) * 8,
-                "price_action": "Trend Continuation",
-                "btst_score": 7.8 + (Math.random() - 0.5) * 0.4
-            }
-        ];
-    }
-
-    generateEnhancedFOAnalysis() {
-        return {
-            pcr: 1.02 + (Math.random() - 0.5) * 0.4,
-            maxPain: 24300 + Math.floor((Math.random() - 0.5) * 200),
-            vix: 13.45 + (Math.random() - 0.5) * 3,
-            recommendedCE: {
-                strike: 24400,
-                ltp: 85 + (Math.random() - 0.5) * 20
-            },
-            recommendedPE: {
-                strike: 24300,
-                ltp: 78 + (Math.random() - 0.5) * 15
-            },
-            timestamp: Date.now()
-        };
-    }
-
-    generateEnhancedAlerts() {
-        const alerts = [
-            {
-                "timestamp": new Date().toLocaleTimeString('en-IN', { hour12: false }),
-                "stock": "RELIANCE",
-                "signal": "BUY",
-                "entry": 2456.75,
-                "target": 2510.00,
-                "stoploss": 2420.00,
-                "type": "BTST",
-                "probability": 85
-            },
-            {
-                "timestamp": new Date().toLocaleTimeString('en-IN', { hour12: false }),
-                "stock": "NIFTY",
-                "signal": "SELL",
-                "entry": 24375,
-                "target": 24320,
-                "stoploss": 24420,
-                "type": "Scalping",
-                "probability": 78
-            }
-        ];
-
-        return alerts;
-    }
-
-    generateEnhancedGainers() {
-        return [
-            {
-                "name": "ADANIPORTS",
-                "ltp": 789.45 + (Math.random() - 0.5) * 20,
-                "change_pct": 4.56 + (Math.random() - 0.5) * 2
-            },
-            {
-                "name": "TATASTEEL", 
-                "ltp": 145.67 + (Math.random() - 0.5) * 10,
-                "change_pct": 3.89 + (Math.random() - 0.5) * 1.5
-            }
-        ];
-    }
-
-    generateEnhancedLosers() {
-        return [
-            {
-                "name": "BAJFINANCE",
-                "ltp": 6789.12 + (Math.random() - 0.5) * 100,
-                "change_pct": -2.34 + (Math.random() - 0.5) * 1
-            },
-            {
-                "name": "HCLTECH",
-                "ltp": 1234.56 + (Math.random() - 0.5) * 30,
-                "change_pct": -1.89 + (Math.random() - 0.5) * 0.8
-            }
-        ];
-    }
-
-    generateEnhancedSectors() {
-        return [
-            { name: "IT", change_pct: 0.68 + (Math.random() - 0.5) * 1 },
-            { name: "MIDCAP", change_pct: 0.73 + (Math.random() - 0.5) * 1.2 },
-            { name: "FMCG", change_pct: 0.12 + (Math.random() - 0.5) * 0.8 },
-            { name: "BANKING", change_pct: -0.17 + (Math.random() - 0.5) * 0.9 },
-            { name: "PHARMA", change_pct: -0.29 + (Math.random() - 0.5) * 0.7 },
-            { name: "SMALLCAP", change_pct: -0.13 + (Math.random() - 0.5) * 1.5 }
-        ];
-    }
-
-    generateEnhancedScalping() {
-        return [
-            {
-                instrument: "NIFTY 50",
-                type: "Option CE",
-                strike: 24400,
-                direction: "Buy", 
-                target: 24450,
-                stoploss: 24370,
-                strategy: "VW",
-                probability: 87 + Math.floor(Math.random() * 10),
-                time: new Date().toLocaleTimeString('en-IN', { hour12: false }),
-                status: "active"
-            },
-            {
-                instrument: "BANKNIFTY",
-                type: "Option PE",
-                strike: 51200,
-                direction: "Sell",
-                target: 51150,
-                stoploss: 51250,
-                strategy: "SMC", 
-                probability: 83 + Math.floor(Math.random() * 12),
-                time: new Date().toLocaleTimeString('en-IN', { hour12: false }),
-                status: Math.random() > 0.7 ? "completed" : "active"
-            }
-        ];
-    }
-
-    // Enhanced rendering methods with UI feedback
-    renderIndices(response) {
-        const data = response.data || response;
-        const tbody = document.getElementById('indices-tbody');
-        if (!tbody) return;
-
-        const previousData = this.lastUpdateTimes.get('indices') || new Map();
-        tbody.innerHTML = '';
-
-        data.forEach(index => {
-            const row = document.createElement('tr');
-            const isChanged = this.hasDataChanged(index, previousData.get(index.symbol));
-            
-            row.innerHTML = `
-                <td>${index.name}</td>
-                <td class="${isChanged ? 'data-update-highlight' : ''}">${index.price.toFixed(2)}</td>
-                <td class="${index.change >= 0 ? 'price-positive' : 'price-negative'} ${isChanged ? 'data-update-highlight' : ''}">${index.change.toFixed(2)}</td>
-                <td class="${index.change_pct >= 0 ? 'price-positive' : 'price-negative'}">${index.change_pct.toFixed(2)}%</td>
-                <td>${index.high.toFixed(2)}</td>
-                <td>${index.low.toFixed(2)}</td>
-                <td>${(index.volume / 1000000).toFixed(1)}M</td>
-            `;
-
-            // Add alert styling for extreme moves
-            if (Math.abs(index.change_pct) > this.alertThresholds.priceChange) {
-                row.classList.add('threshold-alert');
-            }
-            if (Math.abs(index.change_pct) > this.alertThresholds.priceChange * 2) {
-                row.classList.add('extreme-alert');
-            }
-
-            tbody.appendChild(row);
-            previousData.set(index.symbol, { ...index });
-        });
-
-        this.lastUpdateTimes.set('indices', previousData);
-        this.updateDataTimestamp('indices');
-        
-        // Update volatility based on NIFTY movement
-        const niftyData = data.find(idx => idx.symbol === 'NIFTY');
-        if (niftyData) {
-            this.updateVolatilityMeter(Math.abs(niftyData.change_pct) / 0.5);
-        }
-    }
-
-    renderBTSTStocks(response) {
-        const data = response.data || response;
-        const tbody = document.getElementById('btst-tbody');
-        if (!tbody) return;
-
-        tbody.innerHTML = '';
-        data.forEach(stock => {
-            const row = document.createElement('tr');
-            const isHighScore = stock.btst_score >= this.alertThresholds.btstScore;
-            
-            row.innerHTML = `
-                <td>${stock.name}</td>
-                <td>${stock.ltp.toFixed(2)}</td>
-                <td class="${stock.change_pct >= 0 ? 'price-positive' : 'price-negative'}">${stock.change_pct.toFixed(2)}%</td>
-                <td>${stock.volume_ratio.toFixed(2)}x</td>
-                <td>${stock.signal}</td>
-                <td>${stock.rsi.toFixed(1)}</td>
-                <td>${stock.price_action}</td>
-                <td><span class="btst-score ${this.getBTSTClass(stock.btst_score)} ${isHighScore ? 'threshold-alert' : ''}">${stock.btst_score.toFixed(1)}</span></td>
-            `;
-
-            if (isHighScore) {
-                row.classList.add('threshold-alert');
-            }
-
-            tbody.appendChild(row);
-        });
-
-        this.updateDataTimestamp('btst');
-    }
-
-    renderFOAnalysis(response) {
-        const data = response.data || response;
-        
-        // Update F&O values
-        const pcrValue = document.getElementById('pcr-value');
-        const maxPainValue = document.getElementById('max-pain');
-        const vixValue = document.getElementById('vix-value');
-
-        if (pcrValue) pcrValue.textContent = data.pcr.toFixed(2);
-        if (maxPainValue) maxPainValue.textContent = data.maxPain;
-        if (vixValue) vixValue.textContent = data.vix.toFixed(2);
-
-        // Update recommended options
-        const optionHighlights = document.querySelector('.option-highlights');
-        if (optionHighlights && data.recommendedCE && data.recommendedPE) {
-            optionHighlights.innerHTML = `
-                <div class="highlight-item">
-                    <span class="option-type call">CE</span>
-                    <span class="strike">${data.recommendedCE.strike}</span>
-                    <span class="premium">₹${data.recommendedCE.ltp.toFixed(0)}</span>
-                </div>
-                <div class="highlight-item">
-                    <span class="option-type put">PE</span>
-                    <span class="strike">${data.recommendedPE.strike}</span>
-                    <span class="premium">₹${data.recommendedPE.ltp.toFixed(0)}</span>
-                </div>
-            `;
-        }
-
-        this.updateDataTimestamp('fno');
-    }
-
-    renderAlerts(response) {
-        const data = response.data || response;
-        const container = document.getElementById('alerts-list');
-        if (!container) return;
-
-        container.innerHTML = '';
-        data.forEach(alert => {
-            const div = document.createElement('div');
-            div.className = `alert-item ${alert.signal.toLowerCase()}`;
-            
-            const probability = alert.probability ? `<div>Probability: ${alert.probability}%</div>` : '';
-            
-            div.innerHTML = `
-                <div class="alert-header">
-                    <span class="alert-stock">${alert.stock}</span>
-                    <span class="alert-signal ${alert.signal.toLowerCase()}">${alert.signal}</span>
-                </div>
-                <div class="alert-details">
-                    <div>Entry: ₹${alert.entry}</div>
-                    <div>Target: ₹${alert.target}</div>
-                    <div>SL: ₹${alert.stoploss}</div>
-                    <div>Type: ${alert.type}</div>
-                    ${probability}
-                </div>
-            `;
-            
-            container.appendChild(div);
-        });
-
-        this.updateDataTimestamp('alerts');
-    }
-
-    renderGainersLosers(gainersResponse, losersResponse) {
-        const gainers = gainersResponse.data || gainersResponse;
-        const losers = losersResponse.data || losersResponse;
-
-        // Gainers
-        const gainersContainer = document.getElementById('gainers-list');
-        if (gainersContainer) {
-            gainersContainer.innerHTML = '';
-            gainers.forEach(stock => {
-                const div = document.createElement('div');
-                div.className = 'gainer-item';
-                
-                const isExtremeMove = stock.change_pct > this.alertThresholds.priceChange * 1.5;
-                if (isExtremeMove) {
-                    div.classList.add('extreme-alert');
-                }
-                
-                div.innerHTML = `
-                    <span class="stock-name">${stock.name}</span>
-                    <span class="stock-change">+${stock.change_pct.toFixed(2)}%</span>
-                `;
-                gainersContainer.appendChild(div);
-            });
-        }
-
-        // Losers
-        const losersContainer = document.getElementById('losers-list');
-        if (losersContainer) {
-            losersContainer.innerHTML = '';
-            losers.forEach(stock => {
-                const div = document.createElement('div');
-                div.className = 'loser-item';
-                
-                const isExtremeMove = Math.abs(stock.change_pct) > this.alertThresholds.priceChange * 1.5;
-                if (isExtremeMove) {
-                    div.classList.add('extreme-alert');
-                }
-                
-                div.innerHTML = `
-                    <span class="stock-name">${stock.name}</span>
-                    <span class="stock-change">${stock.change_pct.toFixed(2)}%</span>
-                `;
-                losersContainer.appendChild(div);
-            });
-        }
-
-        this.updateDataTimestamp('movers');
-    }
-
-    renderSectors(response) {
-        const data = response.data || response;
-        const grid = document.getElementById('sector-grid');
-        if (!grid) return;
-
-        grid.innerHTML = '';
-        data.forEach(sector => {
-            const div = document.createElement('div');
-            div.className = `sector-item ${sector.change_pct >= 0 ? 'positive' : 'negative'}`;
-            
-            const isExtremeMove = Math.abs(sector.change_pct) > 2;
-            if (isExtremeMove) {
-                div.classList.add('extreme-alert');
-            }
-            
-            div.innerHTML = `
-                <div class="sector-name">${sector.name}</div>
-                <div class="sector-change">${sector.change_pct >= 0 ? '+' : ''}${sector.change_pct.toFixed(2)}%</div>
-            `;
-            grid.appendChild(div);
-        });
-
-        this.updateDataTimestamp('sectors');
-    }
-
-    renderScalping(response) {
-        const data = response.data || response;
-        const tbody = document.getElementById('scalping-tbody');
-        if (!tbody) return;
-
-        tbody.innerHTML = '';
-        data.forEach(opp => {
-            const row = document.createElement('tr');
-            const isHighProbability = opp.probability > 85;
-            
-            row.innerHTML = `
-                <td>${opp.time || new Date().toLocaleTimeString('en-IN', { hour12: false })}</td>
-                <td>${opp.instrument}</td>
-                <td>${opp.type}</td>
-                <td>${opp.strike || '--'}</td>
-                <td>${opp.direction}</td>
-                <td>${opp.strategy || 'VW'}</td>
-                <td class="${isHighProbability ? 'threshold-alert' : ''}">${opp.probability}%</td>
-                <td><span class="status-badge">${opp.status || 'Active'}</span></td>
-                <td>${opp.result || '--'}</td>
-            `;
-            
-            if (isHighProbability) {
-                row.classList.add('threshold-alert');
-            }
-            
-            tbody.appendChild(row);
-        });
-
-        this.updateDataTimestamp('scalping');
-    }
-
-    updateHeaderSummary(data) {
-        const indices = data.data || data;
-        const nifty = indices.find(idx => idx.symbol === 'NIFTY');
-        const bankNifty = indices.find(idx => idx.symbol === 'BANKNIFTY');
-
-        if (nifty) {
-            const priceEl = document.getElementById('nifty-price');
-            const changeEl = document.getElementById('nifty-change');
-            if (priceEl) {
-                this.animatePriceChange(priceEl, nifty.price.toFixed(2));
-            }
-            if (changeEl) {
-                const changeText = `${nifty.change >= 0 ? '+' : ''}${nifty.change.toFixed(2)} (${nifty.change_pct.toFixed(2)}%)`;
-                this.animatePriceChange(changeEl, changeText);
-                changeEl.className = `change ${nifty.change >= 0 ? 'positive' : 'negative'}`;
-            }
-        }
-
-        if (bankNifty) {
-            const priceEl = document.getElementById('banknifty-price');
-            const changeEl = document.getElementById('banknifty-change');
-            if (priceEl) {
-                this.animatePriceChange(priceEl, bankNifty.price.toFixed(2));
-            }
-            if (changeEl) {
-                const changeText = `${bankNifty.change >= 0 ? '+' : ''}${bankNifty.change.toFixed(2)} (${bankNifty.change_pct.toFixed(2)}%)`;
-                this.animatePriceChange(changeEl, changeText);
-                changeEl.className = `change ${bankNifty.change >= 0 ? 'positive' : 'negative'}`;
-            }
-        }
-    }
-
-    animatePriceChange(element, newValue) {
-        if (element.textContent !== newValue) {
-            element.classList.add('data-update-highlight');
-            element.textContent = newValue;
-            
-            setTimeout(() => {
-                element.classList.remove('data-update-highlight');
-            }, 800);
-        }
-    }
-
-    updateDataTimestamp(section) {
-        const timestamp = document.querySelector(`#${section}-timestamp, .section-header .data-timestamp`);
-        if (timestamp) {
-            timestamp.textContent = `Updated: ${new Date().toLocaleTimeString('en-IN', { hour12: false })}`;
-        }
-    }
-
-    hasDataChanged(newData, oldData) {
-        if (!oldData) return true;
-        return JSON.stringify(newData) !== JSON.stringify(oldData);
-    }
-
-    getBTSTClass(score) {
-        if (score >= 8) return 'high';
-        if (score >= 7) return 'medium';
-        return 'low';
-    }
-
-    // Enhanced WebSocket handling
-    async initWebSocketConnection() {
-        return new Promise((resolve, reject) => {
-            try {
-                const wsUrl = `ws://localhost:5000`;
-                this.websocket = new WebSocket(wsUrl);
-
-                this.websocket.onopen = () => {
-                    console.log('✅ Enhanced WebSocket connected');
-                    
-                    // Subscribe to real-time data
-                    this.websocket.send(JSON.stringify({
-                        action: 'subscribe',
-                        instruments: ['NIFTY', 'BANKNIFTY', 'NIFTYIT']
-                    }));
-                    
-                    resolve();
-                };
-
-                this.websocket.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    this.handleEnhancedLiveDataUpdate(data);
-                };
-
-                this.websocket.onerror = (error) => {
-                    console.error('Enhanced WebSocket error:', error);
-                    reject(new Error('WebSocket connection failed'));
-                };
-
-                this.websocket.onclose = () => {
-                    console.log('Enhanced WebSocket connection closed');
-                    // Attempt reconnection
-                    if (this.dataSource === 'live') {
-                        setTimeout(() => this.initWebSocketConnection(), 5000);
-                    }
-                };
-
-                setTimeout(() => {
-                    if (this.websocket.readyState === WebSocket.CONNECTING) {
-                        this.websocket.close();
-                        reject(new Error('WebSocket connection timeout'));
-                    }
-                }, 10000);
-
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    handleEnhancedLiveDataUpdate(data) {
-        console.log('📊 Enhanced live data update:', data);
-        
-        switch (data.type) {
-            case 'realtime_quote':
-                this.updateRealTimeQuote(data.data);
-                break;
-            case 'market_trend':
-                this.updateMarketTrend(data.trend);
-                this.updateVolatilityMeter(data.volatilityIndex);
-                break;
-            case 'data_update':
-                this.handleDataUpdate(data);
-                break;
-            case 'auth_success':
-                this.updateConnectionStatus('Connected to Live API', 'success');
-                break;
-        }
-    }
-
-    updateRealTimeQuote(quoteData) {
-        // Update header summary with real-time data
-        const symbol = quoteData.symbol;
-        const priceElement = document.getElementById(`${symbol.toLowerCase()}-price`);
-        const changeElement = document.getElementById(`${symbol.toLowerCase()}-change`);
-        
-        if (priceElement) {
-            this.animatePriceChange(priceElement, quoteData.price.toFixed(2));
-        }
-        
-        if (changeElement) {
-            const changeText = `${quoteData.change >= 0 ? '+' : ''}${quoteData.change.toFixed(2)} (${quoteData.change_pct.toFixed(2)}%)`;
-            this.animatePriceChange(changeElement, changeText);
-            changeElement.className = `change ${quoteData.change >= 0 ? 'positive' : 'negative'}`;
-        }
-    }
-
-    handleDataUpdate(updateData) {
-        switch (updateData.category) {
-            case 'indices':
-                this.renderIndices(updateData.data);
-                break;
-            case 'btst':
-                this.renderBTSTStocks(updateData.data);
-                break;
-            case 'alerts':
-                this.renderAlerts(updateData.data);
-                break;
-        }
-    }
-
-    // Rest of the existing methods with enhancements...
-    async renderAllMockData() {
-        console.log('🎨 Rendering enhanced initial mock data...');
-        
-        try {
-            const [indices, btst, alerts, gainers, losers, sectors, scalping, foAnalysis] = await Promise.all([
-                this.getMockData('indices'),
-                this.getMockData('btst'),
-                this.getMockData('alerts'),
-                this.getMockData('gainers'),
-                this.getMockData('losers'),
-                this.getMockData('sectors'),
-                this.getMockData('scalping'),
-                this.getMockData('fno-analysis')
-            ]);
-
-            this.renderIndices(indices);
-            this.renderBTSTStocks(btst);
-            this.renderAlerts(alerts);
-            this.renderGainersLosers(gainers, losers);
-            this.renderSectors(sectors);
-            this.renderScalping(scalping);
-            this.renderFOAnalysis(foAnalysis);
-            this.updateHeaderSummary(indices);
-
-        } catch (error) {
-            console.error('❌ Error rendering enhanced mock data:', error);
-        }
-    }
-
-    async refreshData() {
-        console.log(`🔄 Enhanced refresh: ${this.dataSource} mode...`);
-
-        try {
-            const promises = [
-                this.fetchData('indices'),
-                this.fetchData('btst'),
-                this.fetchData('alerts'),
-                this.fetchData('gainers'),
-                this.fetchData('losers'),
-                this.fetchData('sectors'),
-                this.fetchData('scalping')
-            ];
-
-            if (this.dataSource === 'live') {
-                promises.push(this.fetchData('fno-analysis'));
-            }
-
-            const [indices, btst, alerts, gainers, losers, sectors, scalping, foAnalysis] = await Promise.all(promises);
-
-            this.renderIndices(indices);
-            this.renderBTSTStocks(btst);
-            this.renderAlerts(alerts);
-            this.renderGainersLosers(gainers, losers);
-            this.renderSectors(sectors);
-            this.renderScalping(scalping);
-            this.updateHeaderSummary(indices);
-
-            if (foAnalysis) {
-                this.renderFOAnalysis(foAnalysis);
-            }
-
-        } catch (error) {
-            console.error('❌ Enhanced data refresh failed:', error);
-            if (this.dataSource === 'live') {
-                this.showErrorModal('Data Refresh Failed', 'Failed to refresh live data. Would you like to switch to mock mode?');
-            }
-        }
-    }
-
-    // Modal, connection, and other existing methods remain the same...
-    showLiveDataConfirmation() {
-        const modal = document.getElementById('live-confirmation-modal');
-        if (modal) modal.classList.remove('hidden');
-    }
-
-    hideLiveConfirmationModal() {
-        const modal = document.getElementById('live-confirmation-modal');
-        if (modal) modal.classList.add('hidden');
-    }
-
-    showErrorModal(title, message) {
-        const modal = document.getElementById('error-modal');
-        const titleEl = document.getElementById('error-modal-title');
-        const messageEl = document.getElementById('error-message');
-
-        if (titleEl) titleEl.textContent = title;
-        if (messageEl) messageEl.textContent = message;
-        if (modal) modal.classList.remove('hidden');
-    }
-
-    hideErrorModal() {
-        const modal = document.getElementById('error-modal');
-        if (modal) modal.classList.add('hidden');
-    }
-
-    showLoading(message) {
-        const overlay = document.getElementById('loading-overlay');
-        const messageEl = document.getElementById('loading-message');
-        
-        if (messageEl) messageEl.textContent = message;
-        if (overlay) overlay.classList.remove('hidden');
-    }
-
-    hideLoading() {
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) overlay.classList.add('hidden');
-    }
-
-    async connectToLiveData() {
-        console.log('🔄 Enhanced connection to live data...');
-        this.showLoading('Checking backend connection...');
-
-        try {
-            const isBackendRunning = await this.testBackendConnection();
-            if (!isBackendRunning) {
-                throw new Error('Backend server is not running. Please start the backend server first.');
-            }
-
-            this.hideLoading();
-            await this.openAuthPopup();
-
-        } catch (error) {
-            console.error('❌ Enhanced live data connection failed:', error);
-            this.hideLoading();
-            this.showErrorModal('Connection Failed', error.message);
-            
-            const mockRadio = document.getElementById('mockData');
-            if (mockRadio) mockRadio.checked = true;
-            this.switchToMockMode();
-        }
-    }
-
-    async openAuthPopup() {
-        try {
-            console.log('🔗 Opening enhanced authentication popup...');
-            
-            const response = await fetch(`${this.backendUrl}/api/login/url`);
-            if (!response.ok) {
-                throw new Error('Failed to get login URL');
-            }
-            
-            const data = await response.json();
-            
-            const popup = window.open(
-                data.loginUrl,
-                'flattrade_auth',
-                'width=600,height=700,scrollbars=yes,resizable=yes'
-            );
-            
-            if (!popup) {
-                throw new Error('Popup blocked. Please allow popups for this site and try again.');
-            }
-            
-            console.log('✅ Enhanced authentication popup opened successfully');
-            
-            const checkClosed = setInterval(() => {
-                if (popup.closed) {
-                    clearInterval(checkClosed);
-                    console.log('🔍 Popup closed, checking authentication status...');
-                    this.checkAuthStatusAndConnect();
-                }
-            }, 1000);
-
-            setTimeout(() => {
-                clearInterval(checkClosed);
-                if (!popup.closed) {
-                    popup.close();
-                }
-            }, 600000);
-            
-        } catch (error) {
-            console.error('❌ Enhanced popup error:', error);
-            throw error;
-        }
-    }
-
-    async testBackendConnection() {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            
-            const response = await fetch(`${this.backendUrl}/api/health`, {
-                method: 'GET',
-                signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            return response.ok;
-        } catch (error) {
-            console.error('Backend connection test failed:', error);
-            return false;
-        }
-    }
-
-    async checkAuthStatusAndConnect() {
-        try {
-            console.log('🔍 Enhanced authentication status check...');
-            this.updateConnectionStatus('Checking authentication...', 'connecting');
-            
-            const response = await fetch(`${this.backendUrl}/api/auth/status`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.authenticated) {
-                    console.log('✅ Enhanced authentication confirmed! Switching to live mode...');
-                    await this.switchToLiveMode();
-                    return;
-                }
-            }
-            
-            console.log('❌ Not authenticated yet');
-            this.updateConnectionStatus('Authentication required', 'error');
-            
-        } catch (error) {
-            console.error('Enhanced auth status check error:', error);
-            this.updateConnectionStatus('Connection error', 'error');
-        }
-    }
-
-    async switchToLiveMode() {
-        console.log('🔄 Enhanced switch to live data mode...');
-        this.showLoading('Initializing enhanced live data connection...');
-
-        try {
-            this.dataSource = 'live';
-            
-            await this.initWebSocketConnection();
-            await this.refreshData();
-            
-            this.updateConnectionStatus('Connected to Live API', 'success');
-            this.updateLiveIndicator('live');
-            this.updateMarketTrend('sideways');
-            this.hideLoading();
-            
-            console.log('✅ Enhanced live mode activated successfully');
-
-        } catch (error) {
-            console.error('❌ Enhanced live mode switch failed:', error);
-            this.hideLoading();
-            this.showErrorModal('Live Mode Failed', 'Failed to establish enhanced live data connection. Please try again.');
-            
-            const mockRadio = document.getElementById('mockData');
-            if (mockRadio) mockRadio.checked = true;
-            this.switchToMockMode();
-        }
-    }
-
-    switchToMockMode() {
-        console.log('🔄 Enhanced switch to mock data mode...');
-        
-        this.dataSource = 'mock';
-        this.disconnectWebSocket();
-        
-        if (this.authCheckInterval) {
-            clearInterval(this.authCheckInterval);
-            this.authCheckInterval = null;
-        }
-        
-        this.updateConnectionStatus('Mock Mode Active', 'mock');
-        this.updateLiveIndicator('mock');
-        this.updateMarketTrend('sideways');
-        
-        if (this.refreshTimer) {
-            clearInterval(this.refreshTimer);
-        }
-        
-        this.refreshData();
-        this.startAdaptiveRefresh();
-        
-        console.log('✅ Enhanced mock mode activated successfully');
-    }
-
-    disconnectWebSocket() {
-        if (this.websocket) {
-            console.log('🔌 Disconnecting enhanced WebSocket...');
-            this.websocket.close();
-            this.websocket = null;
-        }
     }
 
     restartRefreshCycle() {
         this.startAdaptiveRefresh();
     }
+
+    showIframeAuthInstructions(loginUrl) {
+        console.log('🔓 Showing iframe authentication instructions');
+
+        const modal = document.getElementById('error-modal');
+        const titleElement = document.getElementById('error-title');
+        const messageElement = document.getElementById('error-message');
+
+        if (modal && titleElement && messageElement) {
+            titleElement.textContent = '🔓 iframe Environment - External Login Required';
+            messageElement.innerHTML = `
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                    <h4 style="margin: 0 0 10px 0; color: #856404;">🚨 Builder.io iframe Environment Detected</h4>
+                    <p style="margin: 5px 0;"><strong>Popups are blocked in this environment.</strong></p>
+                    <p style="margin: 5px 0;">You need to authenticate with Flattrade in a separate browser tab.</p>
+                </div>
+
+                <div style="background: #e7f3ff; border: 1px solid #b8daff; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="margin: 0 0 10px 0; color: #0c5460;">📋 Step-by-Step Instructions:</h4>
+                    <ol style="text-align: left; margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Click the big blue button below</strong> to open Flattrade login in a new tab</li>
+                        <li><strong>Complete the Flattrade authentication</strong> in that new tab</li>
+                        <li><strong>Return to this Builder.io tab</strong> - the dashboard will automatically detect authentication</li>
+                        <li><strong>Data will switch to live automatically</strong> within a few seconds</li>
+                    </ol>
+                </div>
+
+                <div style="margin: 20px 0; text-align: center;">
+                    <a href="${loginUrl}" target="_blank" class="btn btn--primary"
+                       onclick="window.open('${loginUrl}', '_blank'); return false;"
+                       style="text-decoration: none; color: white; padding: 15px 30px; font-size: 16px; font-weight: bold; border-radius: 8px; display: inline-block; background: #007bff; border: none; margin: 5px;">
+                        🚀 Open Flattrade Login in New Tab
+                    </a>
+                    <br>
+                    <button onclick="navigator.clipboard.writeText('${loginUrl}').then(() => alert('URL copied! Paste it in a new tab: ${loginUrl.substring(0, 50)}...'))"
+                            class="btn btn--secondary"
+                            style="margin: 10px 5px; padding: 10px 20px; border-radius: 6px; background: #6c757d; color: white; border: none;">
+                        📋 Copy URL to Clipboard
+                    </button>
+                    <button onclick="window.parent.postMessage({type: 'open-preview'}, '*')"
+                            class="btn btn--secondary"
+                            style="margin: 10px 5px; padding: 10px 20px; border-radius: 6px; background: #17a2b8; color: white; border: none;">
+                        🔗 Open in Full Browser
+                    </button>
+                </div>
+
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px;">🔗 If buttons don't work, manually copy this URL:</h4>
+                    <div style="background: #fff; border: 1px solid #ccc; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 11px; word-break: break-all; margin: 10px 0;">
+                        ${loginUrl}
+                    </div>
+                    <p style="margin: 5px 0; font-size: 12px; color: #666;">
+                        Copy the URL above and paste it in a new browser tab to authenticate.
+                    </p>
+                </div>
+
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; border-radius: 5px; margin: 15px 0;">
+                    <p style="margin: 0; font-size: 12px; color: #666;">
+                        <strong>⏰ Auto-Detection:</strong> This dashboard will automatically check for authentication every 3 seconds.
+                        Once you complete login in the other tab, return here and wait a moment.
+                    </p>
+                </div>
+
+                <div style="margin: 15px 0; padding: 10px; background: #fff3e0; border-radius: 5px;">
+                    <p style="margin: 0; font-size: 11px; color: #e65100;">
+                        <strong>Alternative:</strong> If you prefer, you can also [Open Preview](#open-preview) to use this dashboard in a full browser tab instead of the iframe.
+                    </p>
+                </div>
+
+                <div style="text-align: center; margin: 20px 0;">
+                    <button onclick="window.dashboard.refreshAuthenticationOptions()"
+                            class="btn btn--secondary"
+                            style="padding: 8px 16px; border-radius: 6px; background: #6c757d; color: white; border: none; font-size: 12px;">
+                        🔄 Refresh Authentication Options
+                    </button>
+                </div>
+            `;
+
+            modal.style.display = 'block';
+            console.log('✅ iframe authentication modal displayed');
+
+            // Start checking auth status every 3 seconds
+            this.startPeriodicAuthCheck();
+        } else {
+            console.log('❌ Modal elements not found, using fallback method');
+            // Fallback - direct navigation with clear instructions
+            alert(`🔓 Builder.io iframe Environment Detected!\n\nPopups are blocked here. I'm opening Flattrade login in a new tab.\n\nPlease:\n1. Complete authentication in the new tab\n2. Return to this Builder.io tab\n3. Wait for automatic detection (3-5 seconds)\n\nClick OK to continue...`);
+            window.open(loginUrl, '_blank');
+            this.startPeriodicAuthCheck();
+        }
+    }
+
+    startPeriodicAuthCheck() {
+        // Clear any existing auth check
+        if (this.authCheckInterval) clearInterval(this.authCheckInterval);
+
+        this.authCheckInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`${this.backendUrl}/api/auth/status`);
+                const data = await response.json();
+
+                if (data.authenticated) {
+                    console.log('✅ Authentication detected!');
+                    clearInterval(this.authCheckInterval);
+
+                    // Close any open modals
+                    const errorModal = document.getElementById('error-modal');
+                    if (errorModal) errorModal.style.display = 'none';
+
+                    // Switch to live mode
+                    this.switchToLiveMode();
+                }
+            } catch (error) {
+                console.error('❌ Error checking auth status:', error);
+            }
+        }, 3000);
+
+        // Auto cleanup after 10 minutes
+        setTimeout(() => {
+            if (this.authCheckInterval) {
+                clearInterval(this.authCheckInterval);
+                console.log('⏰ Auth check timeout - stopping periodic checks');
+            }
+        }, 600000);
+    }
+
+    handleAuthenticationExpired() {
+        console.log('🔐 API token expired, switching back to placeholder mode');
+
+        // Switch back to placeholder mode
+        this.dataSource = 'placeholder';
+        this.updateConnectionStatus('Authentication Expired', 'error');
+        this.updateLiveIndicator('placeholder');
+
+        // Reset radio button
+        const mockRadio = document.getElementById('mockData');
+        if (mockRadio) mockRadio.checked = true;
+
+        // Show re-authentication modal
+        this.showErrorModal('🔐 Authentication Expired',
+            'Your Flattrade API session has expired. Please click "Live (API)" to re-authenticate for real-time data.');
+    }
+
+    showErrorModal(title, message) {
+        const modal = document.getElementById('error-modal');
+        const titleElement = document.getElementById('error-title');
+        const messageElement = document.getElementById('error-message');
+
+        if (modal && titleElement && messageElement) {
+            titleElement.textContent = title;
+            messageElement.textContent = message;
+            modal.style.display = 'block';
+        } else {
+            // Fallback to alert if modal not found
+            alert(`${title}: ${message}`);
+        }
+    }
+
+    async refreshAuthenticationOptions() {
+        console.log('🔄 Refreshing authentication options...');
+
+        try {
+            // Get fresh login URL
+            const loginResponse = await fetch(`${this.backendUrl}/api/login/url`);
+            const loginData = await loginResponse.json();
+
+            if (loginData.loginUrl) {
+                // Close current modal
+                const modal = document.getElementById('error-modal');
+                if (modal) modal.style.display = 'none';
+
+                // Show updated authentication instructions
+                this.showIframeAuthInstructions(loginData.loginUrl);
+            }
+        } catch (error) {
+            console.error('❌ Error refreshing auth options:', error);
+            this.showErrorModal('Error', 'Could not refresh authentication options. Please try again.');
+        }
+    }
 }
 
-// Initialize enhanced dashboard when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🌟 DOM loaded, starting enhanced dashboard...');
+// Initialize dashboard when DOM is loaded
+window.addEventListener('DOMContentLoaded', () => {
+    console.log('🌐 DOM loaded, initializing dashboard...');
     window.dashboard = new EnhancedTradingDashboard();
 });
+
+// Fallback initialization
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    console.log('🌐 DOM already ready, initializing dashboard...');
+    window.dashboard = new EnhancedTradingDashboard();
+}

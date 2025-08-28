@@ -12,9 +12,6 @@ const healthRoutes = require('./src/routes/healthRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const marketDataRoutes = require('./src/routes/marketDataRoutes');
 
-// Import utilities
-const { updateEnvFile } = require('./src/utils/envUtils');
-
 // Import constants
 const { NSE_INDEX_TOKENS, FO_SECURITIES } = require('./src/utils/constants');
 
@@ -36,7 +33,7 @@ const AUTH_PORTAL = 'https://auth.flattrade.in/';
 const TOKEN_ENDPOINT = 'https://authapi.flattrade.in/trade/apitoken';
 const FLATTRADE_BASE_URL = 'https://piconnect.flattrade.in/PiConnectTP/';
 
-let FLATTRADE_TOKEN = process.env.FLATTRADE_TOKEN || null;
+let FLATTRADE_TOKEN = null;
 let connectedClients = new Set();
 let marketData = new Map();
 let volatilityIndex = 1.0;
@@ -47,13 +44,6 @@ app.locals.FLATTRADE_TOKEN = FLATTRADE_TOKEN;
 app.locals.volatilityIndex = volatilityIndex;
 app.locals.connectedClients = connectedClients;
 app.locals.tokenCache = tokenCache;
-
-// Log token status on startup
-if (FLATTRADE_TOKEN) {
-    console.log('🔑 Found existing FLATTRADE_TOKEN from .env - authentication persisted');
-} else {
-    console.log('🔐 No FLATTRADE_TOKEN found - authentication required');
-}
 
 // Rate limiting variables
 let apiCallCount = 0;
@@ -68,8 +58,7 @@ app.use('/api', marketDataRoutes);
 
 // ===== ENHANCED FLATTRADE REQUEST FUNCTION =====
 async function makeFlattraderequest(endpoint, data) {
-    const currentToken = app.locals.FLATTRADE_TOKEN;
-    if (!currentToken) {
+    if (!FLATTRADE_TOKEN) {
         throw new Error('Not authenticated. Please login first.');
     }
 
@@ -94,7 +83,7 @@ async function makeFlattraderequest(endpoint, data) {
     const payload = {
         ...data,
         uid: CLIENT_CODE,
-        jKey: currentToken
+        jKey: FLATTRADE_TOKEN
     };
 
     console.log(`📡 Making API call ${apiCallCount}/${API_CALLS_PER_MINUTE} to: ${FLATTRADE_BASE_URL}${endpoint}`);
@@ -102,7 +91,7 @@ async function makeFlattraderequest(endpoint, data) {
     try {
         const response = await axios.post(
             `${FLATTRADE_BASE_URL}${endpoint}`,
-            `jData=${JSON.stringify(payload)}&jKey=${currentToken}`,
+            `jData=${JSON.stringify(payload)}&jKey=${FLATTRADE_TOKEN}`,
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -117,6 +106,7 @@ async function makeFlattraderequest(endpoint, data) {
 
             if (errorMsg.includes('Session') || errorMsg.includes('Invalid') || errorMsg.includes('Token')) {
                 console.log('🔐 Token appears to be invalid, clearing...');
+                FLATTRADE_TOKEN = null;
                 app.locals.FLATTRADE_TOKEN = null;
             }
 
@@ -140,7 +130,7 @@ app.get('/api/alerts', async (req, res) => {
     try {
         const alerts = [];
 
-        if (!app.locals.FLATTRADE_TOKEN) {
+        if (!FLATTRADE_TOKEN) {
             console.log('⚠️ No token - showing empty alerts');
             return res.json({
                 data: [],
@@ -177,7 +167,7 @@ app.get('/api/alerts', async (req, res) => {
         res.json({
             data: sampleAlerts,
             timestamp: Date.now(),
-            source: app.locals.FLATTRADE_TOKEN ? 'live' : 'unavailable'
+            source: FLATTRADE_TOKEN ? 'live' : 'unavailable'
         });
 
     } catch (error) {
@@ -246,40 +236,6 @@ const appServer = server.listen(PORT, () => {
     }
 });
 
-// On server startup, validate the request code and obtain a token if valid
-(async () => {
-    const request_code = process.env.FLATTRADE_REQUEST_CODE;
-
-    if (request_code) {
-        console.log('🔄 Validating existing request code...');
-
-        try {
-            const response = await axios.post(TOKEN_ENDPOINT, {
-                app_key: process.env.FLATTRADE_API_KEY,
-                app_secret: process.env.FLATTRADE_API_SECRET,
-                request_code
-            });
-
-            if (response.data.stat === 'Ok') {
-                const { token } = response.data;
-                console.log('✅ Token obtained successfully on startup:', token);
-
-                // Update .env with the new token
-                await updateEnvFile('FLATTRADE_TOKEN', token);
-
-                // Update in-memory token
-                app.locals.FLATTRADE_TOKEN = token;
-            } else {
-                console.log('⚠️ Request code invalid or expired. Please log in again.');
-            }
-        } catch (error) {
-            console.error('Error during request code validation:', error.message);
-        }
-    } else {
-        console.log('⚠️ No request code found. Please log in to obtain a token.');
-    }
-})();
-
 // Multiple ways to keep the process alive
 process.stdin.resume();
 setInterval(() => {}, 100);
@@ -313,8 +269,5 @@ process.on('SIGINT', () => {
         console.log('Server closed');
     });
 });
-
-// Make app available globally for controller access
-global.app = app;
 
 module.exports = app;

@@ -4,8 +4,9 @@
   "description": "Enhanced Backend for NSE Trading Dashboard with Flattrade API integration, real-time market movers, advanced F&O analysis",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "node index.js --max-old-space-size=128",
+    "dev": "nodemon index.js --max-old-space-size=128",
+    "dev-persistent": "node -e \"require('./index.js'); setInterval(() => {}, 1000);\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
