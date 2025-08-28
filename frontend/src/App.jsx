@@ -1,6 +1,7 @@
 // frontend/src/App.jsx
 import React, { useState } from 'react';
 import Header from './components/Header';
+import MajorIndicesStrip from './components/MajorIndicesStrip';
 import MarketIndices from './components/MarketIndices';
 import MarketAnalysis from './components/MarketAnalysis';
 import FnOAnalysis from './components/FnOAnalysis';
@@ -69,35 +70,8 @@ function App() {
       {/* Clean Header with Title, Date/Time, and Toggle */}
       <Header dataSource={dataSource} onDataSourceChange={handleDataSourceChange} />
       
-      {/* Major Indices Strip - Prominent Display */}
-      <section className="major-indices-strip">
-        <div className="indices-container">
-          <div className="major-index">
-            <div className="index-name">NIFTY 50</div>
-            <div className="index-price">24,500.00</div>
-            <div className="index-change positive">+125.50 (+0.51%)</div>
-            <div className="index-levels">S: 24,350 | R: 24,650</div>
-          </div>
-          <div className="major-index">
-            <div className="index-name">BANK NIFTY</div>
-            <div className="index-price">51,200.00</div>
-            <div className="index-change negative">-200.25 (-0.39%)</div>
-            <div className="index-levels">S: 50,800 | R: 51,500</div>
-          </div>
-          <div className="major-index">
-            <div className="index-name">SENSEX</div>
-            <div className="index-price">80,450.00</div>
-            <div className="index-change positive">+180.75 (+0.22%)</div>
-            <div className="index-levels">S: 80,200 | R: 80,800</div>
-          </div>
-          <div className="major-index">
-            <div className="index-name">INDIA VIX</div>
-            <div className="index-price">13.25</div>
-            <div className="index-change neutral">-0.15 (-1.12%)</div>
-            <div className="index-levels">Volatility Index</div>
-          </div>
-        </div>
-      </section>
+      {/* Major Indices Strip - Real-time Data */}
+      <MajorIndicesStrip dataSource={dataSource} />
 
       {/* Market Status Bar */}
       <section className="market-status-bar">

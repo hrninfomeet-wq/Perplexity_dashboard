@@ -48,6 +48,11 @@ env/
 __pycache__/
 *.pyc
 *.pyo
+
+# Session storage and authentication files
+session-store.json
+auth-session.json
+*.session
 *.pyd
 .Python
 

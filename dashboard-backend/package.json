@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js --max-old-space-size=128",
+    "start-enhanced": "node startup-enhanced.js --max-old-space-size=128",
     "dev": "nodemon index.js --max-old-space-size=128",
+    "dev-enhanced": "nodemon startup-enhanced.js --max-old-space-size=128",
     "dev-persistent": "node -e \"require('./index.js'); setInterval(() => {}, 1000);\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
