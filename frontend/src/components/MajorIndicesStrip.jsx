@@ -1,7 +1,9 @@
 // frontend/src/components/MajorIndicesStrip.jsx
 import React, { useState, useEffect } from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 
 const MajorIndicesStrip = ({ dataSource }) => {
+    const { refreshRate } = useSettings();
     const [indices, setIndices] = useState([]);
     const [timestamp, setTimestamp] = useState('Never');
     const [loading, setLoading] = useState(true);
@@ -71,10 +73,10 @@ const MajorIndicesStrip = ({ dataSource }) => {
         
         // Only auto-refresh if we have live data
         if (dataSource === 'Live') {
-            const interval = setInterval(fetchIndices, 10000); // Refresh every 10 seconds
+            const interval = setInterval(fetchIndices, refreshRate); // Use configurable refresh rate
             return () => clearInterval(interval);
         }
-    }, [dataSource]);
+    }, [dataSource, refreshRate]);
 
     const getChangeClass = (change) => {
         if (typeof change !== 'number') return '';

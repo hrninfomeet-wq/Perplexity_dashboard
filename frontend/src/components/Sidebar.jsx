@@ -1,7 +1,9 @@
 // frontend/src/components/Sidebar.jsx
 import React, { useState, useEffect } from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 
 const Sidebar = () => {
+    const { refreshRate, updateRefreshRate, refreshRateOptions } = useSettings();
     const [alerts, setAlerts] = useState([]);
     const [alertsTimestamp, setAlertsTimestamp] = useState('Never');
     const [authStatus, setAuthStatus] = useState('Click button to authenticate');
@@ -27,9 +29,9 @@ const Sidebar = () => {
         };
 
         fetchAlerts();
-        const interval = setInterval(fetchAlerts, 15000); // Refresh alerts every 15 seconds
+        const interval = setInterval(fetchAlerts, refreshRate); // Use configurable refresh rate
         return () => clearInterval(interval);
-    }, []);
+    }, [refreshRate]);
 
     // Handle authentication logic
     const handleConnectClick = async () => {
@@ -108,6 +110,37 @@ const Sidebar = () => {
                             </button>
                             <div className="auth-status" style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
                                 {authStatus}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Data Refresh Rate Setting */}
+                    <div className="setting-item">
+                        <div className="refresh-rate-controls">
+                            <div className="info-label">Data Refresh Rate:</div>
+                            <select 
+                                value={refreshRate} 
+                                onChange={(e) => updateRefreshRate(parseInt(e.target.value, 10))}
+                                className="refresh-rate-dropdown"
+                                style={{ 
+                                    width: '100%', 
+                                    marginTop: '10px', 
+                                    padding: '8px 12px', 
+                                    borderRadius: '6px',
+                                    border: '1px solid #ddd',
+                                    backgroundColor: '#fff',
+                                    fontSize: '14px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {refreshRateOptions.map(option => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="refresh-info" style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+                                Live data will refresh every {refreshRateOptions.find(opt => opt.value === refreshRate)?.label || '2 seconds'}
                             </div>
                         </div>
                     </div>

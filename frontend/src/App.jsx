@@ -8,6 +8,7 @@ import FnOAnalysis from './components/FnOAnalysis';
 import BTSTScanner from './components/BTSTScanner';
 import ScalpingOpportunities from './components/ScalpingOpportunities';
 import Sidebar from './components/Sidebar';
+import { SettingsProvider } from './contexts/SettingsContext';
 import './style.css';
 import './dashboard-styles.css';
 
@@ -66,7 +67,8 @@ function App() {
   };
 
   return (
-    <div className="dashboard-container">
+    <SettingsProvider>
+      <div className="dashboard-container">
       {/* Clean Header with Title, Date/Time, and Toggle */}
       <Header dataSource={dataSource} onDataSourceChange={handleDataSourceChange} />
       
@@ -109,6 +111,7 @@ function App() {
         </div>
       </main>
     </div>
+    </SettingsProvider>
   );
 }
 

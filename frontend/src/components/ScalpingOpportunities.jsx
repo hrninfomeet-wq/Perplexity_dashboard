@@ -1,7 +1,9 @@
 // frontend/src/components/ScalpingOpportunities.jsx
 import React, { useState, useEffect } from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 
 const ScalpingOpportunities = () => {
+    const { refreshRate } = useSettings();
     const [signals, setSignals] = useState([]);
     const [timestamp, setTimestamp] = useState('Never');
 
@@ -23,10 +25,10 @@ const ScalpingOpportunities = () => {
         };
 
         fetchScalpingData();
-        const interval = setInterval(fetchScalpingData, 10000); // Refresh every 10 seconds for fresh signals
+        const interval = setInterval(fetchScalpingData, refreshRate); // Use configurable refresh rate
 
         return () => clearInterval(interval);
-    }, []);
+    }, [refreshRate]);
 
     const formatValue = (value) => {
         return typeof value === 'number' ? `₹${value.toFixed(2)}` : '????';

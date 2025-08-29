@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 
 const SectorPerformance = ({ sectors, timestamp }) => {
     const getChangeClass = (change) => {
@@ -61,6 +62,7 @@ const MoversTable = ({ title, movers }) => {
 };
 
 const MarketAnalysis = () => {
+    const { refreshRate } = useSettings();
     const [gainers, setGainers] = useState([]);
     const [losers, setLosers] = useState([]);
     const [sectors, setSectors] = useState([]);
@@ -99,10 +101,10 @@ const MarketAnalysis = () => {
         };
 
         fetchData();
-        const interval = setInterval(fetchData, 15000); // Refresh every 15 seconds
+        const interval = setInterval(fetchData, refreshRate); // Use configurable refresh rate
 
         return () => clearInterval(interval);
-    }, []);
+    }, [refreshRate]);
 
     return (
         <section className="section">
