@@ -1,0 +1,6 @@
+Your objective is to develop a high-performance, intuitive stock scanner and trading recommendation application for trading platforms. The app would continuously monitor live market data via API, maintaining secure authentication without disruption. This app will be run locally on Windows PC and not deployed online. Focus on preserving all backend functionalities and calculations essential for generating accurate trading signals. Simplify the code for efficiency without compromising functionality. Prepare a clear, step-by-step plan to ensure a right-first-time implementation, enabling seamless resumption if the process is interrupted. Create a setpoint internally if your response includes multi-step operation. If additional data or clarification is needed, ask relevant questions.
+
+DO NOT:
+1. Never use command-line file copying when files are open in VS Code - always edit files directly using the replace_string_in_file tool to avoid data loss. Because you are working on CS code app, the original and temporary files are open in the VS code app window and it will not be copied because it is already opened. 
+2. Do not waste too much time or get stuck after executing a command. Find a way to check the status output of your command. You should come out of the command loop after some time.
+3. Run the commands you need for working on the project folder. 

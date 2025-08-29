@@ -17,6 +17,70 @@ body {
 .trading-dashboard {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  overflow-x: auto;
+  overflow-y: auto;
+  
+  /* Professional scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #3498db #ecf0f1;
+}
+
+.trading-dashboard::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.trading-dashboard::-webkit-scrollbar-track {
+  background: #ecf0f1;
+  border-radius: 4px;
+}
+
+.trading-dashboard::-webkit-scrollbar-thumb {
+  background: #3498db;
+  border-radius: 4px;
+  border: 1px solid #ecf0f1;
+}
+
+.trading-dashboard::-webkit-scrollbar-thumb:hover {
+  background: #2980b9;
+}
+
+.trading-dashboard::-webkit-scrollbar-corner {
+  background: #ecf0f1;
+}
+
+/* Main Trading Area - Enable Horizontal Scrolling */
+.main-trading-area {
+  min-width: 1400px; /* Ensure horizontal scrolling when needed */
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 1rem 2rem;
+  
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+}
+
+.main-trading-area::-webkit-scrollbar {
+  height: 6px;
+}
+
+.main-trading-area::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.main-trading-area::-webkit-scrollbar-thumb {
+  background: #3498db;
+  border-radius: 3px;
+}
+
+/* Trading Grid - Flexible Layout */
+.trading-grid {
+  display: grid;
+  grid-template-columns: 400px 400px 300px; /* Fixed widths to ensure visibility */
+  gap: 1.5rem;
+  min-width: 1200px; /* Minimum width for all panels */
+  width: fit-content;
 }
 
 /* 1. Professional Header - Dark Navy Background */
@@ -327,9 +391,10 @@ body {
 
 .trading-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 320px;
+  grid-template-columns: 400px 400px 320px; /* Fixed widths to ensure all panels visible */
   gap: 2rem;
-  max-width: 1600px;
+  min-width: 1140px; /* Minimum width for horizontal scrolling */
+  width: fit-content;
   margin: 0 auto;
 }
 
@@ -342,7 +407,7 @@ body {
   gap: 2rem;
 }
 
-/* Section Containers */
+/* Section Containers - Enhanced Panel Visibility */
 .fno-section,
 .btst-section,
 .market-analysis-section,
@@ -353,6 +418,51 @@ body {
   padding: 1.5rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  min-height: 300px;
+  width: 100%;
+  
+  /* Enhanced visibility */
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.3s ease;
+}
+
+/* Panel Visibility Indicators */
+.fno-section::before,
+.btst-section::before,
+.market-analysis-section::before,
+.scalping-section::before,
+.settings-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #3498db 0%, #2980b9 100%);
+  border-radius: 15px 0 0 15px;
+}
+
+/* Individual Panel Indicators */
+.market-analysis-section::before {
+  background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.fno-section::before {
+  background: linear-gradient(180deg, #f39c12 0%, #e67e22 100%);
+}
+
+.scalping-section::before {
+  background: linear-gradient(180deg, #27ae60 0%, #229954 100%);
+}
+
+.btst-section::before {
+  background: linear-gradient(180deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+.settings-section::before {
+  background: linear-gradient(180deg, #34495e 0%, #2c3e50 100%);
 }
 
 /* 7. Settings Tab */
