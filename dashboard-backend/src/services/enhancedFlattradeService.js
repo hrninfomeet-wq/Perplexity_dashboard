@@ -10,14 +10,19 @@ class EnhancedFlattradeService {
         // Rate limiting
         this.apiCallCount = 0;
         this.apiCallResetTime = Date.now();
-        this.API_CALLS_PER_MINUTE = 100;
-        this.API_CALL_DELAY = 200;
+        this.API_CALLS_PER_MINUTE = 80; // Reduced from 100 to provide safety buffer
+        this.API_CALL_DELAY = 250; // Increased delay slightly
         
         // Request cache
         this.cache = new Map();
-        this.cacheTimeout = 10000; // 10 seconds cache
+        this.cacheTimeout = 15000; // Increased cache timeout to 15 seconds
         
-        console.log('🚀 Enhanced Flattrade Service initialized');
+        // Error tracking
+        this.errorCount = 0;
+        this.lastError = null;
+        this.consecutiveErrors = 0;
+        
+        console.log('🚀 Enhanced Flattrade Service initialized with safety limits');
     }
 
     /**
@@ -49,7 +54,7 @@ class EnhancedFlattradeService {
                 jKey: token
             };
 
-            console.log(`📡 API call ${this.apiCallCount}/${this.API_CALLS_PER_MINUTE} to: ${endpoint}`);
+            console.log(`📡 Making API call ${this.apiCallCount}/${this.API_CALLS_PER_MINUTE} to: ${this.FLATTRADE_BASE_URL}${endpoint}`);
 
             const response = await axios.post(
                 `${this.FLATTRADE_BASE_URL}${endpoint}`,
@@ -64,6 +69,7 @@ class EnhancedFlattradeService {
 
             if (response.data.stat !== 'Ok') {
                 const errorMsg = response.data.emsg || 'Flattrade API error';
+                console.log(`❌ API Error for ${endpoint}: ${errorMsg}`);
                 
                 // Check if it's an authentication error
                 if (this.isAuthError(errorMsg)) {
@@ -80,6 +86,9 @@ class EnhancedFlattradeService {
                 throw new Error(errorMsg);
             }
 
+            // Reset consecutive errors on successful request
+            this.consecutiveErrors = 0;
+
             // Cache successful response
             this.cache.set(cacheKey, {
                 data: response.data,
@@ -92,6 +101,50 @@ class EnhancedFlattradeService {
             return response.data;
 
         } catch (error) {
+            // Track errors
+            this.errorCount++;
+            this.consecutiveErrors++;
+            this.lastError = { 
+                message: error.message, 
+                endpoint, 
+                timestamp: Date.now() 
+            };
+            
+            // Circuit breaker - if too many consecutive errors, wait longer
+            if (this.consecutiveErrors >= 5) {
+                console.log(`🔴 Circuit breaker activated after ${this.consecutiveErrors} consecutive errors. Cooling down...`);
+                await new Promise(resolve => setTimeout(resolve, 10000)); // 10 second cooldown
+                this.consecutiveErrors = 0; // Reset after cooldown
+            }
+            
+            // Handle HTTP errors specifically
+            if (error.response) {
+                const status = error.response.status;
+                const statusText = error.response.statusText;
+                
+                if (status === 400) {
+                    console.log(`❌ HTTP 400 for ${endpoint} - possibly invalid token or parameters`);
+                    // For 400 errors, try re-authentication once
+                    if (retryCount < 1) {
+                        console.log('🔐 HTTP 400 detected, refreshing authentication...');
+                        await enhancedAuthController.logout();
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        return this.makeRequest(endpoint, data, retryCount + 1);
+                    }
+                } else if (status === 401) {
+                    console.log(`❌ HTTP 401 for ${endpoint} - authentication required`);
+                    await enhancedAuthController.logout();
+                } else if (status === 429) {
+                    console.log(`❌ HTTP 429 for ${endpoint} - rate limit exceeded, waiting longer...`);
+                    await new Promise(resolve => setTimeout(resolve, 30000)); // 30 second wait for 429
+                } else {
+                    console.log(`❌ HTTP ${status} for ${endpoint} - ${statusText}`);
+                }
+                
+                throw new Error(`HTTP ${status}: ${statusText}`);
+            }
+            
+            // Handle authentication errors
             if (this.isAuthError(error.message) && retryCount < maxRetries) {
                 console.log(`🔄 Auth error, retrying request (${retryCount + 1}/${maxRetries})...`);
                 
@@ -102,7 +155,7 @@ class EnhancedFlattradeService {
                 return this.makeRequest(endpoint, data, retryCount + 1);
             }
             
-            console.error(`❌ API Error for ${endpoint}:`, error.message);
+            console.error(`❌ Request failed for ${endpoint}:`, error.message);
             throw error;
         }
     }
@@ -117,15 +170,20 @@ class EnhancedFlattradeService {
         if (now - this.apiCallResetTime > 60000) {
             this.apiCallCount = 0;
             this.apiCallResetTime = now;
+            console.log('🔄 API rate limit counter reset');
         }
 
-        // If we've hit the limit, wait
+        // If we've hit the limit, wait for reset
         if (this.apiCallCount >= this.API_CALLS_PER_MINUTE) {
-            console.log('⏳ API rate limit reached, waiting...');
-            await new Promise(resolve => setTimeout(resolve, this.API_CALL_DELAY * 5));
+            const timeUntilReset = 60000 - (now - this.apiCallResetTime);
+            console.log(`⏳ API rate limit reached (${this.apiCallCount}/${this.API_CALLS_PER_MINUTE}), waiting ${Math.ceil(timeUntilReset/1000)}s for reset...`);
+            await new Promise(resolve => setTimeout(resolve, timeUntilReset + 1000));
+            this.apiCallCount = 0;
+            this.apiCallResetTime = Date.now();
+            console.log('✅ API rate limit reset, continuing...');
         }
 
-        // Add delay between calls
+        // Add delay between calls to avoid overwhelming API
         if (this.apiCallCount > 0) {
             await new Promise(resolve => setTimeout(resolve, this.API_CALL_DELAY));
         }
@@ -180,8 +238,12 @@ class EnhancedFlattradeService {
             authenticated: enhancedAuthController.isAuthenticated(),
             apiCallCount: this.apiCallCount,
             cacheSize: this.cache.size,
-            rateLimitRemaining: this.API_CALLS_PER_MINUTE - this.apiCallCount,
-            resetTime: new Date(this.apiCallResetTime + 60000)
+            rateLimitRemaining: Math.max(0, this.API_CALLS_PER_MINUTE - this.apiCallCount),
+            resetTime: new Date(this.apiCallResetTime + 60000),
+            errorCount: this.errorCount,
+            consecutiveErrors: this.consecutiveErrors,
+            lastError: this.lastError,
+            rateLimitStatus: this.apiCallCount >= this.API_CALLS_PER_MINUTE ? 'EXCEEDED' : 'OK'
         };
     }
 

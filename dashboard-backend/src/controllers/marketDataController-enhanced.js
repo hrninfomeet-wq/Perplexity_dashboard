@@ -519,43 +519,60 @@ const getIndices = async (req, res) => {
     }
 
     try {
-        const indicesPromises = Object.entries(NSE_INDEX_TOKENS).map(async ([symbol, config]) => {
-            try {
-                const quoteData = await makeFlattradeRequest('GetQuotes', { exch: 'NSE', token: config.token }, FLATTRADE_TOKEN);
+        const indexEntries = Object.entries(NSE_INDEX_TOKENS);
+        const indices = [];
+        
+        // Process indices in batches to reduce API load
+        const batchSize = 4; // Process 4 indices at a time
+        
+        for (let i = 0; i < indexEntries.length; i += batchSize) {
+            const batch = indexEntries.slice(i, i + batchSize);
+            
+            const batchPromises = batch.map(async ([symbol, config]) => {
+                try {
+                    const quoteData = await makeFlattradeRequest('GetQuotes', { exch: 'NSE', token: config.token }, FLATTRADE_TOKEN);
 
-                const currentPrice = parseFloat(quoteData.lp || 0);
-                const prevClose = parseFloat(quoteData.c || currentPrice);
-                const change = currentPrice - prevClose;
-                const changePct = prevClose > 0 ? (change / prevClose) * 100 : 0;
+                    const currentPrice = parseFloat(quoteData.lp || 0);
+                    const prevClose = parseFloat(quoteData.c || currentPrice);
+                    const change = currentPrice - prevClose;
+                    const changePct = prevClose > 0 ? (change / prevClose) * 100 : 0;
 
-                return {
-                    name: config.name,
-                    symbol: symbol,
-                    price: currentPrice,
-                    change: change,
-                    change_pct: changePct,
-                    open: parseFloat(quoteData.o || 0),
-                    high: parseFloat(quoteData.h || 0),
-                    low: parseFloat(quoteData.l || 0),
-                    prev_close: prevClose,
-                };
-            } catch (error) {
-                console.error(`Error fetching index ${symbol}:`, error.message);
-                return {
-                    name: config.name,
-                    symbol: symbol,
-                    price: '????',
-                    change: '????',
-                    change_pct: '????',
-                    open: '????',
-                    high: '????',
-                    low: '????',
-                    prev_close: '????',
-                };
+                    return {
+                        name: config.name,
+                        symbol: symbol,
+                        price: currentPrice,
+                        change: change,
+                        change_pct: changePct,
+                        open: parseFloat(quoteData.o || 0),
+                        high: parseFloat(quoteData.h || 0),
+                        low: parseFloat(quoteData.l || 0),
+                        prev_close: prevClose,
+                    };
+                } catch (error) {
+                    console.error(`Error fetching index ${symbol}:`, error.message);
+                    return {
+                        name: config.name,
+                        symbol: symbol,
+                        price: '????',
+                        change: '????',
+                        change_pct: '????',
+                        open: '????',
+                        high: '????',
+                        low: '????',
+                        prev_close: '????',
+                    };
+                }
+            });
+            
+            const batchResults = await Promise.all(batchPromises);
+            indices.push(...batchResults);
+            
+            // Add delay between batches
+            if (i + batchSize < indexEntries.length) {
+                await new Promise(resolve => setTimeout(resolve, 300));
             }
-        });
+        }
 
-        const indices = await Promise.all(indicesPromises);
         marketCache.set(cacheKey, { data: indices, timestamp: Date.now() });
         res.json({ data: indices, source: 'live' });
 
@@ -571,25 +588,41 @@ const fetchMarketMovers = async (FLATTRADE_TOKEN) => {
     }
 
     try {
-        const foStockSymbols = Object.keys(FO_SECURITIES).slice(0, 20);
-        const stockPromises = foStockSymbols.map(symbol =>
-            makeFlattradeRequest('GetQuotes', { exch: 'NSE', token: FO_SECURITIES[symbol].token }, FLATTRADE_TOKEN)
-                .then(quoteData => {
-                    const currentPrice = parseFloat(quoteData.lp || 0);
-                    const prevClose = parseFloat(quoteData.c || currentPrice);
-                    const change = currentPrice - prevClose;
-                    const changePct = prevClose > 0 ? (change / prevClose) * 100 : 0;
-                    return { name: symbol, change_pct: changePct, ltp: currentPrice };
-                })
-                .catch(err => {
-                    console.error(`Error fetching mover ${symbol}:`, err.message);
-                    return null;
-                })
-        );
+        // Reduce API calls by processing fewer stocks and using cache
+        const foStockSymbols = Object.keys(FO_SECURITIES).slice(0, 10); // Reduced from 20 to 10
+        
+        // Process in smaller batches with delays
+        const batchSize = 3;
+        const stocks = [];
+        
+        for (let i = 0; i < foStockSymbols.length; i += batchSize) {
+            const batch = foStockSymbols.slice(i, i + batchSize);
+            const batchPromises = batch.map(symbol =>
+                makeFlattradeRequest('GetQuotes', { exch: 'NSE', token: FO_SECURITIES[symbol].token }, FLATTRADE_TOKEN)
+                    .then(quoteData => {
+                        const currentPrice = parseFloat(quoteData.lp || 0);
+                        const prevClose = parseFloat(quoteData.c || currentPrice);
+                        const change = currentPrice - prevClose;
+                        const changePct = prevClose > 0 ? (change / prevClose) * 100 : 0;
+                        return { name: symbol, change_pct: changePct, ltp: currentPrice };
+                    })
+                    .catch(err => {
+                        console.error(`Error fetching mover ${symbol}:`, err.message);
+                        return null;
+                    })
+            );
+            
+            const batchResults = await Promise.all(batchPromises);
+            stocks.push(...batchResults.filter(s => s && s.ltp > 0));
+            
+            // Add delay between batches to avoid overwhelming API
+            if (i + batchSize < foStockSymbols.length) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
 
-        const stocks = (await Promise.all(stockPromises)).filter(s => s && s.ltp > 0);
-        const gainers = [...stocks].sort((a, b) => b.change_pct - a.change_pct).slice(0, 10);
-        const losers = [...stocks].sort((a, b) => a.change_pct - b.change_pct).slice(0, 10);
+        const gainers = [...stocks].sort((a, b) => b.change_pct - a.change_pct).slice(0, 5);
+        const losers = [...stocks].sort((a, b) => a.change_pct - b.change_pct).slice(0, 5);
 
         return { gainers, losers };
     } catch (error) {
