@@ -420,3 +420,53 @@
   color: #374151;
   margin-bottom: 8px;
 }
+
+/* Major Indices Strip Stability Improvements */
+.major-index {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.major-index.refreshing {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+  border-left: 2px solid #3b82f6;
+}
+
+.refresh-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0.7;
+}
+
+.refresh-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: pulse-refresh 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-refresh {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Ensure consistent sizing */
+.major-indices-strip .indices-container {
+  min-height: 120px; /* Prevent height fluctuations */
+}
+
+.major-index {
+  min-height: 100px; /* Consistent individual item height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

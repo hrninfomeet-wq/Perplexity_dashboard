@@ -6,12 +6,19 @@ const MajorIndicesStrip = ({ dataSource }) => {
     const { refreshRate } = useSettings();
     const [indices, setIndices] = useState([]);
     const [timestamp, setTimestamp] = useState('Never');
-    const [loading, setLoading] = useState(true);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         const fetchIndices = async () => {
             try {
-                setLoading(true);
+                // Only show full loading on first load, subtle refresh indicator after that
+                if (indices.length === 0) {
+                    setIsInitialLoading(true);
+                } else {
+                    setIsRefreshing(true);
+                }
+                
                 const response = await fetch('/api/indices');
                 
                 if (!response.ok) {
@@ -21,7 +28,8 @@ const MajorIndicesStrip = ({ dataSource }) => {
                 const data = await response.json();
                 setIndices(data.data || []);
                 setTimestamp(new Date().toLocaleTimeString());
-                setLoading(false);
+                setIsInitialLoading(false);
+                setIsRefreshing(false);
             } catch (error) {
                 console.error("Failed to fetch indices:", error);
                 // Fallback to mock data when API fails
@@ -65,7 +73,8 @@ const MajorIndicesStrip = ({ dataSource }) => {
                 ];
                 setIndices(mockIndices);
                 setTimestamp('Mock Data');
-                setLoading(false);
+                setIsInitialLoading(false);
+                setIsRefreshing(false);
             }
         };
 
@@ -112,20 +121,25 @@ const MajorIndicesStrip = ({ dataSource }) => {
     return (
         <section className="major-indices-strip">
             <div className="indices-container">
-                {loading ? (
+                {isInitialLoading ? (
                     <div className="major-index loading">
                         <div className="index-name">Loading...</div>
                         <div className="index-price">Fetching market data...</div>
                     </div>
                 ) : (
                     indices.map(index => (
-                        <div key={index.symbol} className="major-index">
+                        <div key={index.symbol} className={`major-index ${isRefreshing ? 'refreshing' : ''}`}>
                             <div className="index-name">{index.name}</div>
                             <div className="index-price">{formatPrice(index.price)}</div>
                             <div className={`index-change ${getChangeClass(index.change)}`}>
                                 {formatChange(index.change, index.change_pct)}
                             </div>
                             <div className="index-levels">{formatLevels(index)}</div>
+                            {isRefreshing && (
+                                <div className="refresh-indicator">
+                                    <span className="refresh-dot"></span>
+                                </div>
+                            )}
                         </div>
                     ))
                 )}
@@ -137,7 +151,7 @@ const MajorIndicesStrip = ({ dataSource }) => {
                             {dataSource} Data
                         </span>
                         <span className="update-time">
-                            Updated: {timestamp}
+                            Updated: {timestamp} {isRefreshing && '🔄'}
                         </span>
                     </div>
                 </div>
