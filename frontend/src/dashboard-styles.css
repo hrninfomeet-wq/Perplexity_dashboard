@@ -1,26 +1,42 @@
-/* Professional Dashboard Layout Styles */
+/* Professional Dashboard Layout Styles - Responsive Design */
 
-/* Dashboard Container */
-.dashboard-container {
-  min-height: 100vh;
-  background: var(--color-background, #f8fafc);
-  padding: 0;
-  margin: 0;
+/* Reset and Base */
+* {
+  box-sizing: border-box;
 }
 
-/* Clean Header */
+html, body {
+  margin: 0;
+  padding: 0;
+  /* Remove height: 100% to allow natural page scrolling */
+  /* Remove overflow-x: hidden - let browser handle scrolling naturally */
+}
+
+/* Dashboard Container - Natural Scrolling Layout */
+.dashboard-container {
+  min-height: 100vh; /* Allow container to grow beyond viewport */
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background, #f8fafc);
+  margin: 0;
+  padding: 0;
+  /* Remove overflow: hidden to allow natural page scrolling */
+}
+
+/* Clean Header - Fixed Height */
 .clean-header {
   background: white;
   border-bottom: 1px solid #e2e8f0;
   padding: 1rem 2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .clean-header .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -92,18 +108,19 @@
   min-width: 40px;
 }
 
-/* Major Indices Strip */
+/* Major Indices Strip - Fixed Height */
 .major-indices-strip {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 1.5rem 2rem;
+  flex-shrink: 0; /* Prevent strip from shrinking */
 }
 
 .indices-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -113,6 +130,10 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   backdrop-filter: blur(10px);
+  min-height: 120px; /* Fixed minimum height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .index-name {
@@ -151,18 +172,19 @@
   opacity: 0.8;
 }
 
-/* Market Status Bar */
+/* Market Status Bar - Fixed Height */
 .market-status-bar {
   background: white;
   border-bottom: 1px solid #e2e8f0;
   padding: 0.75rem 2rem;
+  flex-shrink: 0; /* Prevent status bar from shrinking */
 }
 
 .status-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -216,37 +238,217 @@
   color: #166534;
 }
 
-/* Main Content */
-.main-content {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+/* Main Dashboard - Natural Content Flow */
+.dashboard-main {
+  /* Remove flex: 1 to allow natural content sizing */
+  /* Remove overflow: auto - let page handle scrolling */
+  padding: 1.5rem 2rem;
+  /* Remove min-height: 0 constraint */
 }
 
-.content-left {
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  /* Remove height: 100% constraint */
+  /* Remove min-height calculation */
+  align-items: start; /* Align items to top */
+}
+
+/* Analytics Section */
+.analytics-section {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
+  /* Remove min-height: 0 constraint */
+  /* Remove height: fit-content constraint */
 }
 
-.analysis-grid {
+.analytics-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+  align-items: start; /* Prevent cards from stretching */
 }
 
-.tables-section {
+.scanner-section {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  /* Remove min-height: 0 constraint */
 }
 
-.content-right {
-  display: flex;
-  flex-direction: column;
+/* Sidebar Section */
+.sidebar-section {
+  /* Remove height: fit-content constraint */
+  /* Remove position: sticky for now to test */
+  /* Remove top: 1.5rem */
+  align-self: start;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .sidebar-section {
+    order: -1; /* Move sidebar to top on smaller screens */
+  }
+  
+  .analytics-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 1rem;
+  }
+  
+  .clean-header {
+    padding: 1rem;
+  }
+  
+  .major-indices-strip {
+    padding: 1rem;
+  }
+  
+  .market-status-bar {
+    padding: 0.5rem 1rem;
+  }
+  
+  .status-container {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .indices-container {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* Legacy Main Content - Remove this old layout */
+.main-content {
+  display: none; /* Hide old layout */
+}
+
+/* Component Responsive Optimization */
+
+/* Market Analysis and F&O Analysis Cards */
+.market-analysis,
+.fno-analysis {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  /* Remove height: fit-content constraint */
+  /* Remove min-height: 200px constraint */
+}
+
+/* BTST Scanner and Scalping Opportunities */
+.btst-scanner,
+.scalping-opportunities {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  /* Remove height: fit-content constraint */
+  /* Remove overflow: auto that was causing internal scrolling */
+}
+
+/* Sidebar Optimization */
+.sidebar {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  /* Remove height: fit-content constraint */
+  /* Remove max-height constraint that was causing the small box */
+  /* Remove overflow-y: auto that was causing internal scrolling */
+  /* Remove position: sticky */
+  /* Remove top: 1.5rem */
+}
+
+/* Table Responsiveness */
+.data-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table table {
+  width: 100%;
+  min-width: 500px; /* Minimum table width for readability */
+}
+
+/* Remove Scroll Constraints - Let content flow naturally */
+/* .scanner-section > * {
+  flex-shrink: 0;
+  min-height: 300px;
+} */
+
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .sidebar-section {
+    order: -1;
+  }
+  
+  .analytics-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Remove empty .sidebar rule */
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 1rem;
+  }
+  
+  .clean-header {
+    padding: 1rem;
+  }
+  
+  .major-indices-strip {
+    padding: 1rem;
+  }
+  
+  .market-status-bar {
+    padding: 0.5rem 1rem;
+  }
+  
+  .status-container {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .indices-container {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .market-analysis,
+  .fno-analysis,
+  .btst-scanner,
+  .scalping-opportunities,
+  .sidebar {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
 }
 
 /* Indices Meta Information */

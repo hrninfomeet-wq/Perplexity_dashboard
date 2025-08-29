@@ -11,6 +11,7 @@ import Sidebar from './components/Sidebar';
 import { SettingsProvider } from './contexts/SettingsContext';
 import './style.css';
 import './dashboard-styles.css';
+import './trading-desk-styles.css';
 
 function App() {
   const [dataSource, setDataSource] = useState('Mock');
@@ -68,49 +69,187 @@ function App() {
 
   return (
     <SettingsProvider>
-      <div className="dashboard-container">
-      {/* Clean Header with Title, Date/Time, and Toggle */}
-      <Header dataSource={dataSource} onDataSourceChange={handleDataSourceChange} />
-      
-      {/* Major Indices Strip - Real-time Data */}
-      <MajorIndicesStrip dataSource={dataSource} />
-
-      {/* Market Status Bar */}
-      <section className="market-status-bar">
-        <div className="status-container">
-          <div className="market-trend">
-            <span className="trend-label">Market Trend:</span>
-            <span className="trend-value bullish">BULLISH</span>
+      <div className="trading-dashboard">
+        {/* Professional Header */}
+        <header className="trading-header">
+          <div className="header-content">
+            <div className="header-left">
+              <h1 className="trading-title">My Trading Desk</h1>
+              <div className="datetime-info">
+                <span className="current-date">{new Date().toLocaleDateString('en-IN')}</span>
+                <span className="current-time">{new Date().toLocaleTimeString('en-IN', { hour12: false })}</span>
+              </div>
+            </div>
+            <div className="header-center">
+              <div className="data-toggle-container">
+                <span className="toggle-label">Data Source</span>
+                <div className={`toggle-pill ${dataSource === 'Live' ? 'live' : 'mock'}`} 
+                     onClick={() => handleDataSourceChange(dataSource === 'Live' ? 'Mock' : 'Live')}>
+                  <div className="toggle-indicator"></div>
+                  <span className="toggle-text">{dataSource}</span>
+                </div>
+              </div>
+            </div>
+            <div className="header-right">
+              <div className="market-status-indicator">
+                <span className="status-dot"></span>
+                <span className="status-text">Market Open</span>
+              </div>
+            </div>
           </div>
-          <div className="market-time">
-            <span className="time-label">Market Status:</span>
-            <span className="time-value">Open</span>
-          </div>
-          <div className="data-source-indicator">
-            <span className="source-label">Data:</span>
-            <span className={`source-value ${dataSource.toLowerCase()}`}>{dataSource}</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content Area */}
-      <main className="main-content">
-        <div className="content-left">
-          <div className="analysis-grid">
-            <MarketAnalysis />
-            <FnOAnalysis />
-          </div>
-          <div className="tables-section">
-            <BTSTScanner />
-            <ScalpingOpportunities />
-          </div>
-        </div>
+        </header>
         
-        <div className="content-right">
-          <Sidebar />
-        </div>
-      </main>
-    </div>
+        {/* Major Sectoral Indices - Two Rows of 5 Cards */}
+        <section className="sectoral-indices">
+          <div className="indices-grid">
+            <MajorIndicesStrip dataSource={dataSource} />
+          </div>
+        </section>
+
+        {/* Trading Alerts - Horizontal Scrollable Cards */}
+        <section className="trading-alerts">
+          <div className="section-header">
+            <h2 className="section-title">Trading Alerts</h2>
+          </div>
+          <div className="alerts-container">
+            {/* Sample Trading Alert Cards */}
+            <div className="alert-card buy-alert">
+              <div className="alert-header">
+                <span className="alert-type">BUY SIGNAL</span>
+                <span className="alert-time">2 min ago</span>
+              </div>
+              <div className="alert-content">
+                <h3>RELIANCE</h3>
+                <div className="alert-details">
+                  <div className="alert-detail">
+                    <span className="alert-detail-label">Price:</span>
+                    <span className="alert-detail-value">₹2,485.50</span>
+                  </div>
+                  <div className="alert-detail">
+                    <span className="alert-detail-label">Target:</span>
+                    <span className="alert-detail-value">₹2,520.00</span>
+                  </div>
+                  <div className="alert-detail">
+                    <span className="alert-detail-label">SL:</span>
+                    <span className="alert-detail-value">₹2,460.00</span>
+                  </div>
+                </div>
+              </div>
+              <div className="alert-actions">
+                <button className="trade-btn buy-btn">BUY</button>
+              </div>
+            </div>
+
+            <div className="alert-card sell-alert">
+              <div className="alert-header">
+                <span className="alert-type">SELL SIGNAL</span>
+                <span className="alert-time">5 min ago</span>
+              </div>
+              <div className="alert-content">
+                <h3>TCS</h3>
+                <div className="alert-details">
+                  <div className="alert-detail">
+                    <span className="alert-detail-label">Price:</span>
+                    <span className="alert-detail-value">₹4,125.80</span>
+                  </div>
+                  <div className="alert-detail">
+                    <span className="alert-detail-label">Target:</span>
+                    <span className="alert-detail-value">₹4,090.00</span>
+                  </div>
+                  <div className="alert-detail">
+                    <span className="alert-detail-label">SL:</span>
+                    <span className="alert-detail-value">₹4,150.00</span>
+                  </div>
+                </div>
+              </div>
+              <div className="alert-actions">
+                <button className="trade-btn sell-btn">SELL</button>
+              </div>
+            </div>
+
+            <div className="alert-card buy-alert">
+              <div className="alert-header">
+                <span className="alert-type">BREAKOUT</span>
+                <span className="alert-time">8 min ago</span>
+              </div>
+              <div className="alert-content">
+                <h3>HDFC BANK</h3>
+                <div className="alert-details">
+                  <div className="alert-detail">
+                    <span className="alert-detail-label">Price:</span>
+                    <span className="alert-detail-value">₹1,745.25</span>
+                  </div>
+                  <div className="alert-detail">
+                    <span className="alert-detail-label">Target:</span>
+                    <span className="alert-detail-value">₹1,780.00</span>
+                  </div>
+                  <div className="alert-detail">
+                    <span className="alert-detail-label">SL:</span>
+                    <span className="alert-detail-value">₹1,730.00</span>
+                  </div>
+                </div>
+              </div>
+              <div className="alert-actions">
+                <button className="trade-btn buy-btn">BUY</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Main Content Grid */}
+        <main className="main-trading-area">
+          <div className="trading-grid">
+            {/* Left Column */}
+            <div className="left-panel">
+              {/* F&O Analysis */}
+              <section className="fno-section">
+                <div className="section-header">
+                  <h2 className="section-title">F&O Analysis</h2>
+                </div>
+                <FnOAnalysis />
+              </section>
+              
+              {/* BTST Scanner */}
+              <section className="btst-section">
+                <div className="section-header">
+                  <h2 className="section-title">BTST Scanner</h2>
+                </div>
+                <BTSTScanner />
+              </section>
+            </div>
+            
+            {/* Center Column */}
+            <div className="center-panel">
+              {/* Market Analysis */}
+              <section className="market-analysis-section">
+                <div className="section-header">
+                  <h2 className="section-title">Market Analysis</h2>
+                </div>
+                <MarketAnalysis />
+              </section>
+              
+              {/* Scalping Opportunities */}
+              <section className="scalping-section">
+                <div className="section-header">
+                  <h2 className="section-title">Scalping Opportunities</h2>
+                </div>
+                <ScalpingOpportunities />
+              </section>
+            </div>
+            
+            {/* Right Panel - Settings & Controls */}
+            <div className="right-panel">
+              <section className="settings-section">
+                <div className="settings-tab">
+                  <div className="settings-icon">⚙️</div>
+                  <span className="settings-label">Settings</span>
+                </div>
+                <Sidebar />
+              </section>
+            </div>
+          </div>
+        </main>
+      </div>
     </SettingsProvider>
   );
 }
