@@ -14,9 +14,9 @@ const getHealthStatus = (req, res) => {
         message: 'NSE Trading Dashboard Backend is running',
         timestamp: new Date().toISOString(),
         authenticated: !!FLATTRADE_TOKEN,
-        volatilityIndex: volatilityIndex,
-        connectedClients: connectedClients.size,
-        cachedTokens: tokenCache.size
+        volatilityIndex: volatilityIndex || 0,
+        connectedClients: connectedClients ? connectedClients.size : 0,
+        cachedTokens: tokenCache ? tokenCache.size : 0
     });
 };
 
