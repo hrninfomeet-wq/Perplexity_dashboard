@@ -49,38 +49,49 @@ body {
   background: #ecf0f1;
 }
 
-/* Main Trading Area - Enable Horizontal Scrolling */
+/* Main Trading Area - Enhanced Responsive Design */
 .main-trading-area {
-  min-width: 1400px; /* Ensure horizontal scrolling when needed */
-  overflow-x: auto;
-  overflow-y: visible;
   padding: 1rem 2rem;
+  overflow: visible;
   
   /* Smooth scrolling */
   scroll-behavior: smooth;
 }
 
-.main-trading-area::-webkit-scrollbar {
-  height: 6px;
-}
+/* Remove old scrollbar styles - handled by ResponsiveGrid now */
 
-.main-trading-area::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.main-trading-area::-webkit-scrollbar-thumb {
-  background: #3498db;
-  border-radius: 3px;
-}
-
-/* Trading Grid - Flexible Layout */
+/* Trading Grid - Enhanced Responsive Layout */
 .trading-grid {
   display: grid;
-  grid-template-columns: 400px 400px 300px; /* Fixed widths to ensure visibility */
   gap: 1.5rem;
-  min-width: 1200px; /* Minimum width for all panels */
-  width: fit-content;
+  width: 100%;
+  
+  /* Default desktop layout */
+  grid-template-columns: 350px 400px 350px 320px;
+  grid-template-areas: "fno market scalping settings";
+  
+  /* Responsive adjustments */
+  @media (max-width: 1399px) {
+    grid-template-columns: 380px 400px 320px;
+    grid-template-areas: "fno market settings";
+    min-width: 1100px;
+  }
+  
+  @media (max-width: 1023px) {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "fno market"
+      "scalping settings";
+  }
+  
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "fno"
+      "market"
+      "scalping"
+      "settings";
+  }
 }
 
 /* 1. Professional Header - Dark Navy Background */
@@ -407,62 +418,30 @@ body {
   gap: 2rem;
 }
 
-/* Section Containers - Enhanced Panel Visibility */
+/* Legacy Section Containers - Now handled by ResponsiveGrid */
 .fno-section,
 .btst-section,
 .market-analysis-section,
 .scalping-section,
 .settings-section {
-  background: white;
-  border-radius: 15px;
-  padding: 1.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Remove old styling - now handled by panel-wrapper in responsive-layout.css */
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  border: none;
   position: relative;
-  min-height: 300px;
+  min-height: auto;
   width: 100%;
-  
-  /* Enhanced visibility */
-  opacity: 1;
-  transform: translateX(0);
-  transition: all 0.3s ease;
 }
 
-/* Panel Visibility Indicators */
+/* Remove old panel indicators - now handled by ResponsiveGrid */
 .fno-section::before,
 .btst-section::before,
 .market-analysis-section::before,
 .scalping-section::before,
 .settings-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, #3498db 0%, #2980b9 100%);
-  border-radius: 15px 0 0 15px;
-}
-
-/* Individual Panel Indicators */
-.market-analysis-section::before {
-  background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
-}
-
-.fno-section::before {
-  background: linear-gradient(180deg, #f39c12 0%, #e67e22 100%);
-}
-
-.scalping-section::before {
-  background: linear-gradient(180deg, #27ae60 0%, #229954 100%);
-}
-
-.btst-section::before {
-  background: linear-gradient(180deg, #9b59b6 0%, #8e44ad 100%);
-}
-
-.settings-section::before {
-  background: linear-gradient(180deg, #34495e 0%, #2c3e50 100%);
+  display: none;
 }
 
 /* 7. Settings Tab */
@@ -493,49 +472,62 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* 4. F&O Analysis - Professional Table Style */
+/* Enhanced Table Styles - Compatible with ResponsiveGrid */
 .fno-analysis table,
 .btst-scanner table,
-.scalping-opportunities table {
+.scalping-opportunities table,
+.market-analysis table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .fno-analysis thead,
 .btst-scanner thead,
-.scalping-opportunities thead {
+.scalping-opportunities thead,
+.market-analysis thead {
   background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
   color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .fno-analysis th,
 .btst-scanner th,
-.scalping-opportunities th {
+.scalping-opportunities th,
+.market-analysis th {
   padding: 1rem 0.75rem;
   text-align: left;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.75rem;
+  white-space: nowrap;
 }
 
 .fno-analysis tbody tr,
 .btst-scanner tbody tr,
-.scalping-opportunities tbody tr {
+.scalping-opportunities tbody tr,
+.market-analysis tbody tr {
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .fno-analysis tbody tr:nth-child(even),
 .btst-scanner tbody tr:nth-child(even),
-.scalping-opportunities tbody tr:nth-child(even) {
+.scalping-opportunities tbody tr:nth-child(even),
+.market-analysis tbody tr:nth-child(even) {
   background: #f8f9fa;
 }
 
 .fno-analysis tbody tr:hover,
 .btst-scanner tbody tr:hover,
-.scalping-opportunities tbody tr:hover {
+.scalping-opportunities tbody tr:hover,
+.market-analysis tbody tr:hover {
   background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
   transform: scale(1.01);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -543,9 +535,11 @@ body {
 
 .fno-analysis td,
 .btst-scanner td,
-.scalping-opportunities td {
+.scalping-opportunities td,
+.market-analysis td {
   padding: 0.875rem 0.75rem;
   border-bottom: 1px solid #e9ecef;
+  white-space: nowrap;
 }
 
 /* Trend Arrows */
@@ -747,24 +741,10 @@ body {
   100% { background-position: 200% 0; }
 }
 
-/* Responsive Design */
-@media (max-width: 1400px) {
-  .trading-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  
-  .right-panel {
-    grid-column: 1 / -1;
-  }
-}
-
+/* Enhanced Responsive Design */
 @media (max-width: 1024px) {
   .indices-container {
     grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .trading-grid {
-    grid-template-columns: 1fr;
   }
   
   .header-content {
@@ -775,6 +755,25 @@ body {
   
   .gainers-losers-container {
     grid-template-columns: 1fr;
+  }
+  
+  /* Enhanced table responsiveness */
+  .fno-analysis table,
+  .btst-scanner table,
+  .scalping-opportunities table,
+  .market-analysis table {
+    font-size: 0.8rem;
+  }
+  
+  .fno-analysis th,
+  .btst-scanner th,
+  .scalping-opportunities th,
+  .market-analysis th,
+  .fno-analysis td,
+  .btst-scanner td,
+  .scalping-opportunities td,
+  .market-analysis td {
+    padding: 0.5rem;
   }
 }
 
@@ -796,41 +795,27 @@ body {
   .trading-title {
     font-size: 1.5rem;
   }
-}
-@media (max-width: 1400px) {
-  .trading-grid {
-    grid-template-columns: 1fr 1fr;
+  
+  /* Mobile table optimizations */
+  .fno-analysis table,
+  .btst-scanner table,
+  .scalping-opportunities table,
+  .market-analysis table {
+    font-size: 0.75rem;
   }
   
-  .right-panel {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 1024px) {
-  .indices-container {
-    grid-template-columns: repeat(3, 1fr);
+  .fno-analysis th,
+  .btst-scanner th,
+  .scalping-opportunities th,
+  .market-analysis th {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.7rem;
   }
   
-  .trading-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .header-content {
-    grid-template-columns: 1fr;
-    text-align: center;
-    gap: 1rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .indices-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .sectoral-indices,
-  .trading-alerts,
-  .main-trading-area {
-    margin: 1rem;
+  .fno-analysis td,
+  .btst-scanner td,
+  .scalping-opportunities td,
+  .market-analysis td {
+    padding: 0.5rem 0.25rem;
   }
 }

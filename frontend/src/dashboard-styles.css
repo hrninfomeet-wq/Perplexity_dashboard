@@ -12,15 +12,15 @@ html, body {
   /* Remove overflow-x: hidden - let browser handle scrolling naturally */
 }
 
-/* Dashboard Container - Natural Scrolling Layout */
+/* Dashboard Container - Enhanced Responsive Layout */
 .dashboard-container {
-  min-height: 100vh; /* Allow container to grow beyond viewport */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--color-background, #f8fafc);
   margin: 0;
   padding: 0;
-  /* Remove overflow: hidden to allow natural page scrolling */
+  overflow: visible; /* Allow natural scrolling */
 }
 
 /* Clean Header - Fixed Height */
@@ -238,57 +238,70 @@ html, body {
   color: #166534;
 }
 
-/* Main Dashboard - Natural Content Flow */
+/* Main Dashboard - Enhanced Responsive Flow */
 .dashboard-main {
-  /* Remove flex: 1 to allow natural content sizing */
-  /* Remove overflow: auto - let page handle scrolling */
   padding: 1.5rem 2rem;
-  /* Remove min-height: 0 constraint */
+  flex: 1;
+  overflow: visible;
 }
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 320px;
   gap: 2rem;
   max-width: 1400px;
   margin: 0 auto;
-  /* Remove height: 100% constraint */
-  /* Remove min-height calculation */
-  align-items: start; /* Align items to top */
+  align-items: start;
+  
+  /* Responsive grid layout */
+  grid-template-columns: 1fr 320px;
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Analytics Section */
+/* Analytics Section - Enhanced Layout */
 .analytics-section {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  /* Remove min-height: 0 constraint */
-  /* Remove height: fit-content constraint */
+  overflow: visible;
 }
 
 .analytics-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-  align-items: start; /* Prevent cards from stretching */
+  align-items: start;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .scanner-section {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  /* Remove min-height: 0 constraint */
+  overflow: visible;
 }
 
-/* Sidebar Section */
+/* Sidebar Section - Enhanced Positioning */
 .sidebar-section {
-  /* Remove height: fit-content constraint */
-  /* Remove position: sticky for now to test */
-  /* Remove top: 1.5rem */
   align-self: start;
+  position: sticky;
+  top: 1.5rem;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  
+  @media (max-width: 1200px) {
+    position: static;
+    max-height: none;
+    order: -1; /* Move to top on smaller screens */
+  }
 }
 
-/* Responsive Design */
+/* Enhanced Responsive Design */
 @media (max-width: 1200px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
@@ -296,7 +309,9 @@ html, body {
   }
   
   .sidebar-section {
-    order: -1; /* Move sidebar to top on smaller screens */
+    order: -1;
+    position: static;
+    max-height: none;
   }
   
   .analytics-cards {
@@ -338,55 +353,81 @@ html, body {
   display: none; /* Hide old layout */
 }
 
-/* Component Responsive Optimization */
+/* Component Responsive Optimization - Compatible with ResponsiveGrid */
 
 /* Market Analysis and F&O Analysis Cards */
 .market-analysis,
 .fno-analysis {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  /* Remove height: fit-content constraint */
-  /* Remove min-height: 200px constraint */
+  background: transparent; /* Let ResponsiveGrid handle styling */
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  border: none;
+  height: auto;
+  overflow: visible;
 }
 
 /* BTST Scanner and Scalping Opportunities */
 .btst-scanner,
 .scalping-opportunities {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  /* Remove height: fit-content constraint */
-  /* Remove overflow: auto that was causing internal scrolling */
+  background: transparent; /* Let ResponsiveGrid handle styling */
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  border: none;
+  height: auto;
+  overflow: visible;
 }
 
 /* Sidebar Optimization */
 .sidebar {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  /* Remove height: fit-content constraint */
-  /* Remove max-height constraint that was causing the small box */
-  /* Remove overflow-y: auto that was causing internal scrolling */
-  /* Remove position: sticky */
-  /* Remove top: 1.5rem */
+  background: transparent; /* Let ResponsiveGrid handle styling */
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  border: none;
+  height: auto;
+  overflow: visible;
 }
 
-/* Table Responsiveness */
+/* Enhanced Table Responsiveness */
 .data-table {
   width: 100%;
   overflow-x: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .data-table table {
   width: 100%;
-  min-width: 500px; /* Minimum table width for readability */
+  min-width: 500px;
+  border-collapse: collapse;
+}
+
+/* Responsive table wrapper */
+.responsive-table-wrapper {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #bdc3c7 #ecf0f1;
+}
+
+.responsive-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.responsive-table-wrapper::-webkit-scrollbar-track {
+  background: #ecf0f1;
+  border-radius: 3px;
+}
+
+.responsive-table-wrapper::-webkit-scrollbar-thumb {
+  background: #bdc3c7;
+  border-radius: 3px;
 }
 
 /* Remove Scroll Constraints - Let content flow naturally */
@@ -404,18 +445,28 @@ html, body {
   
   .sidebar-section {
     order: -1;
+    position: static;
+    max-height: none;
   }
   
   .analytics-cards {
     grid-template-columns: 1fr;
   }
   
-  /* Remove empty .sidebar rule */
+  .dashboard-main {
+    padding: 1rem;
+  }
+  
+  /* Enhanced table responsiveness for tablets */
+  .data-table table {
+    min-width: 400px;
+    font-size: 0.875rem;
+  }
 }
 
 @media (max-width: 768px) {
   .dashboard-main {
-    padding: 1rem;
+    padding: 0.5rem;
   }
   
   .clean-header {
@@ -441,13 +492,28 @@ html, body {
     gap: 1rem;
   }
   
+  /* Mobile table optimizations */
+  .data-table table {
+    min-width: 300px;
+    font-size: 0.8rem;
+  }
+  
+  .responsive-table-wrapper {
+    margin: 0.5rem 0;
+  }
+  
+  /* Ensure components work well in mobile ResponsiveGrid */
   .market-analysis,
   .fno-analysis,
   .btst-scanner,
   .scalping-opportunities,
   .sidebar {
-    padding: 1rem;
-    margin-bottom: 1rem;
+    /* Let ResponsiveGrid handle all styling */
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    border: none;
+    box-shadow: none;
   }
 }
 

@@ -8,10 +8,12 @@ import FnOAnalysis from './components/FnOAnalysis';
 import BTSTScanner from './components/BTSTScanner';
 import ScalpingOpportunities from './components/ScalpingOpportunities';
 import Sidebar from './components/Sidebar';
+import ResponsiveGrid from './components/ResponsiveGrid';
 import { SettingsProvider } from './contexts/SettingsContext';
 import './style.css';
 import './dashboard-styles.css';
 import './trading-desk-styles.css';
+import './responsive-layout.css';
 
 function App() {
   const [dataSource, setDataSource] = useState('Mock');
@@ -196,59 +198,13 @@ function App() {
           </div>
         </section>
 
-        {/* Main Content Grid */}
-        <main className="main-trading-area">
-          <div className="trading-grid">
-            {/* Left Column */}
-            <div className="left-panel">
-              {/* F&O Analysis */}
-              <section className="fno-section">
-                <div className="section-header">
-                  <h2 className="section-title">F&O Analysis</h2>
-                </div>
-                <FnOAnalysis />
-              </section>
-              
-              {/* BTST Scanner */}
-              <section className="btst-section">
-                <div className="section-header">
-                  <h2 className="section-title">BTST Scanner</h2>
-                </div>
-                <BTSTScanner />
-              </section>
-            </div>
-            
-            {/* Center Column */}
-            <div className="center-panel">
-              {/* Market Analysis */}
-              <section className="market-analysis-section">
-                <div className="section-header">
-                  <h2 className="section-title">Market Analysis</h2>
-                </div>
-                <MarketAnalysis />
-              </section>
-              
-              {/* Scalping Opportunities */}
-              <section className="scalping-section">
-                <div className="section-header">
-                  <h2 className="section-title">Scalping Opportunities</h2>
-                </div>
-                <ScalpingOpportunities />
-              </section>
-            </div>
-            
-            {/* Right Panel - Settings & Controls */}
-            <div className="right-panel">
-              <section className="settings-section">
-                <div className="settings-tab">
-                  <div className="settings-icon">⚙️</div>
-                  <span className="settings-label">Settings</span>
-                </div>
-                <Sidebar />
-              </section>
-            </div>
-          </div>
-        </main>
+        {/* Responsive Main Trading Area */}
+        <ResponsiveGrid>
+          <FnOAnalysis />
+          <MarketAnalysis />
+          <ScalpingOpportunities />
+          <Sidebar />
+        </ResponsiveGrid>
       </div>
     </SettingsProvider>
   );
