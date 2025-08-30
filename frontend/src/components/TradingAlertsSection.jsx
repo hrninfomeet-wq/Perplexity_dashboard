@@ -1,4 +1,4 @@
-// frontend/src/components/TradingAlertsSection.jsx
+// frontend/src/components/TradingAle                <h3>📊 Index Options Trade Tips</h3>tsSection.jsx
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 
@@ -35,7 +35,7 @@ const TradingAlertsSection = () => {
     return (
         <section className="alerts-section">
             <div className="section-header">
-                <h3>� Stock Trading Tips</h3>
+                <h3>📊 Index Options trade tips</h3>
                 <span className="data-timestamp">Updated: {alertsTimestamp}</span>
             </div>
             <div className="alerts-container">
