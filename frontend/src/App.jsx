@@ -1,5 +1,5 @@
 // frontend/src/App.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import MajorIndicesStrip from './components/MajorIndicesStrip';
 import MarketIndices from './components/MarketIndices';
@@ -18,6 +18,62 @@ import './responsive-layout.css';
 
 function App() {
   const [dataSource, setDataSource] = useState('Mock');
+  const [headerIndices, setHeaderIndices] = useState([
+    { symbol: 'NIFTY', name: 'NIFTY 50', price: 24500.00, change: 125.50, change_pct: 0.51 },
+    { symbol: 'BANKNIFTY', name: 'BANK NIFTY', price: 51200.00, change: -200.25, change_pct: -0.39 },
+    { symbol: 'SENSEX', name: 'SENSEX', price: 80450.00, change: 180.75, change_pct: 0.22 },
+    { symbol: 'VIX', name: 'INDIA VIX', price: 13.25, change: -0.15, change_pct: -1.12 },
+    { symbol: 'GOLDM', name: 'GOLD FUT', price: 72850.00, change: 45.50, change_pct: 0.06 }
+  ]);
+
+  // Fetch header indices data
+  useEffect(() => {
+    const fetchHeaderIndices = async () => {
+      try {
+        const response = await fetch('/api/indices');
+        if (response.ok) {
+          const data = await response.json();
+          const allIndices = data.data || [];
+          
+          console.log('Header API Response:', allIndices); // Debug log
+          
+          // Create updated header data by merging API data with existing state
+          const updatedHeaderIndices = headerIndices.map(headerItem => {
+            const apiData = allIndices.find(index => index.symbol === headerItem.symbol);
+            return apiData ? { ...headerItem, ...apiData } : headerItem;
+          });
+          
+          console.log('Updated Header Indices:', updatedHeaderIndices); // Debug log
+          setHeaderIndices(updatedHeaderIndices);
+        }
+      } catch (error) {
+        console.error('Failed to fetch header indices:', error);
+        // Keep existing data as fallback - don't reset to empty
+      }
+    };
+
+    fetchHeaderIndices();
+    if (dataSource === 'Live') {
+      const interval = setInterval(fetchHeaderIndices, 5000); // Update every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [dataSource]); // Removed headerIndices from dependency to avoid infinite loop
+
+  const formatHeaderPrice = (price) => {
+    if (typeof price !== 'number') return price || '????';
+    return price.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  };
+
+  const formatHeaderChange = (change, changePct) => {
+    if (typeof change !== 'number' || typeof changePct !== 'number') return '????';
+    const sign = change >= 0 ? '+' : '';
+    return `${sign}${change.toFixed(1)} (${sign}${changePct.toFixed(2)}%)`;
+  };
+
+  const getHeaderChangeClass = (change) => {
+    if (typeof change !== 'number') return '';
+    return change >= 0 ? 'header-positive' : 'header-negative';
+  };
 
   const handleDataSourceChange = async (newSource) => {
     setDataSource(newSource);
@@ -84,7 +140,17 @@ function App() {
               </div>
             </div>
             <div className="header-center">
-              {/* Empty center space for balance */}
+              <div className="header-tickers">
+                {headerIndices.map(index => (
+                  <div key={index.symbol} className="header-ticker-card">
+                    <div className="ticker-symbol">{index.symbol}</div>
+                    <div className="ticker-price">{formatHeaderPrice(index.price)}</div>
+                    <div className={`ticker-change ${getHeaderChangeClass(index.change)}`}>
+                      {formatHeaderChange(index.change, index.change_pct)}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="header-right">
               <div className="header-right-content">

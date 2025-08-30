@@ -138,6 +138,123 @@ body {
   justify-content: center;
 }
 
+/* Header Tickers */
+.header-tickers {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  overflow-x: auto; /* Allow horizontal scroll if needed */
+  padding: 0 0.5rem; /* Add padding to prevent edge cutoff */
+}
+
+.header-ticker-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  min-width: 120px;
+  flex-shrink: 0; /* Prevent cards from shrinking */
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-ticker-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.ticker-symbol {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #bdc3c7;
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.5px;
+}
+
+.ticker-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ecf0f1;
+  margin-bottom: 0.25rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.ticker-change {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.ticker-change.header-positive {
+  color: #2ecc71;
+}
+
+.ticker-change.header-negative {
+  color: #e74c3c;
+}
+
+/* Responsive header tickers */
+@media (max-width: 1400px) {
+  .header-tickers {
+    gap: 0.75rem;
+  }
+  
+  .header-ticker-card {
+    min-width: 110px;
+    padding: 0.6rem 0.8rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .header-tickers {
+    gap: 0.5rem;
+  }
+  
+  .header-ticker-card {
+    min-width: 100px;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .ticker-price {
+    font-size: 1rem;
+  }
+  
+  .ticker-symbol,
+  .ticker-change {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .header-tickers {
+    gap: 0.4rem;
+  }
+  
+  .header-ticker-card {
+    min-width: 85px;
+    padding: 0.4rem 0.6rem;
+  }
+  
+  .ticker-price {
+    font-size: 0.9rem;
+  }
+  
+  .ticker-symbol,
+  .ticker-change {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-tickers {
+    display: none; /* Hide on mobile to save space */
+  }
+}
+
 .data-toggle-container {
   display: flex;
   flex-direction: column;
