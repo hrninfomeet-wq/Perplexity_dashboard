@@ -149,44 +149,61 @@ body {
 }
 
 .header-ticker-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
   text-align: center;
-  min-width: 120px;
+  min-width: 140px;
   flex-shrink: 0; /* Prevent cards from shrinking */
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-ticker-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3498db, #2ecc71, #f39c12);
+  opacity: 0.8;
 }
 
 .header-ticker-card:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .ticker-symbol {
   font-size: 0.75rem;
   font-weight: 600;
   color: #bdc3c7;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .ticker-price {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #ecf0f1;
-  margin-bottom: 0.25rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin-bottom: 0.3rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .ticker-change {
   font-size: 0.7rem;
   font-weight: 600;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin-bottom: 0.3rem;
 }
 
 .ticker-change.header-positive {
@@ -197,6 +214,16 @@ body {
   color: #e74c3c;
 }
 
+.ticker-levels {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #95a5a6;
+  letter-spacing: 0.3px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 0.3rem;
+  margin-top: 0.2rem;
+}
+
 /* Responsive header tickers */
 @media (max-width: 1400px) {
   .header-tickers {
@@ -204,28 +231,60 @@ body {
   }
   
   .header-ticker-card {
-    min-width: 110px;
-    padding: 0.6rem 0.8rem;
+    min-width: 130px;
+    padding: 0.75rem 1rem;
+  }
+  
+  .ticker-price {
+    font-size: 1.05rem;
   }
 }
 
 @media (max-width: 1200px) {
   .header-tickers {
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
   
   .header-ticker-card {
-    min-width: 100px;
-    padding: 0.5rem 0.75rem;
+    min-width: 120px;
+    padding: 0.65rem 0.85rem;
   }
   
   .ticker-price {
     font-size: 1rem;
   }
   
-  .ticker-symbol,
-  .ticker-change {
+  .ticker-symbol {
+    font-size: 0.7rem;
+  }
+  
+  .ticker-change,
+  .ticker-levels {
     font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 1000px) {
+  .header-tickers {
+    gap: 0.5rem;
+  }
+  
+  .header-ticker-card {
+    min-width: 105px;
+    padding: 0.6rem 0.75rem;
+  }
+  
+  .ticker-price {
+    font-size: 0.95rem;
+  }
+  
+  .ticker-symbol {
+    font-size: 0.65rem;
+  }
+  
+  .ticker-change,
+  .ticker-levels {
+    font-size: 0.6rem;
   }
 }
 
@@ -235,17 +294,21 @@ body {
   }
   
   .header-ticker-card {
-    min-width: 85px;
-    padding: 0.4rem 0.6rem;
+    min-width: 95px;
+    padding: 0.5rem 0.65rem;
   }
   
   .ticker-price {
     font-size: 0.9rem;
   }
   
-  .ticker-symbol,
-  .ticker-change {
+  .ticker-symbol {
     font-size: 0.6rem;
+  }
+  
+  .ticker-change,
+  .ticker-levels {
+    font-size: 0.55rem;
   }
 }
 

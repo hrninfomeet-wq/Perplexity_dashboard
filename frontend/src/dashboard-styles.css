@@ -31,6 +31,7 @@ html, body {
 .fno-analysis-section,
 .scalping-opportunities-section,
 .trading-alerts-section,
+.btst-scanner-section,
 .settings-main-section,
 .top-gainers-main-section,
 .top-losers-main-section {
@@ -73,13 +74,6 @@ html, body {
   min-width: 300px; /* Reduced from 800px to prevent overflow */
   width: 100%;
   table-layout: fixed; /* Fixed layout for better control */
-}
-
-/* Force BTST Scanner to same width as other sections */
-.btst-scanner-section {
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden; /* Prevent section from expanding */
 }
 
 .btst-scanner-section .movers-table {

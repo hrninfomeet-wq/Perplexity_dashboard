@@ -19,11 +19,11 @@ import './responsive-layout.css';
 function App() {
   const [dataSource, setDataSource] = useState('Mock');
   const [headerIndices, setHeaderIndices] = useState([
-    { symbol: 'NIFTY', name: 'NIFTY 50', price: 24500.00, change: 125.50, change_pct: 0.51 },
-    { symbol: 'BANKNIFTY', name: 'BANK NIFTY', price: 51200.00, change: -200.25, change_pct: -0.39 },
-    { symbol: 'SENSEX', name: 'SENSEX', price: 80450.00, change: 180.75, change_pct: 0.22 },
-    { symbol: 'VIX', name: 'INDIA VIX', price: 13.25, change: -0.15, change_pct: -1.12 },
-    { symbol: 'GOLDM', name: 'GOLD FUT', price: 72850.00, change: 45.50, change_pct: 0.06 }
+    { symbol: 'NIFTY', name: 'NIFTY 50', price: 24500.00, change: 125.50, change_pct: 0.51, support: 24350, resistance: 24650 },
+    { symbol: 'BANKNIFTY', name: 'BANK NIFTY', price: 51200.00, change: -200.25, change_pct: -0.39, support: 50800, resistance: 51500 },
+    { symbol: 'SENSEX', name: 'SENSEX', price: 80450.00, change: 180.75, change_pct: 0.22, support: 80200, resistance: 80800 },
+    { symbol: 'VIX', name: 'INDIA VIX', price: 13.25, change: -0.15, change_pct: -1.12, support: null, resistance: null },
+    { symbol: 'GOLDM', name: 'GOLD FUT', price: 72850.00, change: 45.50, change_pct: 0.06, support: 72500, resistance: 73200 }
   ]);
 
   // Fetch header indices data
@@ -73,6 +73,17 @@ function App() {
   const getHeaderChangeClass = (change) => {
     if (typeof change !== 'number') return '';
     return change >= 0 ? 'header-positive' : 'header-negative';
+  };
+
+  const formatHeaderLevels = (index) => {
+    if (index.symbol === 'VIX') {
+      return 'Volatility Index';
+    }
+    
+    const support = index.support || (index.price * 0.98);
+    const resistance = index.resistance || (index.price * 1.02);
+    
+    return `S: ${Math.round(support).toLocaleString('en-IN')} | R: ${Math.round(resistance).toLocaleString('en-IN')}`;
   };
 
   const handleDataSourceChange = async (newSource) => {
@@ -148,6 +159,7 @@ function App() {
                     <div className={`ticker-change ${getHeaderChangeClass(index.change)}`}>
                       {formatHeaderChange(index.change, index.change_pct)}
                     </div>
+                    <div className="ticker-levels">{formatHeaderLevels(index)}</div>
                   </div>
                 ))}
               </div>

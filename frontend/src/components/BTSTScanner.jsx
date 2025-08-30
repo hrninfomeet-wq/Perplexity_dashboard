@@ -36,7 +36,7 @@ const BTSTScanner = () => {
     };
 
     return (
-        <section className="btst-scanner-section">
+        <section className="section btst-section">
             <div className="section-header">
                 <h2>🌙 BTST Scanner</h2>
                 <div className="section-info">
