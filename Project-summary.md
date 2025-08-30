@@ -116,6 +116,12 @@ Node.js/Express REST API
 - **✅ Consistent Styling**: Applied uniform styling across all independent sections
 - **✅ Performance Optimization**: Each section now has independent data fetching and refresh cycles
 - **✅ Section Rebranding (Aug 31, 2025)**: Updated TradingAlertsSection title from "💡 Stock Trading Tips" to "📊 Index Options trade tips" for better content specificity
+- **✅ BTST Scanner Recovery (Aug 31, 2025)**: Restored missing BTST Scanner section that was lost during layout restructuring
+- **✅ BTST Scanner Formatting (Aug 31, 2025)**: Fixed width inconsistency to match uniform section layout
+  - Reduced table columns from 8 to 6 for better space utilization
+  - Added proper overflow handling with horizontal scrolling
+  - Implemented consistent CSS styling matching Top Gainers/Losers sections
+  - Optimized column widths and shortened headers for compact display
 
 #### Current Dashboard Structure (Aug 31, 2025)
 ```
@@ -123,6 +129,7 @@ Header (with Data Source toggle on right)
 ├── Major Indices Section (NIFTY 50, BANK NIFTY, etc.)
 ├── Stock Trading Tips Section (horizontal scrollable cards)
 ├── FNO Analysis Section (independent)
+├── 🌙 BTST Scanner Section (recovered & reformatted)
 ├── Scalping Opportunities Section (independent)
 ├── Index Options Trade Tips Section (extracted alerts with API data)
 ├── Top Gainers Section (extracted, independent)

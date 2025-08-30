@@ -203,6 +203,11 @@ function App() {
           <FnOAnalysis />
         </section>
 
+        {/* BTST Scanner Section */}
+        <section className="btst-scanner-section">
+          <BTSTScanner />
+        </section>
+
         {/* Scalping Opportunities Section */}
         <section className="scalping-opportunities-section">
           <ScalpingOpportunities />

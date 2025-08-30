@@ -53,29 +53,46 @@ html, body {
 .trading-alerts-section:hover,
 .settings-main-section:hover,
 .top-gainers-main-section:hover,
-.top-losers-main-section:hover {
+.top-losers-main-section:hover,
+.btst-scanner-section:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Table Section Specific Fixes */
 .top-gainers-main-section .table-container,
-.top-losers-main-section .table-container {
+.top-losers-main-section .table-container,
+.btst-scanner-section .table-container {
   overflow-x: auto;
   width: 100%;
   max-width: 100%;
 }
 
 .top-gainers-main-section .movers-table,
-.top-losers-main-section .movers-table {
+.top-losers-main-section .movers-table,
+.btst-scanner-section .movers-table {
   min-width: 300px; /* Reduced from 800px to prevent overflow */
   width: 100%;
   table-layout: fixed; /* Fixed layout for better control */
 }
 
+/* Force BTST Scanner to same width as other sections */
+.btst-scanner-section {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* Prevent section from expanding */
+}
+
+.btst-scanner-section .movers-table {
+  max-width: 100%;
+  min-width: 400px; /* Minimum width for readability */
+}
+
 .top-gainers-main-section .movers-table th,
 .top-gainers-main-section .movers-table td,
 .top-losers-main-section .movers-table th,
-.top-losers-main-section .movers-table td {
+.top-losers-main-section .movers-table td,
+.btst-scanner-section .movers-table th,
+.btst-scanner-section .movers-table td {
   padding: 8px 12px;
   word-wrap: break-word;
   overflow: hidden;
@@ -102,6 +119,37 @@ html, body {
 .top-losers-main-section .movers-table th:nth-child(3),
 .top-losers-main-section .movers-table td:nth-child(3) {
   width: 30%; /* Change % column */
+}
+
+/* BTST Scanner table column widths - More compact */
+.btst-scanner-section .movers-table th:nth-child(1),
+.btst-scanner-section .movers-table td:nth-child(1) {
+  width: 30%; /* Stock column */
+}
+
+.btst-scanner-section .movers-table th:nth-child(2),
+.btst-scanner-section .movers-table td:nth-child(2) {
+  width: 18%; /* Price column */
+}
+
+.btst-scanner-section .movers-table th:nth-child(3),
+.btst-scanner-section .movers-table td:nth-child(3) {
+  width: 18%; /* Change % column */
+}
+
+.btst-scanner-section .movers-table th:nth-child(4),
+.btst-scanner-section .movers-table td:nth-child(4) {
+  width: 12%; /* Vol Ratio column */
+}
+
+.btst-scanner-section .movers-table th:nth-child(5),
+.btst-scanner-section .movers-table td:nth-child(5) {
+  width: 12%; /* Signal column */
+}
+
+.btst-scanner-section .movers-table th:nth-child(6),
+.btst-scanner-section .movers-table td:nth-child(6) {
+  width: 10%; /* BTST Score column */
 }
 
 /* Clean Header - Fixed Height */
