@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import Header from './components/Header';
 import MajorIndicesStrip from './components/MajorIndicesStrip';
 import MarketIndices from './components/MarketIndices';
-import MarketAnalysis from './components/MarketAnalysis';
 import FnOAnalysis from './components/FnOAnalysis';
 import BTSTScanner from './components/BTSTScanner';
 import ScalpingOpportunities from './components/ScalpingOpportunities';
-import Sidebar from './components/Sidebar';
-import ResponsiveGrid from './components/ResponsiveGrid';
+import TradingAlertsSection from './components/TradingAlertsSection';
+import SettingsSection from './components/SettingsSection';
+import TopGainersSection from './components/TopGainersSection';
+import TopLosersSection from './components/TopLosersSection';
 import { SettingsProvider } from './contexts/SettingsContext';
 import './style.css';
 import './dashboard-styles.css';
@@ -83,19 +84,18 @@ function App() {
               </div>
             </div>
             <div className="header-center">
-              <div className="data-toggle-container">
-                <span className="toggle-label">Data Source</span>
-                <div className={`toggle-pill ${dataSource === 'Live' ? 'live' : 'mock'}`} 
-                     onClick={() => handleDataSourceChange(dataSource === 'Live' ? 'Mock' : 'Live')}>
-                  <div className="toggle-indicator"></div>
-                  <span className="toggle-text">{dataSource}</span>
-                </div>
-              </div>
+              {/* Empty center space for balance */}
             </div>
             <div className="header-right">
-              <div className="market-status-indicator">
-                <span className="status-dot"></span>
-                <span className="status-text">Market Open</span>
+              <div className="header-right-content">
+                <div className="data-toggle-container">
+                  <span className="toggle-label">Data Source</span>
+                  <div className={`toggle-pill ${dataSource === 'Live' ? 'live' : 'mock'}`} 
+                       onClick={() => handleDataSourceChange(dataSource === 'Live' ? 'Mock' : 'Live')}>
+                    <div className="toggle-indicator"></div>
+                    <span className="toggle-text">{dataSource}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -108,10 +108,10 @@ function App() {
           </div>
         </section>
 
-        {/* Trading Alerts - Horizontal Scrollable Cards */}
+        {/* Stock Trading Tips - Horizontal Scrollable Cards */}
         <section className="trading-alerts">
           <div className="section-header">
-            <h2 className="section-title">Trading Alerts</h2>
+            <h2 className="section-title">Stock Trading Tips</h2>
           </div>
           <div className="alerts-container">
             {/* Sample Trading Alert Cards */}
@@ -198,13 +198,35 @@ function App() {
           </div>
         </section>
 
-        {/* Responsive Main Trading Area */}
-        <ResponsiveGrid>
+        {/* FNO Analysis Section */}
+        <section className="fno-analysis-section">
           <FnOAnalysis />
-          <MarketAnalysis />
+        </section>
+
+        {/* Scalping Opportunities Section */}
+        <section className="scalping-opportunities-section">
           <ScalpingOpportunities />
-          <Sidebar />
-        </ResponsiveGrid>
+        </section>
+
+        {/* Stock Trading Tips Section */}
+        <section className="trading-alerts-section">
+          <TradingAlertsSection />
+        </section>
+
+        {/* Top Gainers Section */}
+        <section className="top-gainers-main-section">
+          <TopGainersSection />
+        </section>
+
+        {/* Top Losers Section */}
+        <section className="top-losers-main-section">
+          <TopLosersSection />
+        </section>
+
+        {/* Settings Section */}
+        <section className="settings-main-section">
+          <SettingsSection />
+        </section>
       </div>
     </SettingsProvider>
   );

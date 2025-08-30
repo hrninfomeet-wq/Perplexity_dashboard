@@ -208,14 +208,69 @@ body {
   justify-content: flex-end;
 }
 
-.market-status-indicator {
+.header-right-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.data-toggle-container {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   padding: 0.5rem 1rem;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   backdrop-filter: blur(10px);
+}
+
+.toggle-label {
+  font-size: 0.875rem;
+  color: #ecf0f1;
+  font-weight: 500;
+}
+
+.toggle-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.toggle-pill.mock {
+  background: rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.toggle-pill.live {
+  background: rgba(34, 197, 94, 0.3);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+}
+
+.toggle-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.toggle-pill.mock .toggle-indicator {
+  background: #ef4444;
+}
+
+.toggle-pill.live .toggle-indicator {
+  background: #22c55e;
+  animation: pulse 2s infinite;
+}
+
+.toggle-text {
+  font-size: 0.875rem;
+  color: #ecf0f1;
+  font-weight: 500;
 }
 
 .status-dot {

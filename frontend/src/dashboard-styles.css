@@ -13,14 +13,95 @@ html, body {
 }
 
 /* Dashboard Container - Enhanced Responsive Layout */
-.dashboard-container {
+.dashboard-container,
+.trading-dashboard {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--color-background, #f8fafc);
   margin: 0;
-  padding: 0;
+  padding: 0 0 2rem 0; /* Add bottom padding for better spacing */
   overflow: visible; /* Allow natural scrolling */
+  gap: 1.5rem; /* Add consistent spacing between sections */
+}
+
+/* Independent Section Layout */
+.sectoral-indices,
+.trading-alerts,
+.fno-analysis-section,
+.scalping-opportunities-section,
+.trading-alerts-section,
+.settings-main-section,
+.top-gainers-main-section,
+.top-losers-main-section {
+  margin: 0 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: box-shadow 0.3s ease;
+  overflow: hidden; /* Prevent horizontal overflow */
+  width: calc(100% - 3rem); /* Ensure proper width calculation */
+  box-sizing: border-box;
+}
+
+.sectoral-indices:hover,
+.trading-alerts:hover,
+.fno-analysis-section:hover,
+.scalping-opportunities-section:hover,
+.trading-alerts-section:hover,
+.settings-main-section:hover,
+.top-gainers-main-section:hover,
+.top-losers-main-section:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Table Section Specific Fixes */
+.top-gainers-main-section .table-container,
+.top-losers-main-section .table-container {
+  overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
+}
+
+.top-gainers-main-section .movers-table,
+.top-losers-main-section .movers-table {
+  min-width: 300px; /* Reduced from 800px to prevent overflow */
+  width: 100%;
+  table-layout: fixed; /* Fixed layout for better control */
+}
+
+.top-gainers-main-section .movers-table th,
+.top-gainers-main-section .movers-table td,
+.top-losers-main-section .movers-table th,
+.top-losers-main-section .movers-table td {
+  padding: 8px 12px;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive column widths for movers table */
+.top-gainers-main-section .movers-table th:first-child,
+.top-gainers-main-section .movers-table td:first-child,
+.top-losers-main-section .movers-table th:first-child,
+.top-losers-main-section .movers-table td:first-child {
+  width: 40%; /* Stock name column */
+}
+
+.top-gainers-main-section .movers-table th:nth-child(2),
+.top-gainers-main-section .movers-table td:nth-child(2),
+.top-losers-main-section .movers-table th:nth-child(2),
+.top-losers-main-section .movers-table td:nth-child(2) {
+  width: 30%; /* Price column */
+}
+
+.top-gainers-main-section .movers-table th:nth-child(3),
+.top-gainers-main-section .movers-table td:nth-child(3),
+.top-losers-main-section .movers-table th:nth-child(3),
+.top-losers-main-section .movers-table td:nth-child(3) {
+  width: 30%; /* Change % column */
 }
 
 /* Clean Header - Fixed Height */

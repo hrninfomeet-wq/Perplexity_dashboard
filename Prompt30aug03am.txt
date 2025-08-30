@@ -1,3 +1,19 @@
 Analyse my project files - frontend and backend to deeply understand the project structure, architecture, functionalities, layout and user interface. 
 First we need to focus on the existing dashboard design and rectify the design issues. The panels visible on my dashboard page namely F&O Analysis, Market Analysis, Scalping Opportunities, BTST Scanner, Settings, are not arranged properly for viewing on the page. The tables and panels are not arranged neatly. There is no horizontal scrolling option for the page. Because of this the panels like Market Analysis, Scalping Opportunities are not visible on the right edge. See screenshot of the web page. If the tables and panels auto-resizing when the browser is windowed, and there is vertical and horizontal scrolling for the entire page, the page would be somewhat better.
 Our main objective is to improve the frontend UI and design make it intuitive for stock trading, market monitoring, easy to use. The UI should clean, efficient, light, and high performing. You can also suggest improvements for the design like a highly profitable trader and web developer.
+
+Prompt For Claude Opus 4.1
+We will do all those remaining areas later. The current page design is still not what i want.
+referrinf to the context of your previous response, I think you misunderstood about my requirement. In your response above you said "Horizontal 4-panel layout functionality (F&O Analysis, Market Analysis, Scalping Opportunities, Settings)" I want those four panels to be arranged one over another. Still I see that they are placed vertically next to each other. See screenshot attached. I have created a rough sketch or mockup detail file pdf for the page design and panel's location on the frontend page. @/frontend/src/components/mockup/ with file location is "C:\Users\haroo\OneDrive\Documents\My Projects\Resource files\Mock up detail_copy.pdf"
+@/project-context.txt @/Project-summary.md 
+
+In the mockup file please note the details for clarification:
+1. In the header panel, the toggle button to move to right side below Market live status. I want NIFTY 50 and BANKNIFTY tickr to be moved to the header panel (shown by handdrawn arrows. Add one more BSE index scrip "SENSEX" there.
+2. From "Market Analysis" panel or section, "Top gainers (F&O securities only)" and "Top losers (F&O securities only)" shall be moved out of the "Market Analysis" section. Remove the panel heading names - "MarketAnalysis" and inside that "Market Analysis", "Sector Performance". Remove everything under "Sector Performance"
+3. Individual panels of the page can be identified easily by the light blue borders shown.
+4. From "Sidebar" panel "🔔 Trading Alerts" to move out of the "Sidebar" panel and placed at location shown in the mock up detail. pdf.
+5. All the individual panels should be auto-resizing, adjustbale according to the page resizing or windowed condition.
+6. You can see that I have added a new panel in the page's right hand side with heading or name "Analyse scrip" with a search bar below it. Any stock or index can be searched in this search bar for trade recommendation analysis. The backend calcualtion and functionality of this panel shall be develpoed later.
+7. The "settings" panel shall also move out of the "Sidebar" and placed at the right bottom side as shown on the mockup page.
+
+Use your intuitive and world calss expertise as a frontend developer to implement the design with the context and requirement decribed already in the tagged files. Ask me any question if you need.
