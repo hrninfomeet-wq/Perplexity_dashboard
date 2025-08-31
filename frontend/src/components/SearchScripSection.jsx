@@ -70,7 +70,6 @@ const SearchScripSection = () => {
   return (
     <div className="search-scrip-section">
       <div className="search-container">
-        <h3 className="search-title">🔍 Search Scrip for Analysis</h3>
         
         <form onSubmit={handleSearchSubmit} className="search-form">
           <div className="search-input-container">

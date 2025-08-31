@@ -74,9 +74,9 @@ const TradingAlertsSection = () => {
                             {alert.signal} SIGNAL
                         </span>
                         <span className="tip-time">{alert.time}</span>
-                        <h3>{alert.script} {alert.strike} {alert.type}</h3>
                     </div>
                     <div className="tip-content">
+                        <h3>{alert.script} {alert.strike} {alert.type}</h3>
                         <div className="alert-details">
                             <div className="alert-detail-row">
                                 <span className="alert-label">Strike Price:</span>
@@ -90,6 +90,11 @@ const TradingAlertsSection = () => {
                                 <span className="alert-label">Stop Loss:</span>
                                 <span className="alert-value stoploss-price">₹{alert.stoploss}</span>
                             </div>
+                        </div>
+                        <div className="tip-tags">
+                            <span className="tip-tag">{alert.script}</span>
+                            <span className="tip-tag">{alert.type} Option</span>
+                            <span className={`tip-tag ${alert.signal.toLowerCase()}`}>{alert.signal}</span>
                         </div>
                     </div>
                 </div>

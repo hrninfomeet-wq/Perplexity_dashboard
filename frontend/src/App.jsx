@@ -9,7 +9,6 @@ import ScalpingOpportunities from './components/ScalpingOpportunities';
 import TradingAlertsSection from './components/TradingAlertsSection';
 import SettingsSection from './components/SettingsSection';
 import TopGainersSection from './components/TopGainersSection';
-import TopLosersSection from './components/TopLosersSection';
 import SearchScripSection from './components/SearchScripSection';
 import { SettingsProvider } from './contexts/SettingsContext';
 import './style.css';
@@ -35,7 +34,6 @@ function App() {
   const [isBTSTCollapsed, setIsBTSTCollapsed] = useState(false);
   const [isScalpingCollapsed, setIsScalpingCollapsed] = useState(false);
   const [isTopGainersCollapsed, setIsTopGainersCollapsed] = useState(false);
-  const [isTopLosersCollapsed, setIsTopLosersCollapsed] = useState(false);
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
   const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
 
@@ -133,6 +131,30 @@ function App() {
               </div>
             </section>
 
+            {/* Scalping Opportunities - Collapsible Section */}
+            <section className={`scalping-opportunities-section ${isScalpingCollapsed ? 'collapsed' : 'expanded'}`}>
+              <div className="collapsible-header" onClick={() => setIsScalpingCollapsed(!isScalpingCollapsed)}>
+                <div className="section-title-wrapper">
+                  <h2 className="section-title">⚡ Scalping Opportunities</h2>
+                  <span className="section-subtitle">Quick profit opportunities</span>
+                </div>
+                <button className="collapse-toggle" aria-label={isScalpingCollapsed ? 'Expand scalping opportunities' : 'Collapse scalping opportunities'}>
+                  <svg 
+                    className={`chevron-icon ${isScalpingCollapsed ? 'collapsed' : 'expanded'}`}
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+              <div className="collapsible-content">
+                <ScalpingOpportunities dataSource={dataSource} />
+              </div>
+            </section>
+
             {/* BTST Scanner - Collapsible Section */}
             <section className={`btst-scanner-section ${isBTSTCollapsed ? 'collapsed' : 'expanded'}`}>
               <div className="collapsible-header" onClick={() => setIsBTSTCollapsed(!isBTSTCollapsed)}>
@@ -157,14 +179,14 @@ function App() {
               </div>
             </section>
 
-            {/* Top Gainers - Collapsible Section */}
+            {/* Market Movers - Collapsible Section (Combined Gainers & Losers) */}
             <section className={`top-gainers-section ${isTopGainersCollapsed ? 'collapsed' : 'expanded'}`}>
               <div className="collapsible-header" onClick={() => setIsTopGainersCollapsed(!isTopGainersCollapsed)}>
                 <div className="section-title-wrapper">
-                  <h2 className="section-title">📈 Top Gainers</h2>
-                  <span className="section-subtitle">Stocks with highest price increase</span>
+                  <h2 className="section-title">� Market Movers</h2>
+                  <span className="section-subtitle">Top gainers and losers side by side</span>
                 </div>
-                <button className="collapse-toggle" aria-label={isTopGainersCollapsed ? 'Expand top gainers' : 'Collapse top gainers'}>
+                <button className="collapse-toggle" aria-label={isTopGainersCollapsed ? 'Expand market movers' : 'Collapse market movers'}>
                   <svg 
                     className={`chevron-icon ${isTopGainersCollapsed ? 'collapsed' : 'expanded'}`}
                     width="20" 
@@ -178,30 +200,6 @@ function App() {
               </div>
               <div className="collapsible-content">
                 <TopGainersSection dataSource={dataSource} />
-              </div>
-            </section>
-
-            {/* Top Losers - Collapsible Section */}
-            <section className={`top-losers-section ${isTopLosersCollapsed ? 'collapsed' : 'expanded'}`}>
-              <div className="collapsible-header" onClick={() => setIsTopLosersCollapsed(!isTopLosersCollapsed)}>
-                <div className="section-title-wrapper">
-                  <h2 className="section-title">📉 Top Losers</h2>
-                  <span className="section-subtitle">Stocks with highest price decrease</span>
-                </div>
-                <button className="collapse-toggle" aria-label={isTopLosersCollapsed ? 'Expand top losers' : 'Collapse top losers'}>
-                  <svg 
-                    className={`chevron-icon ${isTopLosersCollapsed ? 'collapsed' : 'expanded'}`}
-                    width="20" 
-                    height="20" 
-                    viewBox="0 0 20 20" 
-                    fill="currentColor"
-                  >
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </div>
-              <div className="collapsible-content">
-                <TopLosersSection dataSource={dataSource} />
               </div>
             </section>
 
@@ -288,30 +286,6 @@ function App() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </section>
-
-            {/* Scalping Opportunities - Collapsible Section */}
-            <section className={`scalping-opportunities-section ${isScalpingCollapsed ? 'collapsed' : 'expanded'}`}>
-              <div className="collapsible-header" onClick={() => setIsScalpingCollapsed(!isScalpingCollapsed)}>
-                <div className="section-title-wrapper">
-                  <h2 className="section-title">⚡ Scalping Opportunities</h2>
-                  <span className="section-subtitle">Quick profit opportunities</span>
-                </div>
-                <button className="collapse-toggle" aria-label={isScalpingCollapsed ? 'Expand scalping opportunities' : 'Collapse scalping opportunities'}>
-                  <svg 
-                    className={`chevron-icon ${isScalpingCollapsed ? 'collapsed' : 'expanded'}`}
-                    width="20" 
-                    height="20" 
-                    viewBox="0 0 20 20" 
-                    fill="currentColor"
-                  >
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </div>
-              <div className="collapsible-content">
-                <ScalpingOpportunities dataSource={dataSource} />
               </div>
             </section>
 

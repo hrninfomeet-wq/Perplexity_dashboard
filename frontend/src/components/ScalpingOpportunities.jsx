@@ -36,14 +36,6 @@ const ScalpingOpportunities = () => {
 
     return (
         <section className="section scalping-section">
-            <div className="section-header">
-                <h2>⚡ Scalping Opportunities</h2>
-                <div className="section-info">
-                    <span className="update-indicator">Real-time intraday signals</span>
-                    <span className="data-timestamp">Updated: {timestamp}</span>
-                </div>
-            </div>
-
             <div className="table-container">
                 <table className="scalping-table">
                     <thead>

@@ -5,6 +5,7 @@ const {
     getIndices,
     getGainers,
     getLosers,
+    getNSEDirectData,
     getSectorPerformance,
     getFnOAnalysis,
     getBTSTData,
@@ -15,6 +16,7 @@ const {
 router.get('/indices', getIndices);
 router.get('/gainers', getGainers);
 router.get('/losers', getLosers);
+router.get('/nse-direct', getNSEDirectData);
 router.get('/sectors', getSectorPerformance);
 router.get('/fno-analysis', getFnOAnalysis);
 router.get('/btst', getBTSTData);

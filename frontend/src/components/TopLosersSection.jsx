@@ -36,13 +36,6 @@ const TopLosersSection = () => {
 
     return (
         <div className="top-losers-content">
-            <div className="section-header">
-                <h2>📉 Top Losers (F&O Securities Only)</h2>
-                <div className="section-info">
-                    <span className="update-indicator">Live losers data</span>
-                    <span className="data-timestamp">Updated: {timestamp}</span>
-                </div>
-            </div>
             <div className="table-container">
                 <table className="movers-table">
                     <thead>

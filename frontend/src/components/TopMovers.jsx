@@ -56,7 +56,6 @@ const TopMovers = () => {
             <div className="movers-container">
                 {/* Top Gainers */}
                 <div className="movers-section gainers-section">
-                    <h3 className="movers-title">🚀 Top Gainers</h3>
                     <div className="movers-table-container">
                         <table className="movers-table">
                             <thead>
@@ -89,7 +88,6 @@ const TopMovers = () => {
 
                 {/* Top Losers */}
                 <div className="movers-section losers-section">
-                    <h3 className="movers-title">📉 Top Losers</h3>
                     <div className="movers-table-container">
                         <table className="movers-table">
                             <thead>

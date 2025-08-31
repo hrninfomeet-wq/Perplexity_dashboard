@@ -292,6 +292,396 @@ body {
   font-weight: 500;
 }
 
+/* Trading Alerts Section Enhanced Styling */
+.tip-type.buy-signal {
+  background: #27ae60;
+  color: white;
+}
+
+.tip-type.sell-signal {
+  background: #e74c3c;
+  color: white;
+}
+
+/* Ensure Trading Alerts Section matches Trading Tips Section width */
+.trading-alerts-section,
+.trading-tips-section {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Ensure both sections have the same collapsible content styling */
+.trading-alerts-section .collapsible-content,
+.trading-tips-section .collapsible-content {
+  padding: 2rem;
+  width: 100%;
+}
+
+/* IMPORTANT: Account for component wrapper in Trading Alerts */
+.trading-alerts-section .collapsible-content > * {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure both sections' content containers match exactly */
+.trading-alerts-section .trading-tips-content,
+.trading-tips-section .trading-tips-content {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* CRITICAL: Ensure identical horizontal width for all tip cards */
+.trading-alerts-section .tip-card,
+.trading-tips-section .tip-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.2rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  margin: 0 !important;
+  /* Allow height to grow with content */
+  height: auto;
+  min-height: auto;
+  flex-shrink: 0;
+}
+
+/* Ensure tip headers have consistent layout */
+.trading-alerts-section .tip-header,
+.trading-tips-section .tip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Ensure tip content areas match */
+.trading-alerts-section .tip-content,
+.trading-tips-section .tip-content {
+  width: 100%;
+  flex: 1;
+}
+
+/* Ensure consistent hover effects */
+.trading-alerts-section .tip-card:hover,
+.trading-tips-section .tip-card:hover {
+  background: #ffffff;
+  border-color: #3498db;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+  transform: translateY(-1px);
+}
+
+/* ===== MARKET MOVERS SIDE-BY-SIDE LAYOUT ===== */
+
+.market-movers-container {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.movers-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  
+  /* Responsive breakpoints */
+  @media (max-width: 1024px) {
+    gap: 1rem;
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.movers-panel {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.movers-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.gainers-panel {
+  border-left: 4px solid #22c55e;
+}
+
+.gainers-panel:hover {
+  border-left-color: #16a34a;
+  background: linear-gradient(135deg, #f0fdf4 0%, #f8f9fa 100%);
+}
+
+.losers-panel {
+  border-left: 4px solid #ef4444;
+}
+
+.losers-panel:hover {
+  border-left-color: #dc2626;
+  background: linear-gradient(135deg, #fef2f2 0%, #f8f9fa 100%);
+}
+
+/* Panel Headers */
+.panel-header-mini {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.panel-title-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-icon {
+  font-size: 1.1rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.panel-title-mini h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.panel-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gainers-badge {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.losers-badge {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Compact Tables */
+.table-container-mini {
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+  background: white;
+}
+
+.movers-table.compact {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.movers-table.compact th {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.movers-table.compact td {
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.movers-table.compact tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Row Hover Effects */
+.gainer-row:hover {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.05), transparent);
+  transform: scale(1.01);
+}
+
+.loser-row:hover {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.05), transparent);
+  transform: scale(1.01);
+}
+
+.gainer-row,
+.loser-row {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* Enhanced Change Highlighting */
+.change-highlight {
+  font-weight: 700 !important;
+  padding: 0.25rem 0.5rem !important;
+  border-radius: 6px !important;
+  text-align: center !important;
+}
+
+.gainers-panel .change-highlight.price-positive {
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0) !important;
+  color: #15803d !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+}
+
+.losers-panel .change-highlight.price-negative {
+  background: linear-gradient(135deg, #fef2f2, #fecaca) !important;
+  color: #dc2626 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Panel Footers */
+.panel-footer-mini {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Loading States */
+.loading-text {
+  color: #64748b !important;
+  font-style: italic;
+  text-align: center;
+  padding: 1.5rem !important;
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+  .movers-panel {
+    padding: 1rem;
+  }
+  
+  .panel-header-mini {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .movers-table.compact th,
+  .movers-table.compact td {
+    padding: 0.5rem 0.4rem;
+    font-size: 0.8rem;
+  }
+  
+  .panel-title-mini h3 {
+    font-size: 0.9rem;
+  }
+}
+
+/* Subtle animations for data updates */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.gainer-row,
+.loser-row {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.alert-details {
+  margin: 0.8rem 0;
+  padding: 0.8rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+}
+
+.alert-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.alert-detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.alert-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
+  flex: 1;
+}
+
+.alert-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: right;
+  flex: 1;
+  font-family: 'Segoe UI', monospace;
+}
+
+.alert-value.target-price {
+  color: #27ae60;
+}
+
+.alert-value.stoploss-price {
+  color: #e74c3c;
+}
+
+.tip-tag.buy {
+  background: rgba(39, 174, 96, 0.1);
+  color: #27ae60;
+}
+
+.tip-tag.sell {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
 /* Responsive Breakpoints for Two-Column Layout */
 @media (max-width: 1400px) {
   .two-column-container {

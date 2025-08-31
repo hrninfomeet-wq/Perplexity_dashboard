@@ -37,14 +37,6 @@ const FnOAnalysis = () => {
 
     return (
         <div className="fno-content">
-            <div className="section-header">
-                <h2>🎯 F&O Analysis (NIFTY)</h2>
-                <div className="section-info">
-                    <span className="update-indicator">Calculated options data</span>
-                    <span className="data-timestamp">Updated: {timestamp}</span>
-                </div>
-            </div>
-
             <div className="fno-metrics-grid">
                 <div className="metric-card">
                     <div className="metric-label">Put-Call Ratio</div>

@@ -37,14 +37,6 @@ const BTSTScanner = () => {
 
     return (
         <section className="section btst-section">
-            <div className="section-header">
-                <h2>🌙 BTST Scanner</h2>
-                <div className="section-info">
-                    <span className="update-indicator">Based on real F&O securities data</span>
-                    <span className="data-timestamp">Updated: {timestamp}</span>
-                </div>
-            </div>
-
             <div className="table-container">
                 <table className="movers-table">
                     <thead>
