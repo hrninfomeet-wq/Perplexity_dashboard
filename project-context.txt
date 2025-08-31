@@ -1,6 +1,55 @@
-Your objective is to develop a high-performance, intuitive stock scanner and trading recommendation application for trading platforms. The app would continuously monitor live market data via API, maintaining secure authentication without disruption. This app will be run locally on Windows PC and not deployed online. Focus on preserving all backend functionalities and calculations essential for generating accurate trading signals. Simplify the code for efficiency without compromising functionality. Prepare a clear, step-by-step plan to ensure a right-first-time implementation, enabling seamless resumption if the process is interrupted. Create a setpoint internally if your response includes multi-step operation. If additional data or clarification is needed, ask relevant questions.
+Your objective is to develop a high-performance, intuitive stock scanner and trading recommendation application for trading platforms. The app would continuously monitor live market data via API, maintaining secure authentication without disruption.
+This app will be run locally on Windows PC and not deployed online. Focus on preserving all backend functionalities and calculations essential for generating accurate trading signals. Simplify the code for efficiency without compromising functionality. 
+Prepare a clear, step-by-step plan to ensure a right-first-time implementation, enabling seamless resumption if the process is interrupted. Create a setpoint internally if your response includes multi-step operation. 
+If additional data or clarification is needed, ask relevant questions.
+
+PROJECT STARTUP INSTRUCTIONS:
+==================================
+PREFERRED METHOD: Use the automated batch file for reliable startup
+- Execute: .\start-project.bat (use .\ prefix in PowerShell)
+- IMPORTANT: Do NOT wait for batch file completion (runs indefinitely)
+- This handles: Node process cleanup, backend startup, frontend startup, browser opening
+- Servers will run in separate command windows for easy monitoring
+- Backend: http://localhost:5000
+- Frontend: http://localhost:3000 (Edge browser)
+
+COPILOT STARTUP PROCESS:
+1. Execute: .\start-project.bat (background, don't wait for completion)
+2. Wait 3-5 seconds for startup
+3. Verify: tasklist | findstr node.exe (check processes)
+4. Confirm: Project accessible at http://localhost:3000
+
+MANUAL STARTUP (if batch file unavailable):
+1. Kill existing processes: tasklist | findstr node.exe (note PIDs), then taskkill /PID [PID] /F
+2. Start backend: cd dashboard-backend; node index.js (background)
+3. Start frontend: cd frontend; npm run dev (background) 
+4. Open browser: start msedge http://localhost:5173/
+
+MONITORING BACKEND ERRORS:
+- Backend runs in separate command window when using batch file
+- Check console logs in backend terminal window for error messages
+- Use tasklist | findstr node.exe to verify processes are running
+- Use netstat -ano | findstr ":5000\|:3000" to check port usage
+
+PROJECT SHUTDOWN:
+- Use taskkill /F /IM node.exe to stop all Node processes
+- Or close individual command windows opened by batch file
+
+SUGGESTED COPILOT PROMPTS:
+==========================
+For starting project: "Start the Perplexity trading dashboard using start-project.bat and monitor for any backend errors"
+For closing project: "Close the project"
+For full startup sequence: "Run the complete project startup using the automated batch file: kill existing processes, start backend + frontend servers in separate windows, open Edge browser, and verify all services are running"
+
+COPILOT MONITORING CAPABILITIES:
+- Can verify Node.js processes are running (tasklist | findstr node.exe)
+- Can check port usage (netstat -ano | findstr ":5000\|:3000")  
+- Can restart servers if they crash
+- Can guide debugging but cannot read live logs from separate command windows
+- Can help interpret error logs if shared
 
 DO NOT:
 1. Never use command-line file copying when files are open in VS Code - always edit files directly using the replace_string_in_file tool to avoid data loss. Because you are working on CS code app, the original and temporary files are open in the VS code app window and it will not be copied because it is already opened. 
 2. Do not waste too much time or get stuck after executing a command. Find a way to check the status output of your command. You should come out of the command loop after some time.
-3. Run the commands you need for working on the project folder. 
+3. Run the commands you need for working on the project folder.
+4. Do not manually start servers when batch file is available - always use start-project.bat for consistency. 

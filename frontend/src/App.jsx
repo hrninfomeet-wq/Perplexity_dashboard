@@ -25,6 +25,14 @@ function App() {
     { symbol: 'VIX', name: 'INDIA VIX', price: 13.25, change: -0.15, change_pct: -1.12, support: null, resistance: null },
     { symbol: 'GOLDM', name: 'GOLD FUT', price: 72850.00, change: 45.50, change_pct: 0.06, support: 72500, resistance: 73200 }
   ]);
+  const [isIndicesCollapsed, setIsIndicesCollapsed] = useState(false);
+  const [isTradingAlertsCollapsed, setIsTradingAlertsCollapsed] = useState(false);
+  const [isFnOCollapsed, setIsFnOCollapsed] = useState(false);
+  const [isBTSTCollapsed, setIsBTSTCollapsed] = useState(false);
+  const [isScalpingCollapsed, setIsScalpingCollapsed] = useState(false);
+  const [isTopGainersCollapsed, setIsTopGainersCollapsed] = useState(false);
+  const [isTopLosersCollapsed, setIsTopLosersCollapsed] = useState(false);
+  const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
 
   // Fetch header indices data
   useEffect(() => {
@@ -179,136 +187,322 @@ function App() {
           </div>
         </header>
         
-        {/* Major Sectoral Indices - Two Rows of 5 Cards */}
-        <section className="sectoral-indices">
-          <div className="indices-grid">
-            <MajorIndicesStrip dataSource={dataSource} />
-          </div>
-        </section>
-
-        {/* Stock Trading Tips - Horizontal Scrollable Cards */}
-        <section className="trading-alerts">
-          <div className="section-header">
-            <h2 className="section-title">Stock Trading Tips</h2>
-          </div>
-          <div className="alerts-container">
-            {/* Sample Trading Alert Cards */}
-            <div className="alert-card buy-alert">
-              <div className="alert-header">
-                <span className="alert-type">BUY SIGNAL</span>
-                <span className="alert-time">2 min ago</span>
-              </div>
-              <div className="alert-content">
-                <h3>RELIANCE</h3>
-                <div className="alert-details">
-                  <div className="alert-detail">
-                    <span className="alert-detail-label">Price:</span>
-                    <span className="alert-detail-value">₹2,485.50</span>
-                  </div>
-                  <div className="alert-detail">
-                    <span className="alert-detail-label">Target:</span>
-                    <span className="alert-detail-value">₹2,520.00</span>
-                  </div>
-                  <div className="alert-detail">
-                    <span className="alert-detail-label">SL:</span>
-                    <span className="alert-detail-value">₹2,460.00</span>
-                  </div>
-                </div>
-              </div>
-              <div className="alert-actions">
-                <button className="trade-btn buy-btn">BUY</button>
-              </div>
+        {/* Major Sectoral Indices - Collapsible Section */}
+        <section className={`sectoral-indices ${isIndicesCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="collapsible-header" onClick={() => setIsIndicesCollapsed(!isIndicesCollapsed)}>
+            <div className="section-title-wrapper">
+              <h2 className="section-title">📊 Major Sectoral Indices</h2>
+              <span className="section-subtitle">Live market sector performance</span>
             </div>
-
-            <div className="alert-card sell-alert">
-              <div className="alert-header">
-                <span className="alert-type">SELL SIGNAL</span>
-                <span className="alert-time">5 min ago</span>
-              </div>
-              <div className="alert-content">
-                <h3>TCS</h3>
-                <div className="alert-details">
-                  <div className="alert-detail">
-                    <span className="alert-detail-label">Price:</span>
-                    <span className="alert-detail-value">₹4,125.80</span>
-                  </div>
-                  <div className="alert-detail">
-                    <span className="alert-detail-label">Target:</span>
-                    <span className="alert-detail-value">₹4,090.00</span>
-                  </div>
-                  <div className="alert-detail">
-                    <span className="alert-detail-label">SL:</span>
-                    <span className="alert-detail-value">₹4,150.00</span>
-                  </div>
-                </div>
-              </div>
-              <div className="alert-actions">
-                <button className="trade-btn sell-btn">SELL</button>
-              </div>
-            </div>
-
-            <div className="alert-card buy-alert">
-              <div className="alert-header">
-                <span className="alert-type">BREAKOUT</span>
-                <span className="alert-time">8 min ago</span>
-              </div>
-              <div className="alert-content">
-                <h3>HDFC BANK</h3>
-                <div className="alert-details">
-                  <div className="alert-detail">
-                    <span className="alert-detail-label">Price:</span>
-                    <span className="alert-detail-value">₹1,745.25</span>
-                  </div>
-                  <div className="alert-detail">
-                    <span className="alert-detail-label">Target:</span>
-                    <span className="alert-detail-value">₹1,780.00</span>
-                  </div>
-                  <div className="alert-detail">
-                    <span className="alert-detail-label">SL:</span>
-                    <span className="alert-detail-value">₹1,730.00</span>
-                  </div>
-                </div>
-              </div>
-              <div className="alert-actions">
-                <button className="trade-btn buy-btn">BUY</button>
-              </div>
+            <button className="collapse-toggle" aria-label={isIndicesCollapsed ? 'Expand indices' : 'Collapse indices'}>
+              <svg 
+                className={`chevron-icon ${isIndicesCollapsed ? 'collapsed' : 'expanded'}`}
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div className={`collapsible-content ${isIndicesCollapsed ? 'collapsed' : 'expanded'}`}>
+            <div className="indices-grid">
+              <MajorIndicesStrip dataSource={dataSource} />
             </div>
           </div>
         </section>
 
-        {/* FNO Analysis Section */}
-        <section className="fno-analysis-section">
-          <FnOAnalysis />
+        {/* Stock Trading Tips - Collapsible Section */}
+        <section className={`trading-alerts ${isTradingAlertsCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="collapsible-header" onClick={() => setIsTradingAlertsCollapsed(!isTradingAlertsCollapsed)}>
+            <div className="section-title-wrapper">
+              <h2 className="section-title">💡 Stock Trading Tips</h2>
+              <span className="section-subtitle">Live trading signals and recommendations</span>
+            </div>
+            <button className="collapse-toggle" aria-label={isTradingAlertsCollapsed ? 'Expand alerts' : 'Collapse alerts'}>
+              <svg 
+                className={`chevron-icon ${isTradingAlertsCollapsed ? 'collapsed' : 'expanded'}`}
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div className={`collapsible-content ${isTradingAlertsCollapsed ? 'collapsed' : 'expanded'}`}>
+            <div className="alerts-container">
+              {/* Sample Trading Alert Cards */}
+              <div className="alert-card buy-alert">
+                <div className="alert-header">
+                  <span className="alert-type">BUY SIGNAL</span>
+                  <span className="alert-time">2 min ago</span>
+                </div>
+                <div className="alert-content">
+                  <h3>RELIANCE</h3>
+                  <div className="alert-details">
+                    <div className="alert-detail">
+                      <span className="alert-detail-label">Price:</span>
+                      <span className="alert-detail-value">₹2,485.50</span>
+                    </div>
+                    <div className="alert-detail">
+                      <span className="alert-detail-label">Target:</span>
+                      <span className="alert-detail-value">₹2,520.00</span>
+                    </div>
+                    <div className="alert-detail">
+                      <span className="alert-detail-label">SL:</span>
+                      <span className="alert-detail-value">₹2,460.00</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="alert-actions">
+                  <button className="trade-btn buy-btn">BUY</button>
+                </div>
+              </div>
+
+              <div className="alert-card sell-alert">
+                <div className="alert-header">
+                  <span className="alert-type">SELL SIGNAL</span>
+                  <span className="alert-time">5 min ago</span>
+                </div>
+                <div className="alert-content">
+                  <h3>TCS</h3>
+                  <div className="alert-details">
+                    <div className="alert-detail">
+                      <span className="alert-detail-label">Price:</span>
+                      <span className="alert-detail-value">₹4,125.80</span>
+                    </div>
+                    <div className="alert-detail">
+                      <span className="alert-detail-label">Target:</span>
+                      <span className="alert-detail-value">₹4,090.00</span>
+                    </div>
+                    <div className="alert-detail">
+                      <span className="alert-detail-label">SL:</span>
+                      <span className="alert-detail-value">₹4,150.00</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="alert-actions">
+                  <button className="trade-btn sell-btn">SELL</button>
+                </div>
+              </div>
+
+              <div className="alert-card buy-alert">
+                <div className="alert-header">
+                  <span className="alert-type">BREAKOUT</span>
+                  <span className="alert-time">8 min ago</span>
+                </div>
+                <div className="alert-content">
+                  <h3>HDFC BANK</h3>
+                  <div className="alert-details">
+                    <div className="alert-detail">
+                      <span className="alert-detail-label">Price:</span>
+                      <span className="alert-detail-value">₹1,745.25</span>
+                    </div>
+                    <div className="alert-detail">
+                      <span className="alert-detail-label">Target:</span>
+                      <span className="alert-detail-value">₹1,780.00</span>
+                    </div>
+                    <div className="alert-detail">
+                      <span className="alert-detail-label">SL:</span>
+                      <span className="alert-detail-value">₹1,730.00</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="alert-actions">
+                  <button className="trade-btn buy-btn">BUY</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
-        {/* BTST Scanner Section */}
-        <section className="btst-scanner-section">
-          <BTSTScanner />
+        {/* F&O Analysis - Collapsible Section */}
+        <section className={`fno-analysis-section ${isFnOCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="collapsible-header" onClick={() => setIsFnOCollapsed(!isFnOCollapsed)}>
+            <div className="section-title-wrapper">
+              <h2 className="section-title">🎯 F&O Analysis (NIFTY)</h2>
+              <span className="section-subtitle">Options data and derivatives insights</span>
+            </div>
+            <button className="collapse-toggle" aria-label={isFnOCollapsed ? 'Expand F&O analysis' : 'Collapse F&O analysis'}>
+              <svg 
+                className={`chevron-icon ${isFnOCollapsed ? 'collapsed' : 'expanded'}`}
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div className={`collapsible-content ${isFnOCollapsed ? 'collapsed' : 'expanded'}`}>
+            <FnOAnalysis />
+          </div>
         </section>
 
-        {/* Scalping Opportunities Section */}
-        <section className="scalping-opportunities-section">
-          <ScalpingOpportunities />
+        {/* BTST Scanner - Collapsible Section */}
+        <section className={`btst-scanner-section ${isBTSTCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="collapsible-header" onClick={() => setIsBTSTCollapsed(!isBTSTCollapsed)}>
+            <div className="section-title-wrapper">
+              <h2 className="section-title">🌙 BTST Scanner</h2>
+              <span className="section-subtitle">Buy Today Sell Tomorrow opportunities</span>
+            </div>
+            <button className="collapse-toggle" aria-label={isBTSTCollapsed ? 'Expand BTST scanner' : 'Collapse BTST scanner'}>
+              <svg 
+                className={`chevron-icon ${isBTSTCollapsed ? 'collapsed' : 'expanded'}`}
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div className={`collapsible-content ${isBTSTCollapsed ? 'collapsed' : 'expanded'}`}>
+            <BTSTScanner />
+          </div>
         </section>
 
-        {/* Stock Trading Tips Section */}
-        <section className="trading-alerts-section">
-          <TradingAlertsSection />
+        {/* Scalping Opportunities - Collapsible Section */}
+        <section className={`scalping-opportunities-section ${isScalpingCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="collapsible-header" onClick={() => setIsScalpingCollapsed(!isScalpingCollapsed)}>
+            <div className="section-title-wrapper">
+              <h2 className="section-title">⚡ Scalping Opportunities</h2>
+              <span className="section-subtitle">High-frequency trading signals</span>
+            </div>
+            <button className="collapse-toggle" aria-label={isScalpingCollapsed ? 'Expand scalping opportunities' : 'Collapse scalping opportunities'}>
+              <svg 
+                className={`chevron-icon ${isScalpingCollapsed ? 'collapsed' : 'expanded'}`}
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div className={`collapsible-content ${isScalpingCollapsed ? 'collapsed' : 'expanded'}`}>
+            <ScalpingOpportunities />
+          </div>
         </section>
 
-        {/* Top Gainers Section */}
-        <section className="top-gainers-main-section">
-          <TopGainersSection />
+        {/* Trading Alerts - Collapsible Section */}
+        <section className={`trading-alerts-section ${isTradingAlertsCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="collapsible-header" onClick={() => setIsTradingAlertsCollapsed(!isTradingAlertsCollapsed)}>
+            <div className="section-title-wrapper">
+              <h2 className="section-title">🚨 Trading Alerts</h2>
+              <span className="section-subtitle">Real-time market notifications</span>
+            </div>
+            <button className="collapse-toggle" aria-label={isTradingAlertsCollapsed ? 'Expand trading alerts' : 'Collapse trading alerts'}>
+              <svg 
+                className={`chevron-icon ${isTradingAlertsCollapsed ? 'collapsed' : 'expanded'}`}
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div className={`collapsible-content ${isTradingAlertsCollapsed ? 'collapsed' : 'expanded'}`}>
+            <TradingAlertsSection />
+          </div>
         </section>
 
-        {/* Top Losers Section */}
-        <section className="top-losers-main-section">
-          <TopLosersSection />
+        {/* Top Gainers - Collapsible Section */}
+        <section className={`top-gainers-main-section ${isTopGainersCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="collapsible-header" onClick={() => setIsTopGainersCollapsed(!isTopGainersCollapsed)}>
+            <div className="section-title-wrapper">
+              <h2 className="section-title">📈 Top Gainers</h2>
+              <span className="section-subtitle">Best performing stocks today</span>
+            </div>
+            <button className="collapse-toggle" aria-label={isTopGainersCollapsed ? 'Expand top gainers' : 'Collapse top gainers'}>
+              <svg 
+                className={`chevron-icon ${isTopGainersCollapsed ? 'collapsed' : 'expanded'}`}
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div className={`collapsible-content ${isTopGainersCollapsed ? 'collapsed' : 'expanded'}`}>
+            <TopGainersSection />
+          </div>
         </section>
 
-        {/* Settings Section */}
-        <section className="settings-main-section">
-          <SettingsSection />
+        {/* Top Losers - Collapsible Section */}
+        <section className={`top-losers-main-section ${isTopLosersCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="collapsible-header" onClick={() => setIsTopLosersCollapsed(!isTopLosersCollapsed)}>
+            <div className="section-title-wrapper">
+              <h2 className="section-title">📉 Top Losers</h2>
+              <span className="section-subtitle">Worst performing stocks today</span>
+            </div>
+            <button className="collapse-toggle" aria-label={isTopLosersCollapsed ? 'Expand top losers' : 'Collapse top losers'}>
+              <svg 
+                className={`chevron-icon ${isTopLosersCollapsed ? 'collapsed' : 'expanded'}`}
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div className={`collapsible-content ${isTopLosersCollapsed ? 'collapsed' : 'expanded'}`}>
+            <TopLosersSection />
+          </div>
+        </section>
+
+        {/* Settings - Collapsible Section */}
+        <section className={`settings-main-section ${isSettingsCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="collapsible-header" onClick={() => setIsSettingsCollapsed(!isSettingsCollapsed)}>
+            <div className="section-title-wrapper">
+              <h2 className="section-title">⚙️ Settings</h2>
+              <span className="section-subtitle">Dashboard configuration</span>
+            </div>
+            <button className="collapse-toggle" aria-label={isSettingsCollapsed ? 'Expand settings' : 'Collapse settings'}>
+              <svg 
+                className={`chevron-icon ${isSettingsCollapsed ? 'collapsed' : 'expanded'}`}
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div className={`collapsible-content ${isSettingsCollapsed ? 'collapsed' : 'expanded'}`}>
+            <SettingsSection />
+          </div>
         </section>
       </div>
     </SettingsProvider>

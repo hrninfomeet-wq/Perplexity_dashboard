@@ -471,14 +471,112 @@ body {
   color: #ecf0f1;
 }
 
-/* 2. Major Sectoral Indices - Two Rows of 5 Cards */
+/* 2. Major Sectoral Indices - Collapsible Section */
 .sectoral-indices {
-  padding: 2rem;
-  background: white;
   margin: 1rem 2rem;
+  background: white;
   border-radius: 15px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Collapsible Header */
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #e9ecef;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.collapsible-header:hover {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+}
+
+.section-title-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-subtitle {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.collapse-toggle {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.collapse-toggle:hover {
+  background: rgba(52, 152, 219, 0.2);
+  transform: scale(1.1);
+}
+
+.chevron-icon {
+  transition: transform 0.3s ease;
+  color: #3498db;
+}
+
+.chevron-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+.chevron-icon.expanded {
+  transform: rotate(0deg);
+}
+
+/* Collapsible Content */
+.collapsible-content {
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsible-content.expanded {
+  max-height: 800px;
+  padding: 2rem;
+  opacity: 1;
+}
+
+.collapsible-content.collapsed {
+  max-height: 0;
+  padding: 0 2rem;
+  opacity: 0;
+}
+
+/* Sectoral Indices in Collapsed State */
+.sectoral-indices.collapsed {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.sectoral-indices.collapsed .collapsible-header {
+  border-bottom: none;
 }
 
 .indices-grid {
