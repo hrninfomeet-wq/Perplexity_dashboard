@@ -37,13 +37,13 @@
 
 ```
 Frontend (React 19.1.1)    Backend (Node.js/Express)    Data Sources
-┌─────────────────────┐    ┌──────────────────────┐    ┌──────────────┐
-│ Collapsible Sections│    │ Multi-Source Controller│    │ NSE Direct   │
-│ Market Movers       │◄──►│ Intelligent Caching   │◄──►│ (FREE)       │
-│ F&O Analysis        │    │ Circuit Breaker       │    ├──────────────┤
-│ BTST Scanner        │    │ Auto-Authentication   │    │ Flattrade    │
-│ Trading Alerts      │    │ Error Recovery        │    │ (Paid Backup)│
-└─────────────────────┘    └──────────────────────┘    └──────────────┘
+┌─────────────────────┐    ┌────────────────────────┐      ┌──────────────┐
+│ Collapsible Sections│    │ Multi-Source Controller│      │ NSE Direct   │
+│ Market Movers       │◄──►│ Intelligent Caching    │  ◄──►│ (FREE)       │
+│ F&O Analysis        │    │ Circuit Breaker        │      ├──────────────┤
+│ BTST Scanner        │    │ Auto-Authentication    │      │ Flattrade    │
+│ Trading Alerts      │    │ Error Recovery         │      │ (Paid Backup)│
+└─────────────────────┘    └────────────────────────┘      └──────────────┘
 ```
 
 ## Performance
