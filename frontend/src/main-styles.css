@@ -1,0 +1,114 @@
+/* ========================================
+   NSE Trading Dashboard - Main Styles
+   Consolidated stylesheet for better maintenance
+   ======================================== */
+
+/* Import base styles from existing files */
+@import './style.css';
+@import './dashboard-styles.css';
+@import './trading-desk-styles.css';
+@import './responsive-layout.css';
+
+/* Additional consolidated styles from professional-styles.css */
+
+/* Dashboard Container */
+.dashboard-container {
+  min-height: 100vh;
+  background: var(--color-background, #f8fafc);
+  padding: 0;
+  margin: 0;
+}
+
+/* Clean Header Enhancements */
+.clean-header {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.clean-header .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.clean-header .dashboard-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.clean-header .datetime-display {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.clean-header .current-date,
+.clean-header .current-time {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.clean-header .data-source-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Professional enhancements */
+.professional-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.professional-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.professional-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Utility classes */
+.text-success { color: #16a34a; }
+.text-danger { color: #dc2626; }
+.text-warning { color: #ca8a04; }
+.text-info { color: #0284c7; }
+
+.bg-success-light { background-color: #f0fdf4; }
+.bg-danger-light { background-color: #fef2f2; }
+.bg-warning-light { background-color: #fffbeb; }
+.bg-info-light { background-color: #f0f9ff; }
+
+/* Animation utilities */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in {
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

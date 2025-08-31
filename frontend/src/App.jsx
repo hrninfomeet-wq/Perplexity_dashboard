@@ -11,10 +11,7 @@ import SettingsSection from './components/SettingsSection';
 import TopGainersSection from './components/TopGainersSection';
 import SearchScripSection from './components/SearchScripSection';
 import { SettingsProvider } from './contexts/SettingsContext';
-import './style.css';
-import './dashboard-styles.css';
-import './trading-desk-styles.css';
-import './responsive-layout.css';
+import './main-styles.css';
 
 function App() {
   const [dataSource, setDataSource] = useState('Mock');
