@@ -9,7 +9,8 @@ const {
     getSectorPerformance,
     getFnOAnalysis,
     getBTSTData,
-    getScalpingData
+    getScalpingData,
+    getMarketTrend
 } = require('../controllers/marketDataController');
 
 // Define market data routes
@@ -21,5 +22,6 @@ router.get('/sectors', getSectorPerformance);
 router.get('/fno-analysis', getFnOAnalysis);
 router.get('/btst', getBTSTData);
 router.get('/scalping', getScalpingData);
+router.get('/trend', getMarketTrend);
 
 module.exports = router;

@@ -190,9 +190,382 @@ html, body {
 .datetime-display {
   display: flex;
   gap: 15px;
-  margin-top: 4px;
+  margin-top: 8px;
   font-size: 12px;
   color: #424242 !important;
+}
+
+/* ========== SOPHISTICATED MARKET SENTIMENT ORB ========== */
+.market-sentiment-orb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 8px 0;
+  padding: 12px 18px;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.market-sentiment-orb:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.market-sentiment-orb::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.1;
+  border-radius: 50px;
+  transition: opacity 0.3s ease;
+}
+
+/* Gradient Backgrounds with Sophisticated Glows */
+.gradient-bullish {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.15) 0%, 
+    rgba(34, 197, 94, 0.08) 50%, 
+    rgba(16, 185, 129, 0.15) 100%);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(16, 185, 129, 0.1);
+}
+
+.gradient-bearish {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.15) 0%, 
+    rgba(220, 38, 38, 0.08) 50%, 
+    rgba(239, 68, 68, 0.15) 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(239, 68, 68, 0.1);
+}
+
+.gradient-neutral {
+  background: linear-gradient(135deg, 
+    rgba(107, 114, 128, 0.15) 0%, 
+    rgba(75, 85, 99, 0.08) 50%, 
+    rgba(107, 114, 128, 0.15) 100%);
+  border-color: rgba(107, 114, 128, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(107, 114, 128, 0.08);
+}
+
+.gradient-loading {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.15) 0%, 
+    rgba(37, 99, 235, 0.08) 50%, 
+    rgba(59, 130, 246, 0.15) 100%);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+/* Trend Core - The Orb Center */
+.trend-core {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+}
+
+.trend-symbol {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.gradient-bullish .trend-symbol {
+  color: #10b981;
+  text-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.gradient-bearish .trend-symbol {
+  color: #ef4444;
+  text-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.gradient-neutral .trend-symbol {
+  color: #6b7280;
+  text-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+}
+
+.gradient-loading .trend-symbol {
+  color: #3b82f6;
+  text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Trend Pulse Animation */
+.trend-pulse {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  z-index: -1;
+}
+
+.pulse-bullish {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+}
+
+.pulse-bearish {
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.4) 0%, transparent 70%);
+}
+
+.pulse-neutral {
+  background: radial-gradient(circle, rgba(107, 114, 128, 0.4) 0%, transparent 70%);
+}
+
+.pulse-loading {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* Trend Details */
+.trend-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.trend-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #1f2937;
+}
+
+.trend-strength {
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #6b7280;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.trend-metrics {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.trend-change {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.gradient-bullish .trend-change {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.gradient-bearish .trend-change {
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.trend-breadth {
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .market-sentiment-orb {
+    padding: 8px 12px;
+    gap: 12px;
+  }
+  
+  .trend-core {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .trend-symbol {
+    font-size: 14px;
+  }
+  
+  .trend-details {
+    min-width: 100px;
+  }
+  
+  .trend-status {
+    font-size: 11px;
+  }
+  
+  .trend-pulse {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Enhanced Hover Effects */
+.market-sentiment-orb:hover .trend-core {
+  transform: scale(1.05);
+  box-shadow: 
+    0 6px 25px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.gradient-bullish:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 30px rgba(16, 185, 129, 0.2);
+}
+
+.gradient-bearish:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 30px rgba(239, 68, 68, 0.2);
+}
+
+.gradient-neutral:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 30px rgba(107, 114, 128, 0.15);
+}
+
+.gradient-loading:hover {
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 30px rgba(59, 130, 246, 0.2);
+}
+
+.market-sentiment-orb:hover .trend-symbol {
+  transform: scale(1.1);
+}
+
+.market-sentiment-orb:hover .trend-pulse {
+  animation-duration: 1.5s;
+}
+
+/* Shimmer Effect for Premium Feel */
+.market-sentiment-orb::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  border-radius: 50px;
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Smooth state transitions */
+.market-sentiment-orb,
+.trend-core,
+.trend-symbol,
+.trend-change {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced focus states for accessibility */
+.market-sentiment-orb:focus-within {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+/* Old market trend display - keeping for backward compatibility */
+.market-trend-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.trend-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.trend-text {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .current-date, .current-time {

@@ -6,6 +6,83 @@ const { NSE_INDEX_TOKENS, FO_SECURITIES } = require('../utils/constants');
 // In-memory cache for calculations
 const marketCache = new Map();
 
+// ===== MARKET TREND CALCULATION =====
+const calculateMarketTrend = (indicesData, gainersData, losersData) => {
+    try {
+        // Calculate trend based on major indices
+        const majorIndices = ['NIFTY', 'SENSEX', 'BANKNIFTY', 'FINNIFTY'];
+        let positiveIndices = 0;
+        let totalIndices = 0;
+        let avgChange = 0;
+
+        // Analyze major indices performance
+        if (indicesData && indicesData.length > 0) {
+            const majorIndicesData = indicesData.filter(index => 
+                majorIndices.some(major => index.name && index.name.includes(major))
+            );
+
+            majorIndicesData.forEach(index => {
+                totalIndices++;
+                const change = parseFloat(index.change) || 0;
+                avgChange += change;
+                if (change > 0) positiveIndices++;
+            });
+
+            avgChange = totalIndices > 0 ? avgChange / totalIndices : 0;
+        }
+
+        // Analyze market breadth (gainers vs losers)
+        const gainersCount = gainersData ? gainersData.length : 0;
+        const losersCount = losersData ? losersData.length : 0;
+        const breadthRatio = (gainersCount + losersCount) > 0 ? 
+            gainersCount / (gainersCount + losersCount) : 0.5;
+
+        // Calculate overall market sentiment
+        let trendStatus = 'NEUTRAL';
+        let trendStrength = 'MODERATE';
+        let trendColor = 'gray';
+
+        // Determine trend based on multiple factors
+        if (avgChange > 0.5 && breadthRatio > 0.6 && positiveIndices >= 3) {
+            trendStatus = 'BULLISH';
+            trendStrength = avgChange > 1.0 ? 'STRONG' : 'MODERATE';
+            trendColor = 'green';
+        } else if (avgChange < -0.5 && breadthRatio < 0.4 && positiveIndices <= 1) {
+            trendStatus = 'BEARISH';
+            trendStrength = avgChange < -1.0 ? 'STRONG' : 'MODERATE';
+            trendColor = 'red';
+        } else {
+            trendStatus = 'NEUTRAL';
+            trendStrength = 'MODERATE';
+            trendColor = 'gray';
+        }
+
+        return {
+            status: trendStatus,
+            strength: trendStrength,
+            color: trendColor,
+            avgChange: parseFloat(avgChange.toFixed(2)),
+            breadthRatio: parseFloat((breadthRatio * 100).toFixed(1)),
+            positiveIndices,
+            totalIndices,
+            timestamp: new Date().toISOString()
+        };
+
+    } catch (error) {
+        console.error('Error calculating market trend:', error);
+        return {
+            status: 'NEUTRAL',
+            strength: 'MODERATE',
+            color: 'gray',
+            avgChange: 0,
+            breadthRatio: 50.0,
+            positiveIndices: 2,
+            totalIndices: 4,
+            timestamp: new Date().toISOString()
+        };
+    }
+};
+
 // ===== REAL F&O ANALYSIS WITH ACTUAL CALCULATIONS =====
 class AdvancedFOAnalysis {
     constructor() {
@@ -826,6 +903,63 @@ const getScalpingData = async (req, res) => {
     }
 };
 
+// ===== MARKET TREND ENDPOINT =====
+const getMarketTrend = async (req, res) => {
+    try {
+        console.log('📊 Fetching market trend data...');
+
+        // Check cache first (cache for 2 minutes)
+        const cacheKey = 'market_trend';
+        const cachedData = marketCache.get(cacheKey);
+        if (cachedData && Date.now() - cachedData.timestamp < 120000) {
+            console.log('🔄 Returning cached market trend');
+            return res.json(cachedData.data);
+        }
+
+        // Fetch required data concurrently
+        const [indicesData, gainersData, losersData] = await Promise.allSettled([
+            nseDataService.getIndicesData(),
+            nseDataService.getGainersData(), 
+            nseDataService.getLosersData()
+        ]);
+
+        // Extract successful results
+        const indices = indicesData.status === 'fulfilled' ? indicesData.value : [];
+        const gainers = gainersData.status === 'fulfilled' ? gainersData.value : [];
+        const losers = losersData.status === 'fulfilled' ? losersData.value : [];
+
+        // Calculate market trend
+        const trendData = calculateMarketTrend(indices, gainers, losers);
+
+        // Cache the result
+        marketCache.set(cacheKey, {
+            data: trendData,
+            timestamp: Date.now()
+        });
+
+        console.log(`📈 Market trend calculated: ${trendData.status} (${trendData.strength})`);
+        res.json(trendData);
+
+    } catch (error) {
+        console.error('Market trend error:', error.message);
+        
+        // Return neutral trend on error
+        const fallbackTrend = {
+            status: 'NEUTRAL',
+            strength: 'MODERATE',
+            color: 'gray',
+            avgChange: 0,
+            breadthRatio: 50.0,
+            positiveIndices: 2,
+            totalIndices: 4,
+            timestamp: new Date().toISOString(),
+            error: 'Data temporarily unavailable'
+        };
+        
+        res.json(fallbackTrend);
+    }
+};
+
 module.exports = {
     getIndices,
     getGainers,
@@ -834,5 +968,6 @@ module.exports = {
     getSectorPerformance,
     getFnOAnalysis,
     getBTSTData,
-    getScalpingData
+    getScalpingData,
+    getMarketTrend
 };

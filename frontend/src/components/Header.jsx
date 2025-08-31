@@ -4,6 +4,15 @@ import React, { useState, useEffect } from 'react';
 const Header = ({ dataSource, onDataSourceChange, indices = [] }) => {
     const [currentDate, setCurrentDate] = useState('');
     const [currentTime, setCurrentTime] = useState('');
+    const [marketTrend, setMarketTrend] = useState({
+        status: 'LOADING',
+        strength: 'MODERATE',
+        color: 'gray',
+        avgChange: 0,
+        breadthRatio: 50.0,
+        positiveIndices: 0,
+        totalIndices: 0
+    });
 
     useEffect(() => {
         const updateDateTime = () => {
@@ -18,6 +27,70 @@ const Header = ({ dataSource, onDataSourceChange, indices = [] }) => {
         return () => clearInterval(timer);
     }, []);
 
+    // Calculate market trend based on indices
+    useEffect(() => {
+        if (indices && indices.length > 0) {
+            const positiveCount = indices.filter(index => parseFloat(index.change_pct || 0) > 0).length;
+            const totalIndices = indices.length;
+            const avgChange = indices.reduce((sum, index) => sum + parseFloat(index.change_pct || 0), 0) / totalIndices;
+            
+            let status = 'NEUTRAL';
+            let color = 'gray';
+            let strength = 'MODERATE';
+            
+            // Determine trend based on average change and positive ratio
+            const positiveRatio = positiveCount / totalIndices;
+            
+            if (avgChange > 0.3 && positiveRatio >= 0.6) {
+                status = 'BULLISH';
+                color = 'green';
+                strength = avgChange > 1.0 ? 'STRONG' : 'MODERATE';
+            } else if (avgChange < -0.3 && positiveRatio <= 0.4) {
+                status = 'BEARISH';
+                color = 'red';
+                strength = avgChange < -1.0 ? 'STRONG' : 'MODERATE';
+            }
+            
+            setMarketTrend({
+                status,
+                strength,
+                color,
+                avgChange: parseFloat(avgChange.toFixed(2)),
+                breadthRatio: parseFloat((positiveRatio * 100).toFixed(1)),
+                positiveIndices: positiveCount,
+                totalIndices
+            });
+        }
+    }, [indices]);
+
+    // Format sophisticated trend display
+    const getTrendIcon = (status) => {
+        switch (status) {
+            case 'BULLISH': return '▲';
+            case 'BEARISH': return '▼';
+            case 'NEUTRAL': return '■';
+            default: return '●';
+        }
+    };
+
+    const getTrendPulse = (status) => {
+        switch (status) {
+            case 'BULLISH': return 'pulse-bullish';
+            case 'BEARISH': return 'pulse-bearish';
+            case 'NEUTRAL': return 'pulse-neutral';
+            default: return 'pulse-loading';
+        }
+    };
+
+    const getTrendGradient = (status) => {
+        switch (status) {
+            case 'BULLISH': return 'gradient-bullish';
+            case 'BEARISH': return 'gradient-bearish';
+            case 'NEUTRAL': return 'gradient-neutral';
+            default: return 'gradient-loading';
+        }
+    };
+
     const handleToggle = () => {
         const newSource = dataSource === 'Mock' ? 'Live' : 'Mock';
         onDataSourceChange(newSource);
@@ -27,9 +100,30 @@ const Header = ({ dataSource, onDataSourceChange, indices = [] }) => {
         <header className="clean-header">
             {/* Unified Header Indices Strip with Title and Controls */}
             <div className="header-indices-strip">
-                {/* Header Left - Title and DateTime */}
+                {/* Header Left - Title and Market Trend */}
                 <div className="header-left">
                     <h1 className="dashboard-title">NSE Trading Dashboard</h1>
+                    
+                    {/* Sophisticated Market Trend Indicator */}
+                    <div className={`market-sentiment-orb ${getTrendGradient(marketTrend.status)}`}>
+                        <div className={`trend-pulse ${getTrendPulse(marketTrend.status)}`}></div>
+                        <div className="trend-core">
+                            <div className="trend-symbol">{getTrendIcon(marketTrend.status)}</div>
+                        </div>
+                        <div className="trend-details">
+                            <div className="trend-status">
+                                {marketTrend.status === 'LOADING' ? 'ANALYZING' : marketTrend.status}
+                                <span className="trend-strength">{marketTrend.strength}</span>
+                            </div>
+                            <div className="trend-metrics">
+                                <span className="trend-change">
+                                    {marketTrend.avgChange > 0 ? '+' : ''}{marketTrend.avgChange}%
+                                </span>
+                                <span className="trend-breadth">{marketTrend.breadthRatio}% ↑</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div className="datetime-display">
                         <span className="current-date">{currentDate}</span>
                         <span className="current-time">{currentTime}</span>
