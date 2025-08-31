@@ -35,7 +35,7 @@ const TopLosersSection = () => {
     };
 
     return (
-        <section className="top-losers-section">
+        <div className="top-losers-content">
             <div className="section-header">
                 <h2>📉 Top Losers (F&O Securities Only)</h2>
                 <div className="section-info">
@@ -67,7 +67,7 @@ const TopLosersSection = () => {
                     </tbody>
                 </table>
             </div>
-        </section>
+        </div>
     );
 };
 

@@ -35,7 +35,7 @@ const TopGainersSection = () => {
     };
 
     return (
-        <section className="top-gainers-section">
+        <div className="top-gainers-content">
             <div className="section-header">
                 <h2>🚀 Top Gainers (F&O Securities Only)</h2>
                 <div className="section-info">
@@ -67,7 +67,7 @@ const TopGainersSection = () => {
                     </tbody>
                 </table>
             </div>
-        </section>
+        </div>
     );
 };
 

@@ -126,7 +126,7 @@ const MajorIndicesStrip = ({ dataSource }) => {
     };
 
     return (
-        <section className="major-indices-strip">
+        <div className="major-indices-content">
             <div className="indices-container">
                 {isInitialLoading ? (
                     <div className="major-index loading">
@@ -150,20 +150,8 @@ const MajorIndicesStrip = ({ dataSource }) => {
                         </div>
                     ))
                 )}
-                
-                {/* Data source indicator */}
-                <div className="indices-meta">
-                    <div className="data-source-info">
-                        <span className={`source-badge ${dataSource.toLowerCase()}`}>
-                            {dataSource} Data
-                        </span>
-                        <span className="update-time">
-                            Updated: {timestamp} {isRefreshing && '🔄'}
-                        </span>
-                    </div>
-                </div>
             </div>
-        </section>
+        </div>
     );
 };
 

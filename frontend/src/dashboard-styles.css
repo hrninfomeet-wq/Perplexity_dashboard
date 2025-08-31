@@ -28,13 +28,14 @@ html, body {
 /* Independent Section Layout */
 .sectoral-indices,
 .trading-alerts,
+.major-indices-section,
 .fno-analysis-section,
 .scalping-opportunities-section,
 .trading-alerts-section,
 .btst-scanner-section,
 .settings-main-section,
-.top-gainers-main-section,
-.top-losers-main-section {
+.top-gainers-section,
+.top-losers-section {
   margin: 0 1.5rem;
   padding: 1.5rem;
   background: white;
@@ -49,27 +50,28 @@ html, body {
 
 .sectoral-indices:hover,
 .trading-alerts:hover,
+.major-indices-section:hover,
 .fno-analysis-section:hover,
 .scalping-opportunities-section:hover,
 .trading-alerts-section:hover,
 .settings-main-section:hover,
-.top-gainers-main-section:hover,
-.top-losers-main-section:hover,
+.top-gainers-section:hover,
+.top-losers-section:hover,
 .btst-scanner-section:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Table Section Specific Fixes */
-.top-gainers-main-section .table-container,
-.top-losers-main-section .table-container,
+.top-gainers-content .table-container,
+.top-losers-content .table-container,
 .btst-scanner-section .table-container {
   overflow-x: auto;
   width: 100%;
   max-width: 100%;
 }
 
-.top-gainers-main-section .movers-table,
-.top-losers-main-section .movers-table,
+.top-gainers-content .movers-table,
+.top-losers-content .movers-table,
 .btst-scanner-section .movers-table {
   min-width: 300px; /* Reduced from 800px to prevent overflow */
   width: 100%;
@@ -81,10 +83,10 @@ html, body {
   min-width: 400px; /* Minimum width for readability */
 }
 
-.top-gainers-main-section .movers-table th,
-.top-gainers-main-section .movers-table td,
-.top-losers-main-section .movers-table th,
-.top-losers-main-section .movers-table td,
+.top-gainers-content .movers-table th,
+.top-gainers-content .movers-table td,
+.top-losers-content .movers-table th,
+.top-losers-content .movers-table td,
 .btst-scanner-section .movers-table th,
 .btst-scanner-section .movers-table td {
   padding: 8px 12px;
@@ -94,24 +96,24 @@ html, body {
 }
 
 /* Responsive column widths for movers table */
-.top-gainers-main-section .movers-table th:first-child,
-.top-gainers-main-section .movers-table td:first-child,
-.top-losers-main-section .movers-table th:first-child,
-.top-losers-main-section .movers-table td:first-child {
+.top-gainers-content .movers-table th:first-child,
+.top-gainers-content .movers-table td:first-child,
+.top-losers-content .movers-table th:first-child,
+.top-losers-content .movers-table td:first-child {
   width: 40%; /* Stock name column */
 }
 
-.top-gainers-main-section .movers-table th:nth-child(2),
-.top-gainers-main-section .movers-table td:nth-child(2),
-.top-losers-main-section .movers-table th:nth-child(2),
-.top-losers-main-section .movers-table td:nth-child(2) {
+.top-gainers-content .movers-table th:nth-child(2),
+.top-gainers-content .movers-table td:nth-child(2),
+.top-losers-content .movers-table th:nth-child(2),
+.top-losers-content .movers-table td:nth-child(2) {
   width: 30%; /* Price column */
 }
 
-.top-gainers-main-section .movers-table th:nth-child(3),
-.top-gainers-main-section .movers-table td:nth-child(3),
-.top-losers-main-section .movers-table th:nth-child(3),
-.top-losers-main-section .movers-table td:nth-child(3) {
+.top-gainers-content .movers-table th:nth-child(3),
+.top-gainers-content .movers-table td:nth-child(3),
+.top-losers-content .movers-table th:nth-child(3),
+.top-losers-content .movers-table td:nth-child(3) {
   width: 30%; /* Change % column */
 }
 
@@ -146,69 +148,175 @@ html, body {
   width: 10%; /* BTST Score column */
 }
 
-/* Clean Header - Fixed Height */
+/* Clean Header Section */
 .clean-header {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 1rem 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0; /* Prevent header from shrinking */
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-bottom: 1px solid #90caf9;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: relative;
 }
 
-.clean-header .header-content {
+/* Header Indices Strip - Unified Layout */
+.header-indices-strip {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-bottom: 1px solid #90caf9;
+  gap: 20px;
+  flex-wrap: wrap;
+  min-height: 80px;
 }
 
-.clean-header .dashboard-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1e293b;
+/* Header Left - Title and DateTime */
+.header-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 250px;
+  flex-shrink: 0;
+}
+
+.dashboard-title {
+  color: #1976d2 !important;
+  font-size: 24px;
+  font-weight: bold;
   margin: 0;
+  line-height: 1.2;
 }
 
-.clean-header .datetime-display {
+.datetime-display {
   display: flex;
-  gap: 1rem;
-  margin-top: 0.25rem;
+  gap: 15px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #424242 !important;
 }
 
-.clean-header .current-date,
-.clean-header .current-time {
-  font-size: 0.875rem;
-  color: #64748b;
-}
-
-.clean-header .data-source-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.clean-header .toggle-label {
-  font-size: 0.875rem;
-  color: #475569;
+.current-date, .current-time {
+  color: #424242 !important;
   font-weight: 500;
 }
 
-.clean-header .toggle-switch {
-  width: 48px;
+/* Indices Container - Center Section */
+.indices-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+/* Individual Index Cards */
+.header-index-item {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  min-width: 120px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.header-index-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.index-symbol {
+  font-weight: bold;
+  font-size: 11px;
+  color: #1976d2 !important;
+  margin-bottom: 2px;
+}
+
+.index-name {
+  font-size: 14px;
+  color: #003f7f !important;
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.header-indices-strip .index-price {
+  font-weight: bold;
+  font-size: 12px;
+  color: #2c3e50 !important;
+  margin-bottom: 2px;
+}
+
+.index-change {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.header-index-item.positive .index-change {
+  color: #4caf50 !important;
+}
+
+.header-index-item.negative .index-change {
+  color: #f44336 !important;
+}
+
+.index-levels {
+  font-size: 8px;
+  margin-top: 2px;
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.support {
+  color: #4caf50 !important;
+  font-weight: 500;
+}
+
+.resistance {
+  color: #f44336 !important;
+  font-weight: 500;
+}
+
+/* Header Right - Data Source Toggle */
+.header-right {
+  display: flex;
+  align-items: center;
+  min-width: 200px;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.data-source-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #424242 !important;
+}
+
+.toggle-label {
+  font-weight: 500;
+  color: #424242 !important;
+}
+
+.toggle-switch {
+  width: 50px;
   height: 24px;
-  background: #e2e8f0;
-  border-radius: 24px;
+  background: #ccc;
+  border-radius: 12px;
   position: relative;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
-.clean-header .toggle-switch.on {
-  background: #10b981;
+.toggle-switch.on {
+  background: #4caf50;
 }
 
-.clean-header .toggle-knob {
+.toggle-knob {
   width: 20px;
   height: 20px;
   background: white;
@@ -216,25 +324,94 @@ html, body {
   position: absolute;
   top: 2px;
   left: 2px;
-  transition: left 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.clean-header .toggle-switch.on .toggle-knob {
-  left: 26px;
+.toggle-switch.on .toggle-knob {
+  transform: translateX(26px);
 }
 
-.clean-header .toggle-status {
-  font-size: 0.875rem;
-  color: #475569;
-  font-weight: 500;
+.toggle-status {
+  font-weight: bold;
   min-width: 40px;
+  color: #424242 !important;
 }
 
-/* Major Indices Strip - Fixed Height */
-.major-indices-strip {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .header-indices-strip {
+    gap: 15px;
+  }
+  
+  .indices-container {
+    gap: 10px;
+  }
+  
+  .header-index-item {
+    min-width: 100px;
+    padding: 6px 10px;
+  }
+  
+  .dashboard-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 992px) {
+  .header-indices-strip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+    padding: 15px 20px;
+  }
+  
+  .header-left, .header-right {
+    align-self: stretch;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .indices-container {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-indices-strip {
+    padding: 12px 15px;
+  }
+  
+  .indices-container {
+    gap: 8px;
+  }
+  
+  .header-index-item {
+    min-width: 90px;
+    padding: 5px 8px;
+  }
+  
+  .dashboard-title {
+    font-size: 18px;
+  }
+  
+  .datetime-display {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+/* Major Indices Section - Black price text */
+.major-indices-section .index-price {
+  color: #000000 !important;
+  text-shadow: none;
+}
+
+/* Major Indices Content - Fixed Height */
+.major-indices-content {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1976d2;
   padding: 1.5rem 2rem;
   flex-shrink: 0; /* Prevent strip from shrinking */
 }
@@ -247,22 +424,31 @@ html, body {
   margin: 0 auto;
 }
 
+.indices-container .index-name {
+  font-size: 14px !important;
+  font-weight: 600;
+  color: #003f7f;
+}
+
 .major-index {
   text-align: center;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
   backdrop-filter: blur(10px);
   min-height: 120px; /* Fixed minimum height */
   display: flex;
   flex-direction: column;
   justify-content: center;
+  border: 1px solid rgba(25, 118, 210, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .index-name {
   font-size: 1.125rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: #1976d2;
   opacity: 0.9;
 }
 
@@ -270,6 +456,7 @@ html, body {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
+  color: #2c3e50;
 }
 
 .index-change {
@@ -279,11 +466,11 @@ html, body {
 }
 
 .index-change.positive {
-  color: #34d399;
+  color: #2e7d32;
 }
 
 .index-change.negative {
-  color: #f87171;
+  color: #d32f2f;
 }
 
 .index-change.neutral {
@@ -292,6 +479,7 @@ html, body {
 
 .index-levels {
   font-size: 0.75rem;
+  color: #666;
   opacity: 0.8;
 }
 
@@ -451,7 +639,7 @@ html, body {
     padding: 1rem;
   }
   
-  .major-indices-strip {
+  .major-indices-content {
     padding: 1rem;
   }
   
@@ -596,7 +784,7 @@ html, body {
     padding: 1rem;
   }
   
-  .major-indices-strip {
+  .major-indices-content {
     padding: 1rem;
   }
   
@@ -724,7 +912,7 @@ html, body {
     align-items: flex-start;
   }
   
-  .major-indices-strip {
+  .major-indices-content {
     padding: 1rem;
   }
   
@@ -851,7 +1039,7 @@ html, body {
 }
 
 /* Ensure consistent sizing */
-.major-indices-strip .indices-container {
+.major-indices-content .indices-container {
   min-height: 120px; /* Prevent height fluctuations */
 }
 

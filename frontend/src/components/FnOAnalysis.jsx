@@ -36,7 +36,7 @@ const FnOAnalysis = () => {
     };
 
     return (
-        <section className="section fno-section">
+        <div className="fno-content">
             <div className="section-header">
                 <h2>🎯 F&O Analysis (NIFTY)</h2>
                 <div className="section-info">
@@ -84,7 +84,7 @@ const FnOAnalysis = () => {
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     );
 };
 
