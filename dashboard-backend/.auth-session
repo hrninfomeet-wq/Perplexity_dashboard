@@ -1,8 +1,8 @@
 {
-  "token": "4fb6dcd90579f7dd798fb725d0b3c08c69c20e8511b42b69e40609413ca3c1cc",
-  "requestCode": "1860c7d5b3d46394.4e831f038c8c909fb7139e4e968d9c3724928f4df9ec1d86a6576dbb4d41bfbd",
-  "expiry": "2025-08-31T10:00:00.000Z",
-  "createdAt": "2025-08-31T06:59:39.565Z",
+  "token": "72c7771a186acbcc0f858311c80120965f79beb1ae95b0a5f5c73a6f964860b8",
+  "requestCode": "1860d8e1e17cbd60.0c98c30cd0655052d7d0edc1998f4e649c970a2c303b610a4246430a0da29d25",
+  "expiry": "2025-09-01T10:00:00.000Z",
+  "createdAt": "2025-08-31T12:12:02.477Z",
   "apiKey": "cbac51e91d844343a3230e743bcace39",
   "clientCode": "FZ08714"
 }
