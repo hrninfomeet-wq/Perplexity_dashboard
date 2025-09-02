@@ -255,9 +255,9 @@ router.use((error, req, res, next) => {
 });
 
 /**
- * Route not found handler - Using function middleware instead of wildcard pattern
+ * Route not found handler
  */
-router.use((req, res) => {
+router.use('*', (req, res) => {
     res.status(404).json({
         success: false,
         error: 'Route not found',

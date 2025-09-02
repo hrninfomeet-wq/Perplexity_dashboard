@@ -224,8 +224,8 @@ app.use((error, req, res, next) => {
     });
 });
 
-// 404 handler - Use a more specific pattern instead of '*'
-app.use((req, res) => {
+// 404 handler
+app.use('*', (req, res) => {
     res.status(404).json({
         success: false,
         error: 'Route not found',

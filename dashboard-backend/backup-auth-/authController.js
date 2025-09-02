@@ -254,98 +254,9 @@ const connectLiveData = async (req, res) => {
     }
 };
 
-/**
- * Refresh authentication token
- * @param {object} req - Express request object
- * @param {object} res - Express response object
- */
-const refreshToken = async (req, res) => {
-    try {
-        console.log('🔄 Processing token refresh request...');
-        
-        const result = await unifiedAuthService.refreshToken();
-        
-        if (result.success) {
-            console.log('✅ Token refreshed successfully');
-            res.json({
-                success: true,
-                message: 'Token refreshed successfully',
-                data: result.data
-            });
-        } else {
-            console.log('❌ Token refresh failed:', result.error);
-            res.status(400).json({
-                success: false,
-                error: result.error || 'Token refresh failed'
-            });
-        }
-    } catch (error) {
-        console.error('❌ Error refreshing token:', error.message);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-};
-
-/**
- * Logout and clear authentication
- * @param {object} req - Express request object
- * @param {object} res - Express response object
- */
-const logout = async (req, res) => {
-    try {
-        console.log('👋 Processing logout request...');
-        
-        const result = unifiedAuthService.logout();
-        
-        console.log('✅ Logout completed successfully');
-        res.json({
-            success: true,
-            message: 'Logged out successfully',
-            data: result
-        });
-    } catch (error) {
-        console.error('❌ Error during logout:', error.message);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-};
-
-/**
- * Get authentication health status
- * @param {object} req - Express request object
- * @param {object} res - Express response object
- */
-const getAuthHealth = async (req, res) => {
-    try {
-        console.log('🏥 Checking authentication health...');
-        
-        const healthInfo = unifiedAuthService.getHealthInfo();
-        
-        console.log('✅ Health check completed');
-        res.json({
-            success: true,
-            message: 'Authentication health check completed',
-            data: healthInfo
-        });
-    } catch (error) {
-        console.error('❌ Error checking auth health:', error.message);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-};
-
 module.exports = {
     getLoginUrl,
     handleLoginCallback,
     getAuthStatus,
-    connectLiveData,
-    refreshToken,
-    logout,
-    getAuthHealth
+    connectLiveData
 };
