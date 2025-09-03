@@ -1,12 +1,12 @@
 // dashboard-backend/src/routes/authRoutes.js
 
 /**
- * Unified Authentication Routes
- * Uses new middleware and simplified controller structure
- * Replaces the previous route configuration with enhanced functionality
+ * Enhanced Authentication Routes with Database Integration
+ * Integrates MongoDB storage with existing authentication system
+ * Maintains backward compatibility while adding persistent session management
  * 
- * @version 2.1.0
- * @created September 01, 2025
+ * @version 2.2.0
+ * @created September 02, 2025
  */
 
 const express = require('express');
@@ -15,6 +15,10 @@ const router = express.Router();
 // Import controllers and middleware
 const authController = require('../controllers/authController');
 const AuthMiddleware = require('../middleware/auth.middleware');
+
+// Import database models
+const User = require('../models/userModel');
+const dbConfig = require('../config/db.config');
 
 // Apply common middleware to all auth routes
 router.use(AuthMiddleware.securityHeaders);
@@ -30,15 +34,71 @@ router.get('/login/url',
     authController.getLoginUrl
 );
 
-// Handle authentication callback from Flattrade
+// Handle authentication callback from Flattrade with database integration
 router.get('/login/callback', 
-    authController.handleLoginCallback
+    async (req, res, next) => {
+        try {
+            // First, handle the standard callback
+            await authController.handleLoginCallback(req, res, next);
+            
+            // If successful, also create/update user session in database
+            if (req.app.locals.FLATTRADE_TOKEN) {
+                await createOrUpdateUserSession(req, res);
+            }
+        } catch (error) {
+            console.error('❌ Database-integrated login callback error:', error.message);
+            // Fallback to standard callback behavior
+            authController.handleLoginCallback(req, res, next);
+        }
+    }
 );
 
-// Get current authentication status (public endpoint)
+// Enhanced authentication status with database integration
 router.get('/auth/status', 
     AuthMiddleware.optionalAuth,
-    authController.getAuthStatus
+    async (req, res) => {
+        try {
+            // Get standard auth status
+            const standardStatus = await authController.getAuthStatus(req, res);
+            
+            // If database is connected, enhance with database info
+            if (dbConfig.isConnected && req.authToken) {
+                try {
+                    const user = await User.findBySessionToken(req.authToken);
+                    
+                    if (user) {
+                        // Enhance response with database user info
+                        const enhancedResponse = {
+                            ...standardStatus._getData ? JSON.parse(standardStatus._getData()) : {},
+                            database: {
+                                connected: true,
+                                user_id: user._id,
+                                username: user.username,
+                                email: user.email,
+                                is_authenticated: user.isAuthenticated,
+                                active_sessions: user.activeSessions.length,
+                                last_active: user.last_active_at,
+                                preferences: user.getDashboardConfig()
+                            }
+                        };
+                        
+                        return res.json(enhancedResponse);
+                    }
+                } catch (dbError) {
+                    console.log('⚠️ Database lookup failed, using standard auth status:', dbError.message);
+                }
+            }
+            
+            // Return standard status if database not available or user not found
+            if (!res.headersSent) {
+                return authController.getAuthStatus(req, res);
+            }
+            
+        } catch (error) {
+            console.error('❌ Enhanced auth status error:', error.message);
+            return authController.getAuthStatus(req, res);
+        }
+    }
 );
 
 // Connect to live data (may require auth)
@@ -237,6 +297,135 @@ if (process.env.NODE_ENV === 'development') {
             }
         }
     );
+}
+
+/**
+ * Database-Enhanced Routes
+ */
+
+// User registration endpoint
+router.post('/register', 
+    AuthMiddleware.securityHeaders,
+    async (req, res) => {
+        try {
+            const { username, email, password } = req.body;
+            
+            // Validate input
+            if (!username || !email || !password) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Missing required fields',
+                    message: 'Username, email, and password are required',
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            // Check if database is connected
+            if (!dbConfig.isConnected) {
+                return res.status(503).json({
+                    success: false,
+                    error: 'Database unavailable',
+                    message: 'User registration requires database connection',
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            // Create new user
+            const newUser = new User({
+                username: username.trim(),
+                email: email.trim().toLowerCase(),
+                password_hash: password, // Will be hashed by pre-save middleware
+                status: 'active'
+            });
+            
+            await newUser.save();
+            
+            console.log(`✅ New user registered: ${username} (${email})`);
+            
+            res.status(201).json({
+                success: true,
+                message: 'User registered successfully',
+                user: {
+                    id: newUser._id,
+                    username: newUser.username,
+                    email: newUser.email
+                },
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (error) {
+            console.error('❌ User registration error:', error.message);
+            
+            // Handle duplicate key errors
+            if (error.code === 11000) {
+                const field = Object.keys(error.keyPattern)[0];
+                return res.status(409).json({
+                    success: false,
+                    error: 'Duplicate field',
+                    message: `${field} already exists`,
+                    field: field,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            
+            res.status(500).json({
+                success: false,
+                error: 'Registration failed',
+                message: error.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    }
+);
+
+/**
+ * Helper Functions
+ */
+
+async function createOrUpdateUserSession(req, res) {
+    try {
+        if (!dbConfig.isConnected || !req.app.locals.FLATTRADE_TOKEN) {
+            return;
+        }
+        
+        // Create a default user for Flattrade authentication
+        const defaultEmail = 'trader@nse-dashboard.local';
+        const defaultUsername = 'NSETrader';
+        
+        let user = await User.findOne({ email: defaultEmail });
+        
+        if (!user) {
+            user = new User({
+                username: defaultUsername,
+                email: defaultEmail,
+                flattrade: {
+                    is_authenticated: true,
+                    last_token_refresh: new Date()
+                },
+                status: 'active'
+            });
+        }
+        
+        // Update Flattrade auth info
+        await user.updateFlattradeAuth({
+            is_authenticated: true,
+            last_token_refresh: new Date(),
+            token_expires_at: new Date(Date.now() + (8 * 60 * 60 * 1000)) // 8 hours
+        });
+        
+        // Create session
+        const deviceInfo = {
+            userAgent: req.get('User-Agent'),
+            ipAddress: req.ip || req.connection.remoteAddress
+        };
+        
+        await user.createSession(req.app.locals.FLATTRADE_TOKEN, deviceInfo);
+        
+        console.log('✅ Database session created for authenticated user');
+        
+    } catch (error) {
+        console.error('❌ Session creation error:', error.message);
+    }
 }
 
 /**

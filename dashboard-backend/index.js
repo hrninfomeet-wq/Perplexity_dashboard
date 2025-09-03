@@ -2,10 +2,11 @@
 
 /**
  * NSE Trading Dashboard - Enhanced Backend Server
- * Integrated with unified authentication system and improved architecture
+ * Integrated with multi-API system, database, and unified authentication
  * 
- * @version 2.1.0
- * @created September 01, 2025
+ * @version 2.3.0
+ * @created September 03, 2025
+ * @phase Phase 2.5 - Multi-API Integration
  */
 
 require('dotenv').config();
@@ -14,15 +15,24 @@ const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 
-// Import new unified authentication system
+// Import database configuration
+const dbConfig = require('./src/config/db.config');
+
+// Import authentication system
 const authConfig = require('./src/config/auth.config');
 const tokenManager = require('./src/utils/token-manager');
 const unifiedAuthService = require('./src/services/auth/unified-auth.service');
 const AuthMiddleware = require('./src/middleware/auth.middleware');
 
-// Import routes
+// Import multi-API system (Phase 2.5)
+const { router: multiApiRoutes, initializeServices: initMultiApiServices } = require('./src/routes/multiApiRoutes');
+const providerRoutes = require('./src/routes/providerRoutes');
+
+// Import existing routes
 const healthRoutes = require('./src/routes/healthRoutes');
-const authRoutes = require('./src/routes/authRoutes'); // Updated routes
+const authRoutes = require('./src/routes/authRoutes');
+const multiAuthRoutes = require('./src/routes/multiAuthRoutes');
+const dataRoutes = require('./src/routes/dataRoutes');
 const marketDataRoutes = require('./src/routes/marketDataRoutes');
 
 // Import utilities
@@ -34,12 +44,14 @@ const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 5000;
 
+// Global state
+let connectedClients = new Set();
+let marketData = new Map();
+let multiApiInitialized = false;
+
 // Global middleware
 app.use(express.json());
 app.use(AuthMiddleware.securityHeaders);
-
-let connectedClients = new Set();
-let marketData = new Map();
 
 // Make enhanced state accessible to controllers
 app.locals.FLATTRADE_TOKEN = tokenManager.getToken();
@@ -47,12 +59,14 @@ app.locals.isAuthenticated = tokenManager.isAuthenticated();
 app.locals.connectedClients = connectedClients;
 app.locals.tokenManager = tokenManager;
 app.locals.authService = unifiedAuthService;
+app.locals.dbConfig = dbConfig;
 
 // Log enhanced startup information
-console.log('🚀 Starting NSE Trading Dashboard Backend v2.1.0...');
+console.log('🚀 Starting NSE Trading Dashboard Backend v2.2.0...');
 console.log(`🔧 Node.js: ${process.version}`);
 console.log(`📂 Environment: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🔐 Authentication: Unified Auth System`);
+console.log(`🗄️ Database: MongoDB Integration`);
 
 // Authentication status on startup
 const startupAuthStatus = tokenManager.getAuthStatus();
@@ -72,8 +86,18 @@ console.log('📚 Setting up routes with enhanced middleware...');
 // Health routes (no auth required)
 app.use('/api', healthRoutes);
 
-// Authentication routes (with unified auth system)
+// Authentication routes (with unified auth system and database)
 app.use('/api', authRoutes);
+
+// Multi-API authentication routes (Phase 2.5 - Step 8)
+app.use('/api/auth/multi', multiAuthRoutes);
+
+// Multi-API system routes (Phase 2.5)
+app.use('/api/multi', multiApiRoutes);
+app.use('/api/providers', providerRoutes);
+
+// Data management routes (with database integration)
+app.use('/api/data', dataRoutes);
 
 // Market data routes (with automatic auth handling)
 app.use('/api', 
@@ -163,9 +187,20 @@ wss.on('connection', (ws) => {
     ws.send(JSON.stringify({
         type: 'connection_established',
         message: 'Connected to NSE Trading Dashboard WebSocket',
-        version: '2.1.0',
-        features: ['real-time-data', 'auto-auth', 'enhanced-calculations'],
+        version: '2.3.0',
+        features: [
+            'multi-api-integration', 
+            'intelligent-failover', 
+            'real-time-health-monitoring',
+            'advanced-rate-limiting',
+            'websocket-management',
+            'database-integration',
+            'unified-authentication'
+        ],
         authenticated: app.locals.isAuthenticated,
+        database_connected: dbConfig.isConnected,
+        multi_api_enabled: multiApiInitialized,
+        api_capacity: multiApiInitialized ? '730+ req/min' : '80 req/min',
         timestamp: new Date().toISOString()
     }));
 
@@ -234,6 +269,14 @@ app.use((req, res) => {
             '/api/health',
             '/api/auth/status',
             '/api/login/url',
+            '/api/multi/health',
+            '/api/multi/providers',
+            '/api/multi/quote/:symbol',
+            '/api/providers/user-config',
+            '/api/providers/auth-status',
+            '/api/data/user/profile',
+            '/api/data/trades/active',
+            '/api/data/analytics/performance',
             '/api/indices',
             '/api/gainers',
             '/api/losers'
@@ -243,26 +286,67 @@ app.use((req, res) => {
 });
 
 // Enhanced server startup
-const appServer = server.listen(PORT, () => {
-    console.log(`🌟 NSE Trading Dashboard Backend v2.1.0 running on http://localhost:${PORT}`);
+const appServer = server.listen(5001, async () => {
+    console.log(`🌟 NSE Trading Dashboard Backend v2.3.0 running on http://localhost:${PORT}`);
     console.log(`📊 Dashboard URL: http://localhost:${PORT}`);
     console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);
     console.log(`🔐 Auth Status: http://localhost:${PORT}/api/auth/status`);
+    console.log(`🚀 Multi-API Health: http://localhost:${PORT}/api/multi/health`);
+    
+    // Initialize database connection (graceful fallback)
+    try {
+        // Set a shorter timeout for database connection
+        const dbConnectPromise = dbConfig.connect();
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Database connection timeout')), 10000)
+        );
+        
+        await Promise.race([dbConnectPromise, timeoutPromise]);
+        console.log('✅ Database connection established successfully');
+    } catch (error) {
+        console.error('❌ Database connection failed:', error.message);
+        console.log('⚠️ Server will continue with limited features (authentication-only mode)');
+        // Ensure the database doesn't crash the server
+        dbConfig.isConnected = false;
+    }
+    
+    // Initialize multi-API system (Phase 2.5)
+    try {
+        console.log('🔄 Initializing Multi-API system...');
+        await initMultiApiServices();
+        multiApiInitialized = true;
+        console.log('✅ Multi-API system initialized successfully');
+        console.log('🎯 API Capacity: 730+ requests/minute across 5 providers');
+    } catch (error) {
+        console.error('❌ Multi-API initialization failed:', error.message);
+        console.log('⚠️ Falling back to single Flattrade API');
+        multiApiInitialized = false;
+    }
+    
     console.log('🎯 Features:');
+    console.log('   • Multi-API Integration (Flattrade, Upstox, FYERS, AliceBlue, NSE Public)');
+    console.log('   • Intelligent Failover and Load Balancing');
+    console.log('   • Real-time Health Monitoring and Alerting');
+    console.log('   • Advanced Rate Limiting with Global Coordination');
+    console.log('   • WebSocket Manager for Real-time Data Streaming');
     console.log('   • Unified Authentication System');
+    console.log('   • MongoDB Database Integration');
+    console.log('   • User Profile and Trade Management');
     console.log('   • Auto-token refresh with 5-minute buffer');
     console.log('   • Enhanced error handling and logging');
-    console.log('   • WebSocket real-time communication');
-    console.log('   • Multi-source data failover (NSE → Flattrade → Mock)');
-    console.log('   • Advanced market calculations (Phase 2 ready)');
+    console.log('   • Multi-source data failover');
+    console.log('   • Advanced market calculations and analytics');
     
-    // Start enhanced heartbeat with auth monitoring
-    setInterval(() => {
+    // Start enhanced heartbeat with multi-API monitoring
+    setInterval(async () => {
         const authStatus = tokenManager.getAuthStatus();
         const wsClients = connectedClients.size;
+        const dbStatus = await dbConfig.getHealthStatus();
         
         console.log(`💗 Enhanced Heartbeat: ${new Date().toLocaleTimeString()}`);
         console.log(`   Auth: ${authStatus.authenticated ? '✅' : '❌'} | ` +
+                   `DB: ${dbStatus.connected ? '✅' : '❌'} | ` +
+                   `Multi-API: ${multiApiInitialized ? '✅' : '❌'} | ` +
                    `Expires: ${authStatus.expiryInfo} | ` + 
                    `WS: ${wsClients} clients | ` +
                    `Memory: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`);
@@ -341,7 +425,9 @@ const gracefulShutdown = (signal) => {
     });
     
     // Close server
-    appServer.close(() => {
+    appServer.close(async () => {
+        console.log('🗄️ Closing database connection...');
+        await dbConfig.disconnect();
         console.log('✅ Server closed successfully');
         
         // Clear session if configured
@@ -373,7 +459,7 @@ keepBusy();
 // Make app available globally for controller access
 global.app = app;
 
-console.log('🎉 NSE Trading Dashboard Backend v2.1.0 initialization complete!');
-console.log('   Ready for Phase 1 testing and validation...\n');
+console.log('🎉 NSE Trading Dashboard Backend v2.2.0 initialization complete!');
+console.log('   Ready for Phase 2 testing and validation...\n');
 
 module.exports = app;

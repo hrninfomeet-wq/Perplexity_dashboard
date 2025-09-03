@@ -345,6 +345,57 @@ class AuthMiddleware {
         
         next();
     }
+
+    /**
+     * Token-based authentication for multi-API routes
+     * @param {object} req - Express request object
+     * @param {object} res - Express response object  
+     * @param {function} next - Express next middleware function
+     */
+    static authenticateToken(req, res, next) {
+        try {
+            // For Phase 2.5, we'll use the same auth logic as requireAuth
+            // This can be enhanced later for JWT tokens or user-specific tokens
+            
+            const token = tokenManager.getToken();
+            
+            if (!token) {
+                console.log('🔐 Token authentication required for multi-API route');
+                return res.status(401).json({
+                    success: false,
+                    error: 'Authentication required',
+                    message: 'Please authenticate to access multi-API features',
+                    needsLogin: true,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            // Attach auth info to request
+            req.authToken = token;
+            req.authStatus = tokenManager.getAuthStatus();
+            req.isAuthenticated = true;
+            
+            // Mock user for Phase 2.5 (will be replaced with real user lookup)
+            req.user = {
+                id: 'default_user',
+                username: 'demo_user',
+                flattrade_authenticated: true
+            };
+            
+            console.log('✅ Token authentication validated for multi-API route');
+            next();
+        } catch (error) {
+            console.error('❌ Token authentication error:', error.message);
+            return res.status(500).json({
+                success: false,
+                error: 'Authentication validation failed',
+                message: error.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    }
 }
 
+// Export individual functions for easier importing
 module.exports = AuthMiddleware;
+module.exports.authenticateToken = AuthMiddleware.authenticateToken;
