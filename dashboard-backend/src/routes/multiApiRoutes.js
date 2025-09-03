@@ -41,6 +41,12 @@ const initializeServices = async () => {
         wsManager = new WebSocketManager();
         wsManager.start();
         
+        // Make services available globally for Phase 3A
+        global.apiManager = apiManager;
+        global.healthMonitor = healthMonitor;
+        global.rateLimiter = rateLimiter;
+        global.wsManager = wsManager;
+        
         console.log('✅ Multi-API services initialized successfully');
         
     } catch (error) {

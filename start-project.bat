@@ -1,6 +1,6 @@
 @echo off
 echo ====================================================
-echo NSE Trading Dashboard - Enhanced Startup Script
+echo NSE Trading Dashboard - Phase 2.5 Multi-API System
 echo ====================================================
 echo.
 
@@ -10,9 +10,9 @@ taskkill /F /IM node.exe 2>nul
 timeout /t 2 /nobreak >nul
 
 REM Start Backend Server
-echo [2/4] Starting Enhanced Backend Server...
+echo [2/4] Starting Multi-API Backend Server (Phase 2.5)...
 cd /d "%~dp0dashboard-backend"
-start "Backend Server" cmd /k "npm run start-enhanced"
+start "Backend Server" cmd /k "npm start"
 timeout /t 5 /nobreak >nul
 
 REM Start Frontend Server

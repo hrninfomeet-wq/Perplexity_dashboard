@@ -444,9 +444,17 @@ router.use((error, req, res, next) => {
 });
 
 /**
- * Route not found handler - Using function middleware instead of wildcard pattern
+ * Route not found handler - Only handle auth-related routes, avoid catching v3 routes
  */
-router.use((req, res) => {
+router.use((req, res, next) => {
+    // Only handle auth-related routes, let other API versions pass through
+    if (req.originalUrl.startsWith('/api/v3') || 
+        req.originalUrl.startsWith('/api/multi') || 
+        req.originalUrl.startsWith('/api/data') ||
+        req.originalUrl.startsWith('/api/health')) {
+        return next(); // Pass through to other routes
+    }
+    
     res.status(404).json({
         success: false,
         error: 'Route not found',

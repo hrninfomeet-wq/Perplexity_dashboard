@@ -28,12 +28,25 @@ const AuthMiddleware = require('./src/middleware/auth.middleware');
 const { router: multiApiRoutes, initializeServices: initMultiApiServices } = require('./src/routes/multiApiRoutes');
 const providerRoutes = require('./src/routes/providerRoutes');
 
+// Import Phase 3A models and services
+const { MarketData, AggregatedMarketData } = require('./src/models/marketDataModel');
+const { TradingOpportunity, WatchList } = require('./src/models/tradingOpportunityModel');
+const { MarketAnalytics, MarketInsights } = require('./src/models/marketAnalyticsModel');
+const { TechnicalIndicator, IndicatorAlert } = require('./src/models/technicalIndicatorsModel');
+const MarketDataIngestionService = require('./src/services/market/marketDataIngestion');
+const SymbolManager = require('./src/services/market/symbolManager');
+const TechnicalIndicatorsEngine = require('./src/services/indicators/technicalIndicatorsEngine');
+
 // Import existing routes
 const healthRoutes = require('./src/routes/healthRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const multiAuthRoutes = require('./src/routes/multiAuthRoutes');
 const dataRoutes = require('./src/routes/dataRoutes');
 const marketDataRoutes = require('./src/routes/marketDataRoutes');
+
+// Import Phase 3A routes
+const marketDataV3Routes = require('./src/routes/marketDataV3Routes');
+const technicalIndicatorsRoutes = require('./src/routes/technicalIndicatorsRoutes');
 
 // Import utilities
 const { NSE_INDEX_TOKENS, FO_SECURITIES } = require('./src/utils/constants');
@@ -48,6 +61,12 @@ const PORT = process.env.PORT || 5000;
 let connectedClients = new Set();
 let marketData = new Map();
 let multiApiInitialized = false;
+
+// Phase 3A Services
+let marketDataIngestion = null;
+let symbolManager = null;
+let technicalIndicatorsEngine = null;
+let phase3AInitialized = false;
 
 // Global middleware
 app.use(express.json());
@@ -86,15 +105,19 @@ console.log('📚 Setting up routes with enhanced middleware...');
 // Health routes (no auth required)
 app.use('/api', healthRoutes);
 
-// Authentication routes (with unified auth system and database)
-app.use('/api', authRoutes);
+// Phase 3A routes - Live Market Data Intelligence (Mount early to avoid auth catch-all)
+app.use('/api/v3', marketDataV3Routes);
+app.use('/api/v3/indicators', technicalIndicatorsRoutes);
+
+// Multi-API system routes (Phase 2.5) - Mount before auth routes to avoid catch-all
+app.use('/api/multi', multiApiRoutes);
+app.use('/api/providers', providerRoutes);
 
 // Multi-API authentication routes (Phase 2.5 - Step 8)
 app.use('/api/auth/multi', multiAuthRoutes);
 
-// Multi-API system routes (Phase 2.5)
-app.use('/api/multi', multiApiRoutes);
-app.use('/api/providers', providerRoutes);
+// Authentication routes (with unified auth system and database) - Mount after specific routes
+app.use('/api', authRoutes);
 
 // Data management routes (with database integration)
 app.use('/api/data', dataRoutes);
@@ -285,8 +308,77 @@ app.use((req, res) => {
     });
 });
 
+/**
+ * Initialize Phase 3A Services (Live Market Data Intelligence)
+ */
+async function initializePhase3AServices() {
+    try {
+        console.log('🚀 Initializing Phase 3A Live Market Data Intelligence...');
+        
+        // Initialize Symbol Manager
+        console.log('📊 Initializing Symbol Manager...');
+        symbolManager = new SymbolManager();
+        await symbolManager.loadUniverseFromAPI();
+        global.symbolManager = symbolManager;
+        console.log('✅ Symbol Manager initialized with universe');
+        
+        // Initialize Market Data Ingestion Service
+        if (multiApiInitialized) {
+            console.log('📈 Initializing Market Data Ingestion Service...');
+            
+            // Get services from global scope (set by multi-API initialization)
+            const apiManager = global.apiManager;
+            const healthMonitor = global.healthMonitor;
+            const rateLimiter = global.rateLimiter;
+            
+            if (apiManager && healthMonitor && rateLimiter) {
+                marketDataIngestion = new MarketDataIngestionService(
+                    apiManager, 
+                    healthMonitor, 
+                    rateLimiter
+                );
+                global.marketDataIngestion = marketDataIngestion;
+                
+                // Start the ingestion service
+                await marketDataIngestion.start();
+                console.log('✅ Market Data Ingestion Service started');
+            } else {
+                console.log('⚠️ Multi-API services not available, skipping ingestion service');
+            }
+        } else {
+            console.log('⚠️ Multi-API system not initialized, skipping ingestion service');
+        }
+        
+        // Initialize Technical Indicators Engine (Step 3)
+        console.log('🧮 Initializing Technical Indicators Engine...');
+        technicalIndicatorsEngine = new TechnicalIndicatorsEngine();
+        global.technicalIndicatorsEngine = technicalIndicatorsEngine;
+        
+        // Start the indicators engine
+        await technicalIndicatorsEngine.start();
+        console.log('✅ Technical Indicators Engine started successfully');
+        
+        phase3AInitialized = true;
+        
+        console.log('🎉 Phase 3A Live Market Data Intelligence initialized successfully!');
+        console.log('📋 Available features:');
+        console.log('   • Symbol Universe Management (NIFTY 50 + sectors)');
+        console.log('   • Real-time Market Data Ingestion (730+ req/min)');
+        console.log('   • Technical Indicators Engine (Step 3) - 15+ indicators');
+        console.log('   • Trading Signal Generation & Alerts');
+        console.log('   • Trading Opportunity Detection (foundation)');
+        console.log('   • Market Analytics Engine (foundation)');
+        console.log('   • REST API v3 endpoints');
+        
+    } catch (error) {
+        console.error('❌ Phase 3A initialization failed:', error.message);
+        console.log('⚠️ Phase 3A features will be limited');
+        phase3AInitialized = false;
+    }
+}
+
 // Enhanced server startup
-const appServer = server.listen(5001, async () => {
+const appServer = server.listen(PORT, async () => {
     console.log(`🌟 NSE Trading Dashboard Backend v2.3.0 running on http://localhost:${PORT}`);
     console.log(`📊 Dashboard URL: http://localhost:${PORT}`);
     console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);
@@ -323,6 +415,9 @@ const appServer = server.listen(5001, async () => {
         multiApiInitialized = false;
     }
     
+    // Initialize Phase 3A services (Live Market Data Intelligence)
+    await initializePhase3AServices();
+    
     console.log('🎯 Features:');
     console.log('   • Multi-API Integration (Flattrade, Upstox, FYERS, AliceBlue, NSE Public)');
     console.log('   • Intelligent Failover and Load Balancing');
@@ -347,6 +442,7 @@ const appServer = server.listen(5001, async () => {
         console.log(`   Auth: ${authStatus.authenticated ? '✅' : '❌'} | ` +
                    `DB: ${dbStatus.connected ? '✅' : '❌'} | ` +
                    `Multi-API: ${multiApiInitialized ? '✅' : '❌'} | ` +
+                   `Phase 3A: ${phase3AInitialized ? '✅' : '❌'} | ` +
                    `Expires: ${authStatus.expiryInfo} | ` + 
                    `WS: ${wsClients} clients | ` +
                    `Memory: ${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`);
