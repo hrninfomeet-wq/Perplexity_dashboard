@@ -11,6 +11,7 @@
 
 const { TechnicalIndicator, IndicatorAlert } = require('../../models/technicalIndicatorsModel');
 const { MarketData } = require('../../models/marketDataModel');
+const { TIMEFRAME_CONFIG, TimeframeUtils } = require('../../config/timeframes.config');
 
 /**
  * Technical Indicators Calculation Engine
@@ -22,7 +23,14 @@ class TechnicalIndicatorsEngine {
         this.calculationIntervals = new Map();
         this.alertThresholds = this.getDefaultAlertThresholds();
         
-        console.log('🧮 Technical Indicators Engine initialized');
+        // Enhanced timeframe support for Phase 3A Step 4
+        this.supportedTimeframes = TIMEFRAME_CONFIG.ALL_TIMEFRAMES;
+        this.scalpingTimeframes = TIMEFRAME_CONFIG.SCALPING_TIMEFRAMES;
+        this.performanceConfig = TIMEFRAME_CONFIG.PERFORMANCE;
+        
+        console.log('🧮 Technical Indicators Engine initialized (Phase 3A Step 4)');
+        console.log(`📊 Enhanced timeframes: ${this.supportedTimeframes.join(', ')}`);
+        console.log(`⚡ Scalping timeframes: ${this.scalpingTimeframes.join(', ')}`);
     }
     
     /**
@@ -427,32 +435,61 @@ class TechnicalIndicatorsEngine {
     
     /**
      * Start periodic calculations for different timeframes
+     * Enhanced for Phase 3A Step 4 with scalping timeframes
      */
     startPeriodicCalculations() {
-        // Calculate indicators every 5 minutes for 5m timeframe
+        console.log('🚀 Starting Phase 3A Step 4 Enhanced Periodic Calculations...');
+        
+        // Scalping Timeframes - Ultra-Fast Calculations
+        const interval1m = setInterval(() => {
+            this.calculateIndicatorsForAllSymbols('1m');
+        }, 1 * 60 * 1000); // Every 1 minute
+        
+        const interval3m = setInterval(() => {
+            this.calculateIndicatorsForAllSymbols('3m');
+        }, 3 * 60 * 1000); // Every 3 minutes
+        
+        // Standard Timeframes
         const interval5m = setInterval(() => {
             this.calculateIndicatorsForAllSymbols('5m');
-        }, 5 * 60 * 1000);
+        }, 5 * 60 * 1000); // Every 5 minutes
         
-        // Calculate indicators every hour for 1h timeframe  
+        const interval15m = setInterval(() => {
+            this.calculateIndicatorsForAllSymbols('15m');
+        }, 15 * 60 * 1000); // Every 15 minutes
+        
         const interval1h = setInterval(() => {
             this.calculateIndicatorsForAllSymbols('1h');
-        }, 60 * 60 * 1000);
+        }, 60 * 60 * 1000); // Every hour
         
-        // Calculate indicators every day for 1d timeframe
         const interval1d = setInterval(() => {
             this.calculateIndicatorsForAllSymbols('1d');
-        }, 24 * 60 * 60 * 1000);
+        }, 24 * 60 * 60 * 1000); // Every day
         
+        // Store all intervals
+        this.calculationIntervals.set('1m', interval1m);
+        this.calculationIntervals.set('3m', interval3m);
         this.calculationIntervals.set('5m', interval5m);
+        this.calculationIntervals.set('15m', interval15m);
         this.calculationIntervals.set('1h', interval1h);
         this.calculationIntervals.set('1d', interval1d);
         
-        console.log('📊 Periodic indicator calculations started');
+        console.log('📊 Enhanced periodic calculations started for 6 timeframes:');
+        console.log('   🏃 Scalping: 1m, 3m (ultra-fast)');
+        console.log('   ⚡ Quick: 5m, 15m (fast)');
+        console.log('   📈 Standard: 1h, 1d (regular)');
+        
+        // Start immediate calculation for all timeframes
+        setTimeout(() => {
+            this.scalpingTimeframes.forEach(timeframe => {
+                this.calculateIndicatorsForAllSymbols(timeframe);
+            });
+        }, 2000); // Small delay to ensure initialization
     }
     
     /**
      * Calculate indicators for all symbols in universe
+     * Enhanced for Phase 3A Step 4 with scalping optimization
      */
     async calculateIndicatorsForAllSymbols(timeframe) {
         if (!this.isRunning) return;
@@ -465,18 +502,43 @@ class TechnicalIndicatorsEngine {
                 return;
             }
             
-            const symbols = symbolManager.getTopSymbols(50); // Top 50 liquid symbols
+            // Scalping optimization: Adjust symbol count based on timeframe
+            const isScalpingTimeframe = this.scalpingTimeframes.includes(timeframe);
+            const symbolCount = isScalpingTimeframe ? 30 : 50; // Fewer symbols for faster processing
+            const symbols = symbolManager.getTopSymbols(symbolCount);
             
-            console.log(`🧮 Calculating ${timeframe} indicators for ${symbols.length} symbols`);
+            const startTime = Date.now();
+            console.log(`🧮 [${timeframe}] Calculating indicators for ${symbols.length} symbols ${isScalpingTimeframe ? '(SCALPING)' : ''}`);
             
-            const results = await Promise.allSettled(
-                symbols.map(symbol => this.calculateIndicators(symbol, timeframe))
-            );
+            // Enhanced concurrent processing for scalping
+            const batchSize = isScalpingTimeframe ? 10 : 5; // Larger batches for scalping
+            const batches = [];
+            for (let i = 0; i < symbols.length; i += batchSize) {
+                batches.push(symbols.slice(i, i + batchSize));
+            }
             
-            const successful = results.filter(r => r.status === 'fulfilled').length;
-            const failed = results.filter(r => r.status === 'rejected').length;
+            let successful = 0;
+            let failed = 0;
             
-            console.log(`✅ Indicators calculated: ${successful} successful, ${failed} failed`);
+            // Process batches with optimized concurrency
+            for (const batch of batches) {
+                const results = await Promise.allSettled(
+                    batch.map(symbol => this.calculateIndicators(symbol, timeframe))
+                );
+                
+                successful += results.filter(r => r.status === 'fulfilled').length;
+                failed += results.filter(r => r.status === 'rejected').length;
+            }
+            
+            const duration = Date.now() - startTime;
+            const avgTime = duration / symbols.length;
+            
+            console.log(`✅ [${timeframe}] Indicators calculated in ${duration}ms: ${successful} successful, ${failed} failed (${avgTime.toFixed(1)}ms/symbol)`);
+            
+            // Performance monitoring for scalping timeframes
+            if (isScalpingTimeframe && avgTime > this.performanceConfig.maxCalculationTime) {
+                console.warn(`⚠️ [${timeframe}] Performance warning: ${avgTime.toFixed(1)}ms > ${this.performanceConfig.maxCalculationTime}ms target`);
+            }
             
         } catch (error) {
             console.error(`❌ Error in periodic calculation for ${timeframe}:`, error.message);
@@ -591,13 +653,42 @@ class TechnicalIndicatorsEngine {
     }
     
     /**
+     * Get enhanced timeframe information for Phase 3A Step 4
+     */
+    getTimeframeInfo() {
+        return {
+            supported: this.supportedTimeframes,
+            scalping: this.scalpingTimeframes,
+            confluence: this.TimeframeUtils?.CONFLUENCE_COMBINATIONS || [],
+            performance: this.performanceConfig
+        };
+    }
+    
+    /**
+     * Get scalping-optimized symbols based on timeframe
+     */
+    getOptimizedSymbolCount(timeframe) {
+        const isScalping = this.scalpingTimeframes.includes(timeframe);
+        return isScalping ? 30 : 50;
+    }
+    
+    /**
+     * Check if timeframe is optimized for scalping
+     */
+    isScalpingTimeframe(timeframe) {
+        return this.scalpingTimeframes.includes(timeframe);
+    }
+    
+    /**
      * Get engine status and metrics
+     * Enhanced for Phase 3A Step 4
      */
     getStatus() {
         return {
             isRunning: this.isRunning,
             activeIntervals: this.calculationIntervals.size,
-            version: '3A.3.0',
+            version: '3A.4.0', // Updated for Phase 3A Step 4
+            phase: 'Phase 3A Step 4 - Enhanced Timeframes',
             capabilities: [
                 'moving_averages',
                 'momentum_indicators',
@@ -605,8 +696,16 @@ class TechnicalIndicatorsEngine {
                 'volume_analysis',
                 'support_resistance',
                 'signal_generation',
-                'alert_system'
-            ]
+                'alert_system',
+                'scalping_timeframes', // New capability
+                'multi_timeframe_analysis', // New capability
+                'enhanced_performance' // New capability
+            ],
+            timeframes: {
+                total: this.supportedTimeframes.length,
+                scalping: this.scalpingTimeframes.length,
+                supported: this.supportedTimeframes
+            }
         };
     }
 }

@@ -36,6 +36,7 @@ const { TechnicalIndicator, IndicatorAlert } = require('./src/models/technicalIn
 const MarketDataIngestionService = require('./src/services/market/marketDataIngestion');
 const SymbolManager = require('./src/services/market/symbolManager');
 const TechnicalIndicatorsEngine = require('./src/services/indicators/technicalIndicatorsEngine');
+const PatternRecognitionEngine = require('./src/services/patterns/patternRecognitionEngine');
 
 // Import existing routes
 const healthRoutes = require('./src/routes/healthRoutes');
@@ -47,6 +48,7 @@ const marketDataRoutes = require('./src/routes/marketDataRoutes');
 // Import Phase 3A routes
 const marketDataV3Routes = require('./src/routes/marketDataV3Routes');
 const technicalIndicatorsRoutes = require('./src/routes/technicalIndicatorsRoutes');
+const patternRecognitionRoutes = require('./src/routes/patternRecognitionRoutes');
 
 // Import utilities
 const { NSE_INDEX_TOKENS, FO_SECURITIES } = require('./src/utils/constants');
@@ -66,6 +68,7 @@ let multiApiInitialized = false;
 let marketDataIngestion = null;
 let symbolManager = null;
 let technicalIndicatorsEngine = null;
+let patternRecognitionEngine = null;
 let phase3AInitialized = false;
 
 // Global middleware
@@ -108,6 +111,7 @@ app.use('/api', healthRoutes);
 // Phase 3A routes - Live Market Data Intelligence (Mount early to avoid auth catch-all)
 app.use('/api/v3', marketDataV3Routes);
 app.use('/api/v3/indicators', technicalIndicatorsRoutes);
+app.use(patternRecognitionRoutes); // Pattern Recognition API v4
 
 // Multi-API system routes (Phase 2.5) - Mount before auth routes to avoid catch-all
 app.use('/api/multi', multiApiRoutes);
@@ -358,6 +362,15 @@ async function initializePhase3AServices() {
         await technicalIndicatorsEngine.start();
         console.log('✅ Technical Indicators Engine started successfully');
         
+        // Initialize Pattern Recognition Engine (Step 4)
+        console.log('🔍 Initializing Pattern Recognition Engine...');
+        patternRecognitionEngine = new PatternRecognitionEngine();
+        global.patternRecognitionEngine = patternRecognitionEngine;
+        
+        // Start the pattern recognition engine
+        await patternRecognitionEngine.start();
+        console.log('✅ Pattern Recognition Engine started successfully');
+        
         phase3AInitialized = true;
         
         console.log('🎉 Phase 3A Live Market Data Intelligence initialized successfully!');
@@ -365,10 +378,12 @@ async function initializePhase3AServices() {
         console.log('   • Symbol Universe Management (NIFTY 50 + sectors)');
         console.log('   • Real-time Market Data Ingestion (730+ req/min)');
         console.log('   • Technical Indicators Engine (Step 3) - 15+ indicators');
+        console.log('   • Pattern Recognition Engine (Step 4) - 20+ patterns');
+        console.log('   • Scalping Timeframes (1m, 3m, 15m) for ultra-fast trading');
         console.log('   • Trading Signal Generation & Alerts');
         console.log('   • Trading Opportunity Detection (foundation)');
         console.log('   • Market Analytics Engine (foundation)');
-        console.log('   • REST API v3 endpoints');
+        console.log('   • REST API v3/v4 endpoints');
         
     } catch (error) {
         console.error('❌ Phase 3A initialization failed:', error.message);
