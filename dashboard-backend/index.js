@@ -50,6 +50,9 @@ const marketDataV3Routes = require('./src/routes/marketDataV3Routes');
 const technicalIndicatorsRoutes = require('./src/routes/technicalIndicatorsRoutes');
 const patternRecognitionRoutes = require('./src/routes/patternRecognitionRoutes');
 
+// Import Phase 3A Step 5 ML routes
+const mlRoutes = require('./src/routes/mlRoutes');
+
 // Import utilities
 const { NSE_INDEX_TOKENS, FO_SECURITIES } = require('./src/utils/constants');
 
@@ -112,6 +115,9 @@ app.use('/api', healthRoutes);
 app.use('/api/v3', marketDataV3Routes);
 app.use('/api/v3/indicators', technicalIndicatorsRoutes);
 app.use(patternRecognitionRoutes); // Pattern Recognition API v4
+
+// Phase 3A Step 5 - ML Enhanced Trading Signals (API v5)
+app.use('/api/v5/ml', mlRoutes);
 
 // Multi-API system routes (Phase 2.5) - Mount before auth routes to avoid catch-all
 app.use('/api/multi', multiApiRoutes);
