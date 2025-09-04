@@ -347,12 +347,12 @@ riskEventSchema.index({ type: 1, severity: 1, timestamp: -1 });
 riskPerformanceSchema.index({ portfolioId: 1, 'period.start': -1 });
 riskConfigurationSchema.index({ userId: 1, portfolioId: 1 });
 
-// Create models
-const RiskAssessment = mongoose.model('RiskAssessment', riskAssessmentSchema);
-const PortfolioRisk = mongoose.model('PortfolioRisk', portfolioRiskSchema);
-const RiskEvent = mongoose.model('RiskEvent', riskEventSchema);
-const RiskPerformance = mongoose.model('RiskPerformance', riskPerformanceSchema);
-const RiskConfiguration = mongoose.model('RiskConfiguration', riskConfigurationSchema);
+// Create models with existence checks to prevent overwrite errors
+const RiskAssessment = mongoose.models.RiskAssessment || mongoose.model('RiskAssessment', riskAssessmentSchema);
+const PortfolioRisk = mongoose.models.PortfolioRisk || mongoose.model('PortfolioRisk', portfolioRiskSchema);
+const RiskEvent = mongoose.models.RiskEvent || mongoose.model('RiskEvent', riskEventSchema);
+const RiskPerformance = mongoose.models.RiskPerformance || mongoose.model('RiskPerformance', riskPerformanceSchema);
+const RiskConfiguration = mongoose.models.RiskConfiguration || mongoose.model('RiskConfiguration', riskConfigurationSchema);
 
 module.exports = {
     RiskAssessment,

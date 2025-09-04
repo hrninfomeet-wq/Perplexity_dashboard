@@ -387,10 +387,11 @@ tradingOpportunitySchema.index({ detectionStrategy: 1, detectedAt: -1 });
 tradingOpportunitySchema.index({ symbol: 1, status: 1 });
 
 // Models
-const StrategyConfig = mongoose.model('StrategyConfig', strategyConfigSchema);
-const StrategyExecution = mongoose.model('StrategyExecution', strategyExecutionSchema);
-const StrategyPerformance = mongoose.model('StrategyPerformance', strategyPerformanceSchema);
-const TradingOpportunity = mongoose.model('TradingOpportunity', tradingOpportunitySchema);
+// Create models with existence checks to prevent overwrite errors
+const StrategyConfig = mongoose.models.StrategyConfig || mongoose.model('StrategyConfig', strategyConfigSchema);
+const StrategyExecution = mongoose.models.StrategyExecution || mongoose.model('StrategyExecution', strategyExecutionSchema);
+const StrategyPerformance = mongoose.models.StrategyPerformance || mongoose.model('StrategyPerformance', strategyPerformanceSchema);
+const TradingOpportunity = mongoose.models.TradingOpportunity || mongoose.model('TradingOpportunity', tradingOpportunitySchema);
 
 module.exports = {
     StrategyConfig,
