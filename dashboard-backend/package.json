@@ -33,11 +33,13 @@
   "dependencies": {
     "@tensorflow/tfjs-node": "^4.22.0",
     "axios": "^1.11.0",
+    "axios-retry": "^4.5.0",
     "bcrypt": "^6.0.0",
     "cheerio": "^1.0.0-rc.12",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "events": "^3.3.0",
     "express": "^5.1.0",
     "financial": "^0.2.4",
     "jsonwebtoken": "^9.0.2",
@@ -46,10 +48,13 @@
     "ml-matrix": "^6.12.1",
     "ml-regression": "^6.3.0",
     "moment": "^2.30.1",
+    "moment-timezone": "^0.6.0",
     "mongoose": "^8.18.0",
     "node-cron": "^4.2.1",
     "simple-statistics": "^7.8.8",
+    "socket.io-client": "^4.8.1",
     "synaptic": "^1.1.4",
+    "uuid": "^11.1.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {

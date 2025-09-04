@@ -57,6 +57,9 @@ const mlRoutes = require('./src/routes/mlRoutes');
 // Import Phase 3A Step 6 Risk Management routes
 const riskRoutes = require('./src/routes/riskRoutes');
 
+// Import Phase 3A Step 8 Live Trading routes
+const liveTradingRoutes = require('./src/routes/liveTradingRoutes');
+
 // Import utilities
 const { NSE_INDEX_TOKENS, FO_SECURITIES } = require('./src/utils/constants');
 
@@ -128,6 +131,9 @@ app.use('/api/v6/risk', riskRoutes);
 
 // Phase 3A Step 7: Advanced Trading Strategies
 app.use('/api/v7/strategies', tradingStrategiesRoutes);
+
+// Phase 3A Step 8: Live Trading Integration
+app.use('/api/v8/live', liveTradingRoutes);
 
 // Multi-API system routes (Phase 2.5) - Mount before auth routes to avoid catch-all
 app.use('/api/multi', multiApiRoutes);
