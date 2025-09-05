@@ -89,6 +89,11 @@ pids
 # Backup files
 *.backup
 
+# TestSprite files and configurations
+testsprite-config.json
+test-with-testsprite.sh
+test-with-testsprite.ps1
+*testsprite*
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
