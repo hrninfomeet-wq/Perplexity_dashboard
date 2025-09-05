@@ -6,6 +6,7 @@ import PortfolioView from './PortfolioView';
 import StrategySelector from './StrategySelector';
 import ConnectButton from '../shared/ConnectButton';
 import AlertsStrip from '../shared/AlertsStrip';
+import PaperTradingControls from '../trading/PaperTradingControls';
 import apiPortalService from '../../services/apiPortalService';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -204,6 +205,11 @@ const DashboardComponent = () => {
             </div>
 
             <PortfolioView />
+
+            <div className="panel-section">
+              <h4 className="panel-section-title">Paper Trading</h4>
+              <PaperTradingControls />
+            </div>
 
             <div className="panel-section">
               <h4 className="panel-section-title">Recent Signals</h4>

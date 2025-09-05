@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import liveTradingAPI from '../services/liveTradingAPI';
+import backendApiService from '../services/backendApiService';
+import paperTradingService from '../services/paperTradingService';
+import websocketService from '../services/websocketService';
+import apiPortalService from '../services/apiPortalService';
 
 // Trading Context
 const TradingContext = createContext();
@@ -472,7 +476,71 @@ export function TradingProvider({ children }) {
 
   // Setup API Event Listeners
   useEffect(() => {
-    // Listen for API events
+    // Initialize backend services
+    const initializeServices = async () => {
+      try {
+        // Initialize backend API service
+        await backendApiService.init();
+        
+        // Setup backend event listeners
+        backendApiService.on('onInitialized', () => {
+          console.log('✅ Backend API service ready');
+          actions.setConnectionStatus(true);
+        });
+        
+        backendApiService.on('onError', (error) => {
+          console.error('❌ Backend API error:', error);
+          actions.setError(error.error);
+        });
+        
+      } catch (error) {
+        console.error('Service initialization failed:', error);
+        actions.setError(error.message);
+      }
+    };
+    
+    // Listen for paper trading events
+    paperTradingService.on('onSessionStarted', (session) => {
+      actions.setActiveSession(session);
+      actions.updateSessionStatus('active');
+      monitorSession(session.sessionId);
+    });
+    
+    paperTradingService.on('onSessionStopped', (session) => {
+      actions.setActiveSession(null);
+      actions.updateSessionStatus('stopped');
+      stopMonitoring();
+    });
+    
+    paperTradingService.on('onTradeExecuted', (trade) => {
+      actions.addTrade(trade);
+    });
+    
+    paperTradingService.on('onPortfolioUpdate', (portfolio) => {
+      actions.setPortfolio(portfolio);
+    });
+    
+    // Listen for WebSocket events
+    websocketService.on('onMarketData', (data) => {
+      actions.setMarketData(data);
+    });
+    
+    websocketService.on('onConnectionChange', (status) => {
+      console.log('WebSocket connection status:', status);
+    });
+    
+    // Listen for API portal events
+    apiPortalService.on('onProviderConnected', (provider) => {
+      console.log('Provider connected:', provider);
+      actions.setConnectionStatus(true);
+    });
+    
+    apiPortalService.on('onProviderDisconnected', (provider) => {
+      console.log('Provider disconnected:', provider);
+      actions.setConnectionStatus(false);
+    });
+    
+    // Listen for legacy API events
     liveTradingAPI.on('session_started', (data) => {
       actions.setActiveSession(data.session);
       actions.updateSessionStatus('active');
@@ -496,6 +564,9 @@ export function TradingProvider({ children }) {
       actions.updatePerformance(performance);
     });
     
+    // Initialize services
+    initializeServices();
+    
     // Initial system health check
     tradingActions.refreshSystemHealth();
     
@@ -507,6 +578,10 @@ export function TradingProvider({ children }) {
     return () => {
       stopMonitoring();
       clearInterval(healthInterval);
+      
+      // Cleanup services
+      backendApiService.destroy();
+      websocketService.disconnect();
       liveTradingAPI.disconnect();
     };
   }, []);
