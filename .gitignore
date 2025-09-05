@@ -88,3 +88,7 @@ pids
 
 # Backup files
 *.backup
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md
