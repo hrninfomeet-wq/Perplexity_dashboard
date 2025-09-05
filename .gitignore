@@ -95,5 +95,13 @@ test-with-testsprite.sh
 test-with-testsprite.ps1
 *testsprite*
 
+# Archive folder and backup files
+archive/
+*backup*
+*-backup.md
+*-old.*
+*_old.*
+*temp*
+
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
