@@ -3,55 +3,51 @@ const path = require('path');
 
 console.log('🚀 Starting combined frontend and backend servers...');
 
-// Start backend
-console.log('📡 Starting backend server...');
-const backend = spawn('node', ['index.js'], {
+const rootDir = path.resolve(__dirname, '..');
+const backendCwd = path.join(rootDir, 'dashboard-backend');
+const frontendCwd = path.join(rootDir, 'frontend');
+
+function spawnProcess(cmd, args, cwd, name) {
+  console.log(`▶️  Starting ${name}...`);
+  const child = spawn(cmd, args, {
+    cwd,
     stdio: 'pipe',
-    shell: true,
-    cwd: path.join(__dirname, 'dashboard-backend')
-});
+    shell: false,
+    env: process.env,
+  });
 
-backend.stdout.on('data', (data) => {
-    console.log(`[BACKEND] ${data.toString().trim()}`);
-});
+  child.stdout.on('data', (data) => {
+    process.stdout.write(`[${name}] ${data}`);
+  });
 
-backend.stderr.on('data', (data) => {
-    console.error(`[BACKEND ERROR] ${data.toString().trim()}`);
-});
+  child.stderr.on('data', (data) => {
+    process.stderr.write(`[${name} ERROR] ${data}`);
+  });
 
-// Wait a moment for backend to start, then start frontend
+  child.on('error', (err) => {
+    console.error(`[${name}] spawn error:`, err.message);
+  });
+
+  child.on('close', (code) => {
+    console.log(`[${name}] exited with code ${code}`);
+  });
+
+  return child;
+}
+
+// Start backend first
+const backend = spawnProcess('node', ['index.js'], backendCwd, 'BACKEND');
+
+// Start frontend shortly after
 setTimeout(() => {
-    console.log('🎨 Starting frontend server...');
-    const frontend = spawn('npm', ['run', 'dev'], {
-        cwd: path.join(__dirname, 'frontend'),
-        stdio: 'pipe',
-        shell: true
-    });
-
-    frontend.stdout.on('data', (data) => {
-        console.log(`[FRONTEND] ${data.toString().trim()}`);
-    });
-
-    frontend.stderr.on('data', (data) => {
-        console.error(`[FRONTEND ERROR] ${data.toString().trim()}`);
-    });
-
-    frontend.on('close', (code) => {
-        console.log(`Frontend process exited with code ${code}`);
-    });
-
-}, 2000);
-
-backend.on('close', (code) => {
-    console.log(`Backend process exited with code ${code}`);
-});
+  spawnProcess(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'dev'], frontendCwd, 'FRONTEND');
+}, 1500);
 
 // Keep the main process alive
 setInterval(() => {
-    console.log('📊 Combined server heartbeat:', new Date().toLocaleTimeString());
+  console.log('📊 Combined server heartbeat:', new Date().toLocaleTimeString());
 }, 30000);
 
-// Keep process alive
 process.stdin.resume();
 
-console.log('✅ Combined server setup complete');
+console.log('✅ Combined server setup initialized');

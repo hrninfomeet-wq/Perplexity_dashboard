@@ -1,7 +1,7 @@
 // frontend/src/components/Header.jsx
 import React, { useState, useEffect } from 'react';
 
-const Header = ({ dataSource, onDataSourceChange, indices = [] }) => {
+const Header = ({ dataSource, onDataSourceChange, indices = [], onToggleView, currentView }) => {
     const [currentDate, setCurrentDate] = useState('');
     const [currentTime, setCurrentTime] = useState('');
     const [marketTrend, setMarketTrend] = useState({
@@ -150,15 +150,40 @@ const Header = ({ dataSource, onDataSourceChange, indices = [] }) => {
                     ))}
                 </div>
                 
-                {/* Header Right - Data Source Toggle */}
+                {/* Header Right - View Toggle and Data Source */}
                 <div className="header-right">
-                    <div className="data-source-toggle">
-                        <span className="toggle-label">Data Source:</span>
-                        <div className={`toggle-switch ${dataSource === 'Live' ? 'on' : 'off'}`} onClick={handleToggle}>
-                            <div className="toggle-knob"></div>
-                        </div>
-                        <span className="toggle-status">{dataSource}</span>
+                    {/* View Toggle */}
+                    <div className="view-toggle">
+                        <button 
+                            className={`view-btn ${currentView === 'dashboard' ? 'active' : ''}`}
+                            onClick={() => onToggleView && onToggleView('dashboard')}
+                            title="Switch to Dashboard View"
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <i className="fas fa-th-large" />
+                            Dashboard
+                        </button>
+                        <button 
+                            className={`view-btn ${currentView === 'trading' ? 'active' : ''}`}
+                            onClick={() => onToggleView && onToggleView('trading')}
+                            title="Switch to Live Trading View"
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <i className="fas fa-chart-line" />
+                            Live Trading
+                        </button>
                     </div>
+
+                    {/* Data Source Toggle - Only show in dashboard view */}
+                    {currentView === 'dashboard' && (
+                        <div className="data-source-toggle">
+                            <span className="toggle-label">Data Source:</span>
+                            <div className={`toggle-switch ${dataSource === 'Live' ? 'on' : 'off'}`} onClick={handleToggle}>
+                                <div className="toggle-knob"></div>
+                            </div>
+                            <span className="toggle-status">{dataSource}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>

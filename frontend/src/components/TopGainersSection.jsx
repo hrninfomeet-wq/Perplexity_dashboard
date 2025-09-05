@@ -8,17 +8,20 @@ const TopGainersSection = () => {
     const [losers, setLosers] = useState([]);
     const [gainersTimestamp, setGainersTimestamp] = useState('Never');
     const [losersTimestamp, setLosersTimestamp] = useState('Never');
+    const [isLoadingGainers, setIsLoadingGainers] = useState(false);
+    const [isLoadingLosers, setIsLoadingLosers] = useState(false);
 
     // Fetch Top Gainers
     useEffect(() => {
         const fetchGainers = async () => {
             try {
-                const response = await fetch('/api/gainers');
+                setIsLoadingGainers(true);
+                const response = await fetch('http://localhost:5000/api/gainers');
                 if (!response.ok) {
                     throw new Error('Failed to fetch gainers data');
                 }
                 const data = await response.json();
-                let gainersData = data.data.gainers || [];
+                let gainersData = data.data || [];
                 
                 // If no gainers data available, use mock data for demonstration
                 if (gainersData.length === 0) {
@@ -58,7 +61,7 @@ const TopGainersSection = () => {
     useEffect(() => {
         const fetchLosers = async () => {
             try {
-                const response = await fetch('/api/losers');
+                const response = await fetch('http://localhost:5000/api/losers');
                 if (!response.ok) {
                     throw new Error('Failed to fetch losers data');
                 }

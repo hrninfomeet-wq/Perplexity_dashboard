@@ -1,0 +1,572 @@
+/* Professional Trading Terminal Dark Theme */
+/* Inspired by Bloomberg Terminal, TradingView, and MetaTrader */
+
+:root {
+  /* Primary Dark Theme Colors */
+  --trading-bg-primary: #0a0e1a;           /* Main background - deep navy */
+  --trading-bg-secondary: #131722;          /* Panel backgrounds */
+  --trading-bg-tertiary: #1e222d;           /* Card/widget backgrounds */
+  --trading-bg-quaternary: #2a2e39;         /* Hover states */
+
+  /* Text Colors */
+  --trading-text-primary: #f7f8fa;          /* Primary text - white */
+  --trading-text-secondary: #b2b5be;        /* Secondary text - light gray */
+  --trading-text-tertiary: #868993;         /* Muted text */
+  --trading-text-disabled: #5d606b;         /* Disabled text */
+
+  /* Trading Colors */
+  --trading-green: #26a69a;                 /* Bullish/Profit */
+  --trading-green-light: #4caf50;           /* Light green accents */
+  --trading-green-dark: #00695c;            /* Dark green backgrounds */
+  --trading-red: #ef5350;                   /* Bearish/Loss */
+  --trading-red-light: #ff5722;             /* Light red accents */
+  --trading-red-dark: #c62828;              /* Dark red backgrounds */
+
+  /* Accent Colors */
+  --trading-blue: #2196f3;                  /* Primary actions */
+  --trading-blue-light: #64b5f6;            /* Light blue accents */
+  --trading-blue-dark: #1565c0;             /* Dark blue backgrounds */
+  --trading-orange: #ff9800;                /* Warnings/Alerts */
+  --trading-purple: #9c27b0;                /* Special highlights */
+  --trading-yellow: #ffc107;                /* Attention/Pending */
+
+  /* Border and Divider Colors */
+  --trading-border-primary: #363a45;        /* Main borders */
+  --trading-border-secondary: #2a2e39;      /* Secondary borders */
+  --trading-border-accent: #424651;         /* Accent borders */
+
+  /* Chart Colors */
+  --chart-grid: #2a2e39;                    /* Chart grid lines */
+  --chart-axis: #5d606b;                    /* Chart axis */
+  --chart-candle-bull: #26a69a;             /* Bullish candles */
+  --chart-candle-bear: #ef5350;             /* Bearish candles */
+
+  /* Status Colors */
+  --status-online: #4caf50;                 /* Connected/Online */
+  --status-offline: #f44336;                /* Disconnected/Offline */
+  --status-warning: #ff9800;                /* Warning states */
+  --status-info: #2196f3;                   /* Information */
+
+  /* Legacy Compatibility */
+  --primary-color: #00ff88;
+  --text-primary: #f7f8fa;
+  --text-secondary: #b2b5be;
+
+  /* Gradient Backgrounds */
+  --gradient-primary: linear-gradient(135deg, #0a0e1a 0%, #131722 100%);
+  --gradient-panel: linear-gradient(135deg, #131722 0%, #1e222d 100%);
+  --gradient-accent: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  --gradient-success: linear-gradient(135deg, #26a69a 0%, #4caf50 100%);
+  --gradient-danger: linear-gradient(135deg, #ef5350 0%, #f44336 100%);
+
+  /* Shadow Definitions */
+  --shadow-panel: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.2);
+  --shadow-button: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-active: 0 6px 30px rgba(33, 150, 243, 0.2);
+
+  /* Typography */
+  --font-primary: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 1.875rem;   /* 30px */
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;       /* 4px */
+  --spacing-sm: 0.5rem;        /* 8px */
+  --spacing-md: 0.75rem;       /* 12px */
+  --spacing-lg: 1rem;          /* 16px */
+  --spacing-xl: 1.5rem;        /* 24px */
+  --spacing-2xl: 2rem;         /* 32px */
+  --spacing-3xl: 3rem;         /* 48px */
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.25s ease-in-out;
+  --transition-slow: 0.35s ease-in-out;
+
+  /* Z-Index Layers */
+  --z-dropdown: 1000;
+  --z-sticky: 1010;
+  --z-fixed: 1020;
+  --z-modal-backdrop: 1030;
+  --z-modal: 1040;
+  --z-popover: 1050;
+  --z-tooltip: 1060;
+}
+
+/* Global Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  background: var(--trading-bg-primary);
+  color: var(--trading-text-primary);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+#root {
+  height: 100vh;
+  background: var(--gradient-primary);
+}
+
+/* Trading Layout System */
+.trading-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  background: var(--gradient-primary);
+}
+
+.trading-header {
+  background: var(--trading-bg-secondary);
+  border-bottom: 1px solid var(--trading-border-primary);
+  padding: var(--spacing-md) var(--spacing-lg);
+  box-shadow: var(--shadow-card);
+  z-index: var(--z-sticky);
+}
+
+.trading-main {
+  display: grid;
+  grid-template-columns: 250px 1fr 300px;
+  grid-template-rows: 1fr;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  overflow: hidden;
+  height: calc(100vh - 120px); /* Adjust based on header/footer height */
+}
+
+.trading-sidebar {
+  background: var(--trading-bg-secondary);
+  border: 1px solid var(--trading-border-primary);
+  border-radius: var(--radius-lg);
+  overflow-y: auto;
+  box-shadow: var(--shadow-panel);
+}
+
+.trading-content {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--spacing-md);
+  overflow: hidden;
+}
+
+.trading-aside {
+  background: var(--trading-bg-secondary);
+  border: 1px solid var(--trading-border-primary);
+  border-radius: var(--radius-lg);
+  overflow-y: auto;
+  box-shadow: var(--shadow-panel);
+}
+
+/* Trading Panel System */
+.trading-panel {
+  background: var(--trading-bg-tertiary);
+  border: 1px solid var(--trading-border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.trading-panel:hover {
+  border-color: var(--trading-border-accent);
+  box-shadow: var(--shadow-active);
+}
+
+.trading-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--gradient-panel);
+  border-bottom: 1px solid var(--trading-border-primary);
+}
+
+.trading-panel-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--trading-text-primary);
+}
+
+.trading-panel-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.trading-panel-content {
+  padding: var(--spacing-lg);
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Button System */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-button);
+  min-width: 120px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--gradient-accent);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--trading-green) 0%, var(--trading-green-dark) 100%);
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(38, 166, 154, 0.3);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--trading-red) 0%, var(--trading-red-dark) 100%);
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(239, 83, 80, 0.3);
+}
+
+.btn-secondary {
+  background: var(--trading-bg-quaternary);
+  color: var(--trading-text-primary);
+  border: 1px solid var(--trading-border-accent);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--trading-border-accent);
+  transform: translateY(-1px);
+}
+
+/* Status Indicators */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-online .status-dot {
+  background: var(--status-online);
+}
+
+.status-offline .status-dot {
+  background: var(--status-offline);
+}
+
+.status-warning .status-dot {
+  background: var(--status-warning);
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Price Display */
+.price-display {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--font-size-lg);
+}
+
+.price-positive {
+  color: var(--trading-green);
+}
+
+.price-negative {
+  color: var(--trading-red);
+}
+
+.price-neutral {
+  color: var(--trading-text-primary);
+}
+
+/* Trading Cards */
+.trading-card {
+  background: var(--trading-bg-tertiary);
+  border: 1px solid var(--trading-border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+}
+
+.trading-card:hover {
+  border-color: var(--trading-border-accent);
+  box-shadow: var(--shadow-active);
+  transform: translateY(-2px);
+}
+
+/* Data Grid */
+.trading-grid {
+  display: grid;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+.trading-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.trading-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.trading-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Input Controls */
+.trading-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: var(--trading-bg-quaternary);
+  border: 1px solid var(--trading-border-primary);
+  border-radius: var(--radius-md);
+  color: var(--trading-text-primary);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  transition: all var(--transition-fast);
+}
+
+.trading-input:focus {
+  outline: none;
+  border-color: var(--trading-blue);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.trading-input::placeholder {
+  color: var(--trading-text-tertiary);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--trading-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--trading-border-accent);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--trading-text-tertiary);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .trading-main {
+    grid-template-columns: 200px 1fr 250px;
+  }
+}
+
+@media (max-width: 992px) {
+  .trading-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+  }
+  
+  .trading-sidebar,
+  .trading-aside {
+    height: auto;
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .trading-main {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+  
+  .trading-panel-content {
+    padding: var(--spacing-md);
+  }
+  
+  .btn {
+    min-width: 100px;
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.font-mono { font-family: var(--font-mono); }
+.font-bold { font-weight: 600; }
+.text-sm { font-size: var(--font-size-sm); }
+.text-lg { font-size: var(--font-size-lg); }
+.text-xl { font-size: var(--font-size-xl); }
+
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm { gap: var(--spacing-sm); }
+.gap-md { gap: var(--spacing-md); }
+
+/* ================================
+   VIEW TOGGLE STYLES
+   ================================ */
+
+.view-toggle {
+  display: flex;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 10px;
+  padding: 6px;
+  margin-right: 20px;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.view-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  position: relative;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.view-btn:hover {
+  background: rgba(0, 255, 136, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.15);
+}
+
+.view-btn.active {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc70 100%);
+  color: #1a1a1a !important;
+  font-weight: 700;
+  box-shadow: 
+    0 4px 15px rgba(0, 255, 136, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.view-btn.active:hover {
+  background: linear-gradient(135deg, #00ff88 0%, #00b366 100%);
+  color: #1a1a1a !important;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 20px rgba(0, 255, 136, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.view-btn i {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.view-btn.active i {
+  opacity: 1;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.gap-lg { gap: var(--spacing-lg); }

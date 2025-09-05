@@ -8,7 +8,7 @@ const FnOAnalysis = () => {
     useEffect(() => {
         const fetchFnOData = async () => {
             try {
-                const response = await fetch('/api/fno-analysis?symbol=NIFTY');
+                const response = await fetch('http://localhost:5000/api/fno-analysis?symbol=NIFTY');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

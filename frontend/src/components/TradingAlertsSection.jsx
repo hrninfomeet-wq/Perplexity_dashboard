@@ -42,7 +42,7 @@ const TradingAlertsSection = () => {
     useEffect(() => {
         const fetchAlerts = async () => {
             try {
-                const response = await fetch('/api/alerts');
+                const response = await fetch('http://localhost:5000/api/alerts');
                 if (response.ok) {
                     const data = await response.json();
                     setAlerts(data.data || mockIndexAlerts);

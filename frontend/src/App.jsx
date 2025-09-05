@@ -10,10 +10,16 @@ import TradingAlertsSection from './components/TradingAlertsSection';
 import SettingsSection from './components/SettingsSection';
 import TopGainersSection from './components/TopGainersSection';
 import SearchScripSection from './components/SearchScripSection';
+import TradingLayout from './components/TradingLayout';
+import LiveTradingDashboard from './components/LiveTradingDashboard';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { TradingProvider } from './contexts/TradingContext';
+import './styles/trading-dark-theme.css';
+import './styles/live-trading-enhancements.css';
 import './main-styles.css';
 
 function App() {
+  const [viewMode, setViewMode] = useState('dashboard'); // 'dashboard' or 'trading'
   const [dataSource, setDataSource] = useState('Mock');
   const [headerIndices, setHeaderIndices] = useState([
     { symbol: 'NIFTY', name: 'NIFTY 50', price: 24500.00, change: 125.50, change_pct: 0.51, support: 24350, resistance: 24650 },
@@ -38,7 +44,7 @@ function App() {
   useEffect(() => {
     const fetchHeaderIndices = async () => {
       try {
-        const response = await fetch('/api/indices');
+        const response = await fetch('http://localhost:5000/api/indices');
         if (response.ok) {
           const data = await response.json();
           const allIndices = data.data || [];
@@ -64,25 +70,40 @@ function App() {
   }, [dataSource]);
 
   return (
-    <SettingsProvider>
-      <div className="App">
-        <Header 
-          dataSource={dataSource} 
-          onDataSourceChange={setDataSource}
-          indices={headerIndices}
-        />
-        
-        {/* Two-Column Layout Container */}
-        <div className="two-column-container">
-          {/* LEFT COLUMN (70%) */}
-          <div className="left-column">
+    <TradingProvider>
+      <SettingsProvider>
+        {viewMode === 'trading' ? (
+          <div className="trading-app-container">
+            <Header 
+              dataSource={dataSource} 
+              onDataSourceChange={setDataSource}
+              indices={headerIndices}
+              onToggleView={(newView) => setViewMode(newView || (viewMode === 'dashboard' ? 'trading' : 'dashboard'))}
+              currentView={viewMode}
+            />
+            <LiveTradingDashboard />
+          </div>
+        ) : (
+          <div className="App">
+            <Header 
+              dataSource={dataSource} 
+              onDataSourceChange={setDataSource}
+              indices={headerIndices}
+              onToggleView={(newView) => setViewMode(newView || (viewMode === 'dashboard' ? 'trading' : 'dashboard'))}
+              currentView={viewMode}
+            />
             
-            {/* Major Indices Strip - Collapsible Section */}
-            <section className={`major-indices-section ${isIndicesCollapsed ? 'collapsed' : 'expanded'}`}>
-              <div className="collapsible-header" onClick={() => setIsIndicesCollapsed(!isIndicesCollapsed)}>
-                <div className="section-title-wrapper">
-                  <h2 className="section-title">📊 Major Indices</h2>
-                  <span className="section-subtitle">Real-time index movements and trends</span>
+            {/* Two-Column Layout Container */}
+            <div className="two-column-container">
+              {/* LEFT COLUMN (70%) */}
+              <div className="left-column">
+                
+                {/* Major Indices Strip - Collapsible Section */}
+                <section className={`major-indices-section ${isIndicesCollapsed ? 'collapsed' : 'expanded'}`}>
+                  <div className="collapsible-header" onClick={() => setIsIndicesCollapsed(!isIndicesCollapsed)}>
+                    <div className="section-title-wrapper">
+                      <h2 className="section-title">📊 Major Indices</h2>
+                      <span className="section-subtitle">Real-time index movements and trends</span>
                 </div>
                 <button className="collapse-toggle" aria-label={isIndicesCollapsed ? 'Expand major indices' : 'Collapse major indices'}>
                   <svg 
@@ -334,10 +355,12 @@ function App() {
               </div>
             </section>
 
+            </div>
           </div>
         </div>
-      </div>
-    </SettingsProvider>
+        )}
+      </SettingsProvider>
+    </TradingProvider>
   );
 }
 

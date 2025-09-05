@@ -8,7 +8,7 @@ const MarketIndices = () => {
     useEffect(() => {
         const fetchIndices = async () => {
             try {
-                const response = await fetch('/api/indices');
+                const response = await fetch('http://localhost:5000/api/indices');
                 if (!response.ok) {
                     // If we get a 401, it means we need to authenticate.
                     // The UI should ideally show a login prompt here.

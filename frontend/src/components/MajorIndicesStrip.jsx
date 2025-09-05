@@ -19,7 +19,7 @@ const MajorIndicesStrip = ({ dataSource }) => {
                     setIsRefreshing(true);
                 }
                 
-                const response = await fetch('/api/indices');
+                const response = await fetch('http://localhost:5000/api/indices');
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);

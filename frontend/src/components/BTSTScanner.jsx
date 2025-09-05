@@ -8,7 +8,7 @@ const BTSTScanner = () => {
     useEffect(() => {
         const fetchBTSTData = async () => {
             try {
-                const response = await fetch('/api/btst');
+                const response = await fetch('http://localhost:5000/api/btst');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

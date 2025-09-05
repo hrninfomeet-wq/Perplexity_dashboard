@@ -1,67 +1,336 @@
-# NSE Trading Dashboard - Enterprise Live Trading Platform
+# NSE Trading Dashboard - Professional Market Analysis Platform
 
 <div align="center">
-  <h3>Professional-Grade Real-Time Market Analysis & Live Trading Infrastructure</h3>
+  <h3>Real-Time Market Analysis & Trading Dashboard with Live Data Integration</h3>
   <p>
-    <strong>Version 3A.8</strong> • 
-    <strong>Phase 3A Step 8 Complete</strong> • 
-    <strong>Live Trading Integration Operational</strong>
+    <strong>Version 4.0</strong> • 
+    <strong>Live Trading Integrated</strong> • 
+    <strong>Production Ready</strong>
   </p>
   
   ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-  ![Tests](https://img.shields.io/badge/tests-92.6%25-brightgreen)
-  ![API Coverage](https://img.shields.io/badge/api--coverage-730%2B%20req%2Fmin-blue)
-  ![MongoDB](https://img.shields.io/badge/database-MongoDB%20Atlas-green)
-  ![Live Trading](https://img.shields.io/badge/live--trading-operational-success)
+  ![Frontend](https://img.shields.io/badge/frontend-React_19.1.1-blue)
+  ![Backend](https://img.shields.io/badge/backend-Node.js_Express-green)
+  ![API Integration](https://img.shields.io/badge/API-Flattrade_Live-success)
+  ![Status](https://img.shields.io/badge/status-production_ready-brightgreen)
 </div>
 
 ## 🎯 Project Overview
 
-**NSE Trading Dashboard** is an enterprise-grade live trading platform designed for professional traders, investment advisors, and trading desk professionals. Built with modern technology stack and featuring comprehensive market analysis, ML-enhanced signal generation, and complete live trading infrastructure.
+**NSE Trading Dashboard** is a professional-grade market analysis platform designed for active traders, analysts, and investment professionals. The system provides comprehensive real-time market data, technical analysis, trading alerts, and integrated live trading capabilities through a modern, responsive web interface.
 
-### ✨ **Current Status: Phase 3A Step 8 Complete**
-- ✅ **Live Trading Engine**: Complete paper trading system with execution simulation
-- ✅ **Database Integration**: MongoDB Atlas with 92.6% test success rate
-- ✅ **Real-time Market Data**: Crypto and NSE data feeds with persistence
-- ✅ **Performance Analytics**: Comprehensive trading metrics and portfolio tracking
-- ✅ **ML-Enhanced Signals**: Neural networks with 15+ technical indicators
-- ✅ **Multi-API Architecture**: 730+ req/min capacity with intelligent failover
+### ✨ **Current Status: Production Ready**
+- ✅ **Live Trading Integration**: Flattrade API with paper trading capabilities
+- ✅ **Real-time Market Data**: Live NSE data feeds with intelligent fallbacks
+- ✅ **Professional Interface**: Responsive design optimized for high-resolution displays
+- ✅ **Trading Analytics**: Advanced market analysis with technical indicators
+- ✅ **Modular Architecture**: Scalable React + Node.js implementation
+- ✅ **Full-width Layout**: Optimized for 4K and ultrawide displays
 
 ## 🚀 Key Features
 
-### 🔥 **Live Trading Infrastructure**
-- **Paper Trading System**: Complete simulation environment with real market data
-- **Execution Simulator**: Advanced order execution with latency and slippage modeling
-- **Portfolio Manager**: Real-time position tracking with database persistence
-- **Performance Analytics**: Comprehensive trading metrics and P&L analysis
-- **Risk Management**: Advanced position sizing with portfolio risk monitoring
+### 📊 **Market Analysis Components**
+- **Real-time Market Indices**: Live NSE, SENSEX, Bank Nifty, VIX tracking
+- **Top Gainers/Losers**: Dynamic market movers with percentage changes
+- **F&O Analysis**: Futures and options market insights
+- **BTST Scanner**: Buy Today Sell Tomorrow opportunity identification
+- **Scalping Opportunities**: Short-term trading signals and alerts
+- **Trading Alerts**: Real-time market alerts and notifications
 
-### 📊 **Advanced Analytics**
-- **Technical Indicators**: 15+ indicators (RSI, MACD, Bollinger Bands, etc.)
-- **Pattern Recognition**: 20+ candlestick and chart patterns with ML confidence
-- **ML Signal Enhancement**: Neural networks for pattern classification and prediction
-- **Real-time Signals**: Automated buy/sell/hold recommendations
-- **Market Screening**: Advanced filtering with technical criteria
+### 💹 **Live Trading Integration**
+- **Flattrade API Integration**: Secure authentication with HMAC-SHA256
+- **Paper Trading System**: Risk-free trading simulation with real market data
+- **Portfolio Management**: Real-time position tracking and P&L calculation
+- **Live Market Data**: Real-time price feeds with intelligent fallback to mock data
+- **Order Management**: Complete trading workflow simulation
 
-### 🏗️ **Enterprise Architecture**
-- **Multi-API Integration**: 5 provider system (Upstox, FYERS, Flattrade, NSE, AliceBlue)
-- **730+ req/min Capacity**: 9.1x improvement supporting high-frequency operations
-- **MongoDB Atlas**: Comprehensive database with transaction consistency
-- **Real-time Data Pipeline**: Crypto and NSE market data feeds
-- **Intelligent Failover**: <1 second automatic provider switching
+### 🎨 **User Experience**
+- **Professional Interface**: Clean, modern design optimized for trading workflows
+- **Responsive Layout**: Full-width utilization on high-resolution displays (4K, ultrawide)
+- **Collapsible Sections**: Customizable dashboard layout with section management
+- **Dark Theme**: Professional trading terminal aesthetics
+- **Real-time Updates**: Live data refresh with configurable intervals
 
-### 🧠 **Machine Learning**
-- **Neural Networks**: Pattern classification and price prediction
-- **Ensemble Methods**: Multiple ML models for improved accuracy
-- **Confidence Scoring**: ML-based confidence levels for all signals
-- **Scalping Support**: Ultra-fast timeframes (1m, 3m, 15m)
+### 🏗️ **Technical Architecture**
+- **Frontend**: React 19.1.1 with Vite for fast development and builds
+- **Backend**: Node.js with Express.js REST API server
+- **Styling**: Modern CSS with responsive design and CSS Grid/Flexbox
+- **API Integration**: RESTful endpoints with error handling and fallbacks
+- **State Management**: React Context API for global state
+- **Real-time Communication**: HTTP polling with plans for WebSocket integration
 
-## 🛠️ Technology Stack
+## 📁 Project Structure
 
-### **Frontend**
 ```
-React 19.1.1 + Vite 7.1.3
-├── Professional Collapsible Interface
+Perplexity_dashboard/
+│
+├── frontend/                          # React Frontend Application
+│   ├── src/
+│   │   ├── components/                # React Components
+│   │   │   ├── Header.jsx            # Main navigation header
+│   │   │   ├── MajorIndicesStrip.jsx # Top market indices display
+│   │   │   ├── MarketIndices.jsx     # Market data visualization
+│   │   │   ├── TopGainersSection.jsx # Top gaining stocks
+│   │   │   ├── FnOAnalysis.jsx       # F&O market analysis
+│   │   │   ├── BTSTScanner.jsx       # BTST trading opportunities
+│   │   │   ├── ScalpingOpportunities.jsx # Short-term trading signals
+│   │   │   ├── TradingAlertsSection.jsx  # Real-time alerts
+│   │   │   ├── TradingLayout.jsx     # Main dashboard layout
+│   │   │   ├── LiveTradingDashboard.jsx # Live trading interface
+│   │   │   ├── SettingsSection.jsx   # Configuration settings
+│   │   │   └── SearchScripSection.jsx # Stock search functionality
+│   │   ├── contexts/                 # React Context Providers
+│   │   │   ├── SettingsContext.jsx   # Global settings management
+│   │   │   └── TradingContext.jsx    # Trading state management
+│   │   ├── services/                 # API Service Layer
+│   │   │   └── liveTradingAPI.js     # Live trading API integration
+│   │   ├── styles/                   # CSS Styling
+│   │   │   ├── trading-dark-theme.css # Dark theme styles
+│   │   │   ├── live-trading-enhancements.css # Live trading UI
+│   │   │   └── main-styles.css       # Core application styles
+│   │   └── App.jsx                   # Main application component
+│   ├── public/                       # Static assets
+│   ├── package.json                  # Frontend dependencies
+│   └── vite.config.js               # Vite build configuration
+│
+├── dashboard-backend/                 # Node.js Backend Server
+│   ├── src/                          # Source code (if using structured approach)
+│   ├── flattrade-service.js          # Flattrade API integration service
+│   ├── live-trading-controller.js    # Paper trading management
+│   ├── index-simple-live.js          # Main server with live trading
+│   ├── index.js                      # Basic server implementation
+│   ├── package.json                  # Backend dependencies
+│   ├── .env                          # Environment variables (API keys)
+│   └── test-*.js                     # Testing utilities
+│
+├── archive/                          # Historical versions and backups
+├── Help files for Prompt/           # Development documentation
+├── README.md                        # Project documentation
+├── PROJECT-SUMMARY.md               # Comprehensive project overview
+├── PROJECT-STATUS-UPDATE.md         # Current development status
+└── start-project.bat               # Quick start script for Windows
+```
+
+### 🔥 **Live Trading Infrastructure**
+- **Paper Trading System**: Risk-free trading simulation with real market data
+- **Real-time Portfolio**: Live position tracking and P&L calculation
+- **Order Simulation**: Complete trading workflow with execution simulation
+- **Performance Analytics**: Comprehensive trading metrics and analysis
+
+## 🛠️ **Technology Stack**
+
+### Frontend
+- **React 19.1.1**: Modern React with latest features and hooks
+- **Vite**: Fast build tool and development server
+- **CSS Grid/Flexbox**: Responsive layout system
+- **Context API**: Global state management
+- **Modern JavaScript**: ES6+ features and async/await
+
+### Backend
+- **Node.js**: JavaScript runtime environment
+- **Express.js**: Web application framework
+- **Axios**: HTTP client for API requests
+- **Crypto**: Built-in module for HMAC authentication
+- **CORS**: Cross-origin resource sharing
+- **dotenv**: Environment variable management
+
+### API Integration
+- **Flattrade API**: Live trading and market data
+- **RESTful Architecture**: Clean API design patterns
+- **Error Handling**: Comprehensive error management
+- **Rate Limiting**: API request throttling
+- **Fallback System**: Mock data for development/testing
+
+## 🚀 **Getting Started**
+
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn package manager
+- Modern web browser (Chrome, Firefox, Edge)
+- Flattrade API credentials (for live trading)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/hrninfomeet-wq/Perplexity_dashboard.git
+   cd Perplexity_dashboard
+   ```
+
+2. **Install backend dependencies**
+   ```bash
+   cd dashboard-backend
+   npm install
+   ```
+
+3. **Install frontend dependencies**
+   ```bash
+   cd ../frontend
+   npm install
+   ```
+
+4. **Configure environment variables**
+   Create a `.env` file in the `dashboard-backend` directory:
+   ```env
+   FLATTRADE_API_KEY=your_api_key
+   FLATTRADE_API_SECRET=your_api_secret
+   FLATTRADE_CLIENT_CODE=your_client_code
+   FLATTRADE_TOKEN=your_token
+   PORT=5000
+   ```
+
+5. **Start the development servers**
+
+   **Backend:**
+   ```bash
+   cd dashboard-backend
+   npm start
+   # or for live trading version
+   node index-simple-live.js
+   ```
+
+   **Frontend:**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+6. **Access the application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000
+
+### Quick Start (Windows)
+Run the included batch file:
+```cmd
+start-project.bat
+```
+
+## 📡 **API Endpoints**
+
+### Market Data
+- `GET /api/market-data` - Current market indices (NIFTY, SENSEX, BANKNIFTY)
+- `GET /api/top-gainers` - Top gaining stocks
+- `GET /api/top-losers` - Top losing stocks
+- `GET /api/portfolio` - Portfolio holdings and positions
+- `GET /api/trading-alerts` - Real-time trading alerts
+- `GET /api/risk-metrics` - Risk management metrics
+
+### Live Trading
+- `GET /api/live/market-data` - Live market data from Flattrade
+- `GET /api/trading/health` - Flattrade API health status
+- `POST /api/trading/session/start` - Start paper trading session
+- `GET /api/trading/portfolio/:sessionId` - Get portfolio for session
+
+### System
+- `GET /health` - Server health check
+
+## 🎨 **User Interface**
+
+### Dashboard Features
+- **Collapsible Sections**: Customize your workspace by showing/hiding sections
+- **Responsive Design**: Optimized for 4K and ultrawide displays
+- **Dark Theme**: Professional trading terminal aesthetics
+- **Real-time Updates**: Live data refresh with visual indicators
+- **Interactive Components**: Click-to-expand details and actions
+
+### Trading Interface
+- **Live Trading Dashboard**: Complete trading interface with real-time data
+- **Paper Trading**: Risk-free simulation environment
+- **Portfolio Tracker**: Real-time position and P&L monitoring
+- **Market Analysis**: Technical indicators and pattern recognition
+- **Alert System**: Customizable notifications and alerts
+
+## 🔧 **Configuration**
+
+### Environment Variables
+```env
+# Flattrade API Configuration
+FLATTRADE_API_KEY=your_api_key_here
+FLATTRADE_API_SECRET=your_api_secret_here
+FLATTRADE_CLIENT_CODE=your_client_code_here
+FLATTRADE_TOKEN=your_token_here
+
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+```
+
+### Frontend Configuration
+- Update API endpoints in `src/services/liveTradingAPI.js`
+- Customize theme in `src/styles/trading-dark-theme.css`
+- Configure layout in `src/components/TradingLayout.jsx`
+
+## 🚀 **Deployment**
+
+### Production Build
+```bash
+# Build frontend for production
+cd frontend
+npm run build
+
+# Start production backend
+cd ../dashboard-backend
+NODE_ENV=production node index-simple-live.js
+```
+
+### Docker Support (Future Enhancement)
+```dockerfile
+# Dockerfile example for future implementation
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 5000
+CMD ["node", "index-simple-live.js"]
+```
+
+## 🧪 **Testing**
+
+### Backend Testing
+```bash
+cd dashboard-backend
+node test-live-integration.js  # Test live trading integration
+node quick-health-test.js      # Quick health check
+```
+
+### Frontend Testing
+```bash
+cd frontend
+npm run test  # Run frontend tests (when configured)
+```
+
+## 🤝 **Contributing**
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## � **License**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 **Support**
+
+For support and questions:
+- Create an issue on GitHub
+- Contact: [Your Contact Information]
+
+## 🏆 **Acknowledgments**
+
+- Flattrade for live trading API
+- React community for excellent documentation
+- NSE for market data standards
+- Trading community for feature inspiration
+
+---
+
+<div align="center">
+  <p><strong>Built with ❤️ for the trading community</strong></p>
+  <p>© 2025 NSE Trading Dashboard. All rights reserved.</p>
+</div>
 ├── Responsive Grid Layout
 ├── Real-time Data Visualization
 ├── Context-based State Management
