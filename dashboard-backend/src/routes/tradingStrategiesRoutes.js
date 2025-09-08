@@ -5,15 +5,17 @@
 
 const express = require('express');
 const router = express.Router();
-const TradingStrategiesEngine = require('../services/tradingStrategiesEngine');
+// TEMPORARILY DISABLED DUE TO SYNTAX ERROR
+// const TradingStrategiesEngine = require('../services/tradingStrategiesEngine');
 
 // Initialize strategies engine
-let strategiesEngine;
-try {
-    strategiesEngine = new TradingStrategiesEngine();
-} catch (error) {
-    console.error('❌ Failed to initialize Trading Strategies Engine:', error);
-}
+let strategiesEngine = null;
+// TEMPORARILY DISABLED
+// try {
+//     strategiesEngine = new TradingStrategiesEngine();
+// } catch (error) {
+//     console.error('❌ Failed to initialize Trading Strategies Engine:', error);
+// }
 
 /**
  * GET /api/strategies - Get all available strategies

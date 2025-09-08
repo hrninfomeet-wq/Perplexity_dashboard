@@ -275,6 +275,23 @@ class WebSocketService {
     this.connectionStatus = status;
   }
 
+  // Configuration update method
+  updateConfig(config = {}) {
+    if (config.serverUrl) {
+      this.serverUrl = config.serverUrl;
+    }
+    if (config.provider) {
+      this.provider = config.provider;
+    }
+    if (config.reconnectAttempts !== undefined) {
+      this.maxReconnectAttempts = config.reconnectAttempts;
+    }
+    if (config.reconnectDelay !== undefined) {
+      this.reconnectDelay = config.reconnectDelay;
+    }
+    console.log('WebSocket configuration updated:', config);
+  }
+
   notifyConnectionChange(status) {
     this.callbacks.onConnectionChange.forEach(callback => {
       callback({ status, isConnected: this.isConnected });

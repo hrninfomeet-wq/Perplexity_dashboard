@@ -4,10 +4,132 @@
  */
 
 const { STRATEGY_CONFIG, STRATEGY_PRIORITY, STRATEGY_RISK_LIMITS } = require('../config/strategies.config');
-const { StrategyExecution, StrategyPerformance, TradingOpportunity } = require('../models/strategyModels');
+const RiskManagementService = require('./riskManagementService');
+const MLAnalysisService = require('./ml/mlAnalysisService');
 
-// Import strategy implementations
-const ScalpingStrategy = require('./strategies/scalpingStrategy');
+class TradingStrategiesEngine {
+    constructor() {
+        console.log('🎯 Initializing Trading Strategies Engine...');
+        
+        // Strategy registry
+        this.strategies = new Map();
+        
+        // Performance tracking
+        this.performanceMetrics = new Map();
+        
+        // Initialize services
+        this.riskManager = new RiskManagementService();
+        this.mlService = new MLAnalysisService();
+        
+        // Market data cache
+        this.marketDataCache = new Map();
+        this.cacheTimeout = 30000; // 30 seconds
+        
+        // Load strategies
+        this.loadStrategies();
+        
+        console.log('✅ Trading Strategies Engine initialized');
+    }
+
+    /**
+     * Load all available strategies
+     */
+    async loadStrategies() {
+        try {
+            // Import all strategy modules
+            const strategies = [
+                { name: 'scalping', module: require('./strategies/scalpingStrategy') },
+                { name: 'swing', module: require('./strategies/swingStrategy') },
+                { name: 'options', module: require('./strategies/optionsStrategy') },
+                { name: 'arbitrage', module: require('./strategies/foArbitrageStrategy') },
+                { name: 'momentum', module: require('./strategies/btstStrategy') }
+            ];
+
+            for (const strategy of strategies) {
+                this.strategies.set(strategy.name, strategy.module);
+                console.log(`📈 Loaded strategy: ${strategy.name}`);
+            }
+
+            console.log(`✅ Loaded ${this.strategies.size} trading strategies`);
+        } catch (error) {
+            console.error('❌ Error loading strategies:', error);
+        }
+    }
+
+    /**
+     * Validate strategy execution inputs
+     * @private
+     */
+    _validateExecutionInputs(symbol, timeframe) {
+        if (!symbol || !timeframe) {
+            throw new Error('Symbol and timeframe are required');
+        }
+    }
+
+    /**
+     * Execute a strategy safely with error handling
+     * @private
+     */
+    async _executeStrategySafely(strategy, symbol, timeframe, marketData) {
+        if (!this.strategies.has(strategy)) {
+            console.warn(`⚠️ Strategy ${strategy} not found`);
+            return null;
+        }
+
+        try {
+            return await this.executeSingleStrategy(strategy, symbol, timeframe, marketData);
+        } catch (strategyError) {
+            console.error(`❌ Error in ${strategy} strategy:`, strategyError);
+            return null;
+        }
+    }
+
+    /**
+     * Execute strategy for given symbol and timeframe
+     * @param {string} symbol - Trading symbol
+     * @param {string} timeframe - Time timeframe
+     * @param {string} strategyType - Strategy type (optional, runs all if not specified)
+     * @returns {Promise<Object>} Strategy execution results
+     */
+    async executeStrategy(symbol, timeframe, strategyType = null) {
+        try {
+            const startTime = Date.now();
+            
+            // Validate inputs
+            this._validateExecutionInputs(symbol, timeframe);
+            
+            // Get market data first
+            const marketData = await this.getMarketData(symbol, timeframe);
+            if (!marketData) {
+                throw new Error(`No market data available for ${symbol}`);
+            }
+            
+            // Determine which strategies to run
+            const strategiesToRun = strategyType ? [strategyType] : this.getActiveStrategies(marketData);
+            
+            const results = [];
+            
+            for (const strategy of strategiesToRun) {
+                const strategyResult = await this._executeStrategySafely(
+                    strategy, 
+                    symbol, 
+                    timeframe, 
+                    marketData
+                );
+                
+                if (strategyResult) {
+                    results.push(strategyResult);
+                }
+            }
+            
+            // Aggregate and rank results
+            const aggregatedResults = await this.aggregateResults(results, symbol, timeframe);
+            
+            // Log performance
+            const totalTime = Date.now() - startTime;
+            console.log(`✅ Strategy execution completed in ${totalTime}ms for ${symbol} (${timeframe})`);
+            
+            return aggregatedResults;
 const SwingStrategy = require('./strategies/swingStrategy');
 const BTSTStrategy = require('./strategies/btstStrategy');
 const OptionsStrategy = require('./strategies/optionsStrategy');

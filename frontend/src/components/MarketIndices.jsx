@@ -8,7 +8,7 @@ const MarketIndices = () => {
     useEffect(() => {
         const fetchIndices = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/indices');
+                const response = await fetch('http://localhost:5000/api/major-indices');
                 if (!response.ok) {
                     // If we get a 401, it means we need to authenticate.
                     // The UI should ideally show a login prompt here.
@@ -16,7 +16,20 @@ const MarketIndices = () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setIndices(data.data);
+                
+                // Map the API response to match expected format
+                const mappedIndices = data.data.map(index => ({
+                    symbol: index.symbol,
+                    name: index.name,
+                    price: index.value,
+                    change: index.change,
+                    change_pct: index.changePercent,
+                    high: index.high || '----',
+                    low: index.low || '----',
+                    prev_close: index.prev_close || '----'
+                }));
+                
+                setIndices(mappedIndices);
                 setTimestamp(new Date().toLocaleTimeString());
             } catch (error) {
                 console.error("Failed to fetch indices:", error);

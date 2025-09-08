@@ -133,6 +133,19 @@ class UnifiedAuthService {
                 const expiresIn = exchangeResult.expiresIn || 28800; // Default 8 hours
                 tokenManager.setToken(exchangeResult.token, requestCode, expiresIn);
                 
+                // Auto-update .env file with new token
+                try {
+                    await updateEnvFile('FLATTRADE_TOKEN', exchangeResult.token);
+                    console.log('🔄 Token automatically updated in .env file');
+                    
+                    // Also update the process.env for immediate use
+                    process.env.FLATTRADE_TOKEN = exchangeResult.token;
+                    console.log('🔄 Process environment updated with new token');
+                } catch (envError) {
+                    console.error('⚠️ Failed to update .env file:', envError.message);
+                    // Continue execution even if .env update fails
+                }
+                
                 console.log('✅ Token exchange completed successfully');
                 return exchangeResult;
             } else {
@@ -471,6 +484,42 @@ class UnifiedAuthService {
      */
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Force reload credentials from environment variables
+     * Useful when .env file has been updated and needs to be reloaded
+     * @returns {Promise<object>} Success status or error
+     */
+    async forceReloadCredentials() {
+        try {
+            console.log('🔃 Force reloading credentials from environment...');
+            
+            // Reload configuration
+            this.config = authConfig.flattrade;
+            
+            // Force reload credentials in Flattrade API service if available
+            const FlattradeAPIService = require('../flattrade-api.service');
+            if (FlattradeAPIService && typeof FlattradeAPIService.forceReloadCredentials === 'function') {
+                FlattradeAPIService.forceReloadCredentials();
+                console.log('✅ Flattrade API service credentials reloaded');
+            }
+            
+            console.log('✅ Credentials force reloaded successfully');
+            return {
+                success: true,
+                message: 'Credentials reloaded from environment variables',
+                tokenFound: !!process.env.FLATTRADE_TOKEN,
+                timestamp: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('❌ Error force reloading credentials:', error.message);
+            return {
+                success: false,
+                error: error.message,
+                timestamp: new Date().toISOString()
+            };
+        }
     }
 
     /**

@@ -1,164 +1,107 @@
 // dashboard-backend/src/controllers/authController.js
-const crypto = require('crypto');
 const axios = require('axios');
 const { updateEnvFile } = require('../utils/envUtils');
+const unifiedAuthService = require('../services/auth/unified-auth.service');
 
-const AUTH_PORTAL = 'https://auth.flattrade.in/';
-const TOKEN_ENDPOINT = 'https://authapi.flattrade.in/trade/apitoken';
-
-const getLoginUrl = (req, res) => {
-    // Read environment variables when function is called to ensure they're loaded
-    const API_KEY = process.env.FLATTRADE_API_KEY;
-    const REDIRECT_URI = process.env.FLATTRADE_REDIRECT_URI;
-
-    console.log('🔑 API_KEY:', API_KEY ? 'Found' : 'Missing');
-    console.log('🔗 REDIRECT_URI:', REDIRECT_URI ? 'Found' : 'Missing');
-
-    if (!API_KEY || !REDIRECT_URI) {
-        return res.status(500).json({
-            error: 'Configuration error: Missing API_KEY or REDIRECT_URI in environment variables'
+const getLoginUrl = async (req, res) => {
+    try {
+        console.log('🔑 Generating login URL using unified auth service...');
+        
+        const result = await unifiedAuthService.generateLoginUrl();
+        
+        if (result.success) {
+            console.log('✅ Login URL generated successfully');
+            res.json({ loginUrl: result.loginUrl });
+        } else {
+            console.log('❌ Failed to generate login URL:', result.error);
+            res.status(500).json({
+                error: result.error || 'Failed to generate login URL'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error generating login URL:', error.message);
+        res.status(500).json({
+            error: error.message
         });
     }
-
-    const url = `${AUTH_PORTAL}?app_key=${encodeURIComponent(API_KEY)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
-    console.log('🚀 Generated login URL:', url);
-    res.json({ loginUrl: url });
 };
 
 const handleLoginCallback = async (req, res) => {
-    const request_code = req.query.code || req.query.request_code;
-
-    if (!request_code) {
-        return res.status(400).send(`<html><body><h1>❌ Error</h1><p>No request code received from Flattrade.</p></body></html>`);
-    }
-
     try {
-        const API_KEY = process.env.FLATTRADE_API_KEY;
-        const API_SECRET = process.env.FLATTRADE_API_SECRET; // Keep original secret with year prefix
+        const request_code = req.query.code || req.query.request_code;
         
-        console.log('🔑 Received request code:', request_code);
-        console.log('� Making token exchange request with API_KEY:', API_KEY);
-        console.log('� Original API_SECRET:', API_SECRET);
-        console.log('� Token endpoint:', TOKEN_ENDPOINT);
-
-        // According to Flattrade docs: api_secret should be SHA-256 hash of (api_key + request_code + api_secret)
-        const hashInput = API_KEY + request_code + API_SECRET;
-        const hashedSecret = crypto.createHash('sha256').update(hashInput).digest('hex');
-        
-        console.log('� Hash input (api_key + request_code + api_secret):', hashInput);
-        console.log('� SHA-256 hashed secret:', hashedSecret);
-
-        // Correct request format according to Flattrade API documentation
-        const requestData = {
-            api_key: API_KEY,
-            api_secret: hashedSecret,
-            request_code: request_code
-        };
-
-        console.log('📤 Token exchange request data:', JSON.stringify(requestData, null, 2));
-
-        // Exchange request code for token
-        const response = await axios.post(TOKEN_ENDPOINT, requestData, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            timeout: 10000
-        });
-
-        console.log('📡 Token exchange response status:', response.status);
-        console.log('📡 Token exchange response headers:', response.headers);
-        console.log('📡 Token exchange response data:', JSON.stringify(response.data, null, 2));
-
-        // Check both 'stat' and 'status' fields for compatibility
-        const isSuccess = response.data.stat === 'Ok' || response.data.status === 'Ok';
-        
-        if (!isSuccess) {
-            const errorMsg = response.data.emsg || 'Failed to obtain token';
-            console.log('❌ Token exchange failed:', errorMsg);
-            
-            // Try alternative endpoint URL
-            console.log('🔄 Trying alternative endpoint URL...');
-            const ALTERNATIVE_ENDPOINT = 'https://auth.flattrade.in/trade/apitoken';
-            
-            try {
-                const alternativeResponse = await axios.post(ALTERNATIVE_ENDPOINT, requestData, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    timeout: 10000
-                });
-                
-                console.log('📡 Alternative endpoint response status:', alternativeResponse.data.stat);
-                console.log('📡 Alternative endpoint response:', JSON.stringify(alternativeResponse.data, null, 2));
-                
-                if (alternativeResponse.data.stat === 'Ok' || alternativeResponse.data.status === 'Ok') {
-                    console.log('✅ Alternative endpoint worked!');
-                    response.data = alternativeResponse.data;
-                } else {
-                    throw new Error(alternativeResponse.data.emsg || 'Alternative endpoint failed');
-                }
-            } catch (altError) {
-                console.error('❌ Alternative endpoint failed:', altError.message);
-                
-                // Try form-urlencoded format as last resort
-                console.log('🔄 Trying form-urlencoded format...');
-                
-                try {
-                    const formData = new URLSearchParams();
-                    formData.append('api_key', API_KEY);
-                    formData.append('api_secret', hashedSecret);
-                    formData.append('request_code', request_code);
-                    
-                    const formResponse = await axios.post(TOKEN_ENDPOINT, formData, {
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'Accept': 'application/json'
-                        },
-                        timeout: 10000
-                    });
-                    
-                    console.log('📡 Form-urlencoded response:', JSON.stringify(formResponse.data, null, 2));
-                    
-                    if (formResponse.data.stat === 'Ok' || formResponse.data.status === 'Ok') {
-                        console.log('✅ Form-urlencoded format worked!');
-                        response.data = formResponse.data;
-                    } else {
-                        throw new Error(formResponse.data.emsg || errorMsg);
-                    }
-                } catch (formError) {
-                    console.error('❌ All authentication methods failed:', formError.message);
-                    throw new Error(errorMsg);
-                }
-            }
+        if (!request_code) {
+            return res.status(400).send(`<html><body><h1>❌ Error</h1><p>No request code received from Flattrade.</p></body></html>`);
         }
 
-        const { token } = response.data;
-        console.log('✅ Token obtained successfully:', token);
+        console.log('� Processing login callback using unified auth service...');
+        
+        const result = await unifiedAuthService.handleAuthCallback(request_code);
+        
+        if (result.success) {
+            console.log('✅ Authentication successful');
+            
+            // Update in-memory token
+            req.app.locals.FLATTRADE_TOKEN = result.token;
+            
+            // Auto-update .env file with new token
+            try {
+                await updateEnvFile('FLATTRADE_TOKEN', result.token);
+                console.log('🔄 Token automatically updated in .env file');
+            } catch (envError) {
+                console.error('⚠️ Failed to update .env file:', envError.message);
+                // Continue execution even if .env update fails
+            }
 
-        // Update .env with request_code and token
-        await updateEnvFile('FLATTRADE_REQUEST_CODE', request_code);
-        await updateEnvFile('FLATTRADE_TOKEN', token);
-
-        // Update in-memory token
-        req.app.locals.FLATTRADE_TOKEN = token;
-
-        res.send(`
-            <html><body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-                <h1>✅ Authentication Successful!</h1>
-                <p>You can now close this window and return to the dashboard.</p>
-                <p>Live data will be available shortly.</p>
-                <script>
-                    if (window.opener) {
-                        window.opener.postMessage({ type: 'auth-success' }, '*');
-                    }
-                    setTimeout(() => window.close(), 2000);
-                </script>
-            </body></html>
-        `);
+            res.send(`
+                <html><body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+                    <h1>✅ Authentication Successful!</h1>
+                    <p>You can now close this window and return to the dashboard.</p>
+                    <p>Live data will be available shortly.</p>
+                    <script>
+                        if (window.opener) {
+                            window.opener.postMessage({ type: 'auth-success' }, '*');
+                        }
+                        setTimeout(() => window.close(), 2000);
+                    </script>
+                </body></html>
+            `);
+        } else {
+            console.log('❌ Authentication failed:', result.error);
+            // Properly escape the error to prevent XSS
+            const safeError = String(result.error || 'Unknown error').replace(/[<>&"']/g, function(m) {
+                return {
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '&': '&amp;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[m];
+            });
+            
+            res.status(500).send(`
+                <html><body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+                    <h1>❌ Authentication Failed</h1>
+                    <div id="error-message"></div>
+                    <script>
+                        // Safely display error message using DOM manipulation
+                        const errorElement = document.getElementById('error-message');
+                        errorElement.textContent = 'Error: ' + ${JSON.stringify(safeError)};
+                        
+                        if (window.opener) {
+                            // Use JSON.stringify to safely encode the error message
+                            window.opener.postMessage({ 
+                                type: 'auth-error', 
+                                error: ${JSON.stringify(result.error || 'Unknown error')} 
+                            }, '*');
+                        }
+                        }
+                    </script>
+                </body></html>
+            `);
+        }
     } catch (error) {
-        console.error('Error during token exchange:', error.message);
+        console.error('❌ Error during login callback:', error.message);
         res.status(500).send(`
             <html><body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
                 <h1>❌ Authentication Failed</h1>
@@ -173,11 +116,25 @@ const handleLoginCallback = async (req, res) => {
     }
 };
 
-const getAuthStatus = (req, res) => {
-    res.json({
-        authenticated: !!req.app.locals.FLATTRADE_TOKEN,
-        timestamp: new Date().toISOString()
-    });
+const getAuthStatus = async (req, res) => {
+    try {
+        console.log('🔍 Checking authentication status...');
+        
+        const result = await unifiedAuthService.getAuthStatus();
+        
+        res.json({
+            authenticated: result.authenticated,
+            timestamp: new Date().toISOString(),
+            data: result.data || {}
+        });
+    } catch (error) {
+        console.error('❌ Error checking auth status:', error.message);
+        res.json({
+            authenticated: false,
+            timestamp: new Date().toISOString(),
+            error: error.message
+        });
+    }
 };
 
 const connectLiveData = async (req, res) => {
@@ -340,6 +297,36 @@ const getAuthHealth = async (req, res) => {
     }
 };
 
+const forceReloadCredentials = async (req, res) => {
+    try {
+        console.log('🔃 Force reloading Flattrade credentials...');
+        
+        // Force reload credentials in the unified auth service
+        const result = await unifiedAuthService.forceReloadCredentials();
+        
+        if (result.success) {
+            console.log('✅ Credentials force reloaded successfully');
+            res.json({
+                success: true,
+                message: 'Credentials reloaded from environment variables',
+                tokenFound: !!process.env.FLATTRADE_TOKEN
+            });
+        } else {
+            console.log('❌ Failed to reload credentials:', result.error);
+            res.status(500).json({
+                success: false,
+                error: result.error || 'Failed to reload credentials'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error force reloading credentials:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     getLoginUrl,
     handleLoginCallback,
@@ -347,5 +334,6 @@ module.exports = {
     connectLiveData,
     refreshToken,
     logout,
-    getAuthHealth
+    getAuthHealth,
+    forceReloadCredentials
 };

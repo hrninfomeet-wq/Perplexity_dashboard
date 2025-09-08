@@ -1,10 +1,10 @@
 # NSE Trading Dashboard - Professional Market Analysis Platform
 
 <div align="center">
-  <h3>Real-Time Market Analysis & Trading Dashboard with Live Data Integration</h3>
+  <h3>Real-Time Market Analysis & Trading Dashboard with Enhanced Authentication</h3>
   <p>
-    <strong>Version 4.0</strong> • 
-    <strong>Live Trading Integrated</strong> • 
+    <strong>Version 4.1</strong> • 
+    <strong>Enhanced Authentication</strong> • 
     <strong>Production Ready</strong>
   </p>
   
@@ -19,13 +19,15 @@
 
 **NSE Trading Dashboard** is a professional-grade market analysis platform designed for active traders, analysts, and investment professionals. The system provides comprehensive real-time market data, technical analysis, trading alerts, and integrated live trading capabilities through a modern, responsive web interface.
 
-### ✨ **Current Status: Production Ready**
+### ✨ **Current Status: Enhanced Production Ready**
+- ✅ **Enhanced Authentication System**: Dynamic credential management and session recovery
 - ✅ **Live Trading Integration**: Flattrade API with paper trading capabilities
 - ✅ **Real-time Market Data**: Live NSE data feeds with intelligent fallbacks
 - ✅ **Professional Interface**: Responsive design optimized for high-resolution displays
 - ✅ **Trading Analytics**: Advanced market analysis with technical indicators
 - ✅ **Modular Architecture**: Scalable React + Node.js implementation
 - ✅ **Full-width Layout**: Optimized for 4K and ultrawide displays
+- ✅ **Credential Reload System**: Runtime token refresh without server restart
 
 ## 🚀 Key Features
 
@@ -37,12 +39,15 @@
 - **Scalping Opportunities**: Short-term trading signals and alerts
 - **Trading Alerts**: Real-time market alerts and notifications
 
-### 💹 **Live Trading Integration**
+### 💹 **Enhanced Trading Integration**
 - **Flattrade API Integration**: Secure authentication with HMAC-SHA256
+- **Dynamic Credential Management**: Runtime credential reload without server restart
+- **Session Recovery System**: Automatic authentication recovery on token expiry
 - **Paper Trading System**: Risk-free trading simulation with real market data
 - **Portfolio Management**: Real-time position tracking and P&L calculation
 - **Live Market Data**: Real-time price feeds with intelligent fallback to mock data
 - **Order Management**: Complete trading workflow simulation
+- **Force Reload Endpoint**: Manual credential refresh via REST API
 
 ### 🎨 **User Experience**
 - **Professional Interface**: Clean, modern design optimized for trading workflows
@@ -140,6 +145,28 @@ Perplexity_dashboard/
 - **Error Handling**: Comprehensive error management
 - **Rate Limiting**: API request throttling
 - **Fallback System**: Mock data for development/testing
+
+## 🔐 **Authentication System (Enhanced)**
+
+### Dynamic Credential Management
+- **Runtime Credential Reload**: Update authentication tokens without server restart
+- **Automatic Session Recovery**: Intelligent session validation and recovery
+- **Environment Variable Sync**: Dynamic reload from `.env` file changes
+- **Force Reload Endpoint**: Manual credential refresh via REST API
+
+### Authentication Features
+- **Session Validation**: Automatic token validation with retry logic
+- **Error Recovery**: Automatic credential reload on session expiry
+- **Service Coordination**: Unified authentication across all services
+- **Token Management**: Secure token storage and refresh mechanisms
+
+### API Endpoints
+```
+POST /api/auth/reload-credentials    # Force reload credentials from environment
+GET  /api/auth/status               # Check authentication status
+POST /api/auth/generate-login-url   # Generate Flattrade login URL
+POST /api/auth/flattrade/exchange-token  # Exchange authorization code for token
+```
 
 ## 🚀 **Getting Started**
 

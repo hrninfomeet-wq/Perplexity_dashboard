@@ -19,26 +19,90 @@ const MajorIndicesStrip = ({ dataSource }) => {
                     setIsRefreshing(true);
                 }
                 
-                const response = await fetch('http://localhost:5000/api/indices');
+                console.log('🔍 MajorIndicesStrip fetching with dataSource:', dataSource);
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (dataSource === 'Live') {
+                    const response = await fetch('http://localhost:5000/api/major-indices');
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const allIndices = data.data || [];
+                    
+                    console.log('📊 MajorIndicesStrip API Response:', allIndices);
+                    
+                    // Filter to show only sectoral indices (not main indices like NIFTY 50, BANK NIFTY that are in header)
+                    const sectoralIndices = allIndices.filter(index => 
+                        !['NIFTY', 'BANKNIFTY', 'NIFTY_50', 'BANK_NIFTY', 'SENSEX', 'VIX'].includes(index.symbol)
+                    );
+                    
+                    // Map the API response structure to component expected structure
+                    const mappedIndices = sectoralIndices.map(index => ({
+                        symbol: index.symbol,
+                        name: index.name,
+                        price: index.value || index.price, // Map 'value' to 'price'
+                        change: index.change || 0, // Use actual change value from API
+                        change_pct: index.changePercent || 0, // Map 'changePercent' to 'change_pct'
+                        support: index.support || (index.value * 0.98),
+                        resistance: index.resistance || (index.value * 1.02)
+                    }));
+                    
+                    console.log('🔄 MajorIndicesStrip Mapped Data:', mappedIndices);
+                    
+                    setIndices(mappedIndices);
+                    setTimestamp(new Date().toLocaleTimeString());
+                    setIsInitialLoading(false);
+                    setIsRefreshing(false);
+                } else {
+                    // Use mock data when dataSource is 'Mock'
+                    console.log('🔵 MajorIndicesStrip using mock data');
+                    const mockIndices = [
+                        { 
+                            symbol: 'NIFTYMIDCAP', 
+                            name: 'NIFTY MIDCAP SELECT', 
+                            price: 12450.00, 
+                            change: 85.25, 
+                            change_pct: 0.69,
+                            support: 12300,
+                            resistance: 12600
+                        },
+                        { 
+                            symbol: 'FINNIFTY', 
+                            name: 'FINNIFTY', 
+                            price: 23850.00, 
+                            change: -125.75, 
+                            change_pct: -0.52,
+                            support: 23700,
+                            resistance: 24000
+                        },
+                        { 
+                            symbol: 'NIFTYAUTO', 
+                            name: 'NIFTY AUTO', 
+                            price: 18920.00, 
+                            change: 220.50, 
+                            change_pct: 1.18,
+                            support: 18700,
+                            resistance: 19100
+                        },
+                        { 
+                            symbol: 'NIFTYIT', 
+                            name: 'NIFTY IT', 
+                            price: 34250.00, 
+                            change: 180.25, 
+                            change_pct: 0.53,
+                            support: 34000,
+                            resistance: 34500
+                        }
+                    ];
+                    setIndices(mockIndices);
+                    setTimestamp('Mock Data');
+                    setIsInitialLoading(false);
+                    setIsRefreshing(false);
                 }
-                
-                const data = await response.json();
-                const allIndices = data.data || [];
-                
-                // Filter out NIFTY, BANKNIFTY, SENSEX, and VIX as they're now in header
-                const filteredIndices = allIndices.filter(index => 
-                    !['NIFTY', 'BANKNIFTY', 'SENSEX', 'VIX'].includes(index.symbol)
-                );
-                
-                setIndices(filteredIndices);
-                setTimestamp(new Date().toLocaleTimeString());
-                setIsInitialLoading(false);
-                setIsRefreshing(false);
             } catch (error) {
-                console.error("Failed to fetch indices:", error);
+                console.error("❌ Failed to fetch indices:", error);
                 // Fallback to mock data when API fails (only sectoral indices)
                 const mockIndices = [
                     { 

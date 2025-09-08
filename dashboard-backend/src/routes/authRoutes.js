@@ -28,8 +28,19 @@ router.use(AuthMiddleware.requestLogger);
  * Public Authentication Routes (no auth required)
  */
 
+// Simple redirect endpoint for /login 
+router.get('/login', (req, res) => {
+    res.redirect('/api/login/url');
+});
+
 // Generate Flattrade login URL
 router.get('/login/url', 
+    AuthMiddleware.optionalAuth,
+    authController.getLoginUrl
+);
+
+// Alternative POST endpoint for generate-login-url (for frontend compatibility)
+router.post('/auth/generate-login-url', 
     AuthMiddleware.optionalAuth,
     authController.getLoginUrl
 );
@@ -137,6 +148,12 @@ router.get('/auth/health',
 /**
  * Advanced Authentication Routes
  */
+
+// Force reload credentials from environment variables
+router.post('/auth/reload-credentials', 
+    AuthMiddleware.optionalAuth, // Allow this even without valid auth since it's needed for fixing auth
+    authController.forceReloadCredentials
+);
 
 // Force token refresh (admin only)
 router.post('/auth/force-refresh', 
@@ -444,15 +461,28 @@ router.use((error, req, res, next) => {
 });
 
 /**
- * Route not found handler - Only handle auth-related routes, avoid catching v3 routes
+ * Route not found handler - Only handle auth-related routes, avoid catching market data routes
  */
 router.use((req, res, next) => {
-    // Only handle auth-related routes, let other API versions pass through
+    // Only handle auth-related routes, let other API versions and market data routes pass through
     if (req.originalUrl.startsWith('/api/v3') || 
         req.originalUrl.startsWith('/api/multi') || 
         req.originalUrl.startsWith('/api/data') ||
-        req.originalUrl.startsWith('/api/health')) {
-        return next(); // Pass through to other routes
+        req.originalUrl.startsWith('/api/health') ||
+        req.originalUrl.startsWith('/api/indices') ||
+        req.originalUrl.startsWith('/api/gainers') ||
+        req.originalUrl.startsWith('/api/losers') ||
+        req.originalUrl.startsWith('/api/nse-direct') ||
+        req.originalUrl.startsWith('/api/sectors') ||
+        req.originalUrl.startsWith('/api/fno-analysis') ||
+        req.originalUrl.startsWith('/api/options-chain') ||
+        req.originalUrl.startsWith('/api/btst') ||
+        req.originalUrl.startsWith('/api/scalping') ||
+        req.originalUrl.startsWith('/api/trading-alerts') ||
+        req.originalUrl.startsWith('/api/trend') ||
+        req.originalUrl.startsWith('/api/scalping-signals') ||
+        req.originalUrl.startsWith('/api/major-indices')) {
+        return next(); // Pass through to market data routes
     }
     
     res.status(404).json({
@@ -463,10 +493,12 @@ router.use((req, res, next) => {
             'GET /api/login/url',
             'GET /api/login/callback',
             'GET /api/auth/status',
+            'POST /api/auth/generate-login-url',
             'POST /api/connect/live',
             'POST /api/auth/refresh',
             'POST /api/auth/logout',
-            'GET /api/auth/health'
+            'GET /api/auth/health',
+            'POST /api/auth/reload-credentials'
         ],
         timestamp: new Date().toISOString()
     });

@@ -1,4 +1,5 @@
 // dashboard-backend/src/controllers/healthController.js
+const FlattradeAPIService = require('../services/flattrade-api.service');
 
 const getHealthStatus = (req, res) => {
     // Accessing state attached to the app object in the main index.js
@@ -56,6 +57,78 @@ const getHealthStatus = (req, res) => {
     });
 };
 
+const testFlattradeSession = async (req, res) => {
+    try {
+        console.log('🧪 Testing Flattrade API session...');
+        
+        const flattradeAPI = new FlattradeAPIService();
+        
+        // Test 1: Validate session
+        const isSessionValid = await flattradeAPI.validateSession();
+        
+        let testResults = {
+            timestamp: new Date().toISOString(),
+            sessionValid: isSessionValid,
+            tests: {}
+        };
+
+        if (isSessionValid) {
+            // Test 2: Get NIFTY quote
+            try {
+                const niftyQuote = await flattradeAPI.getSingleQuote('26000', 'NSE');
+                testResults.tests.niftyQuote = {
+                    success: true,
+                    data: {
+                        price: parseFloat(niftyQuote.lp) || 0,
+                        change: parseFloat(niftyQuote.c) || 0,
+                        token: '26000'
+                    }
+                };
+                console.log('✅ NIFTY quote test successful');
+            } catch (error) {
+                testResults.tests.niftyQuote = {
+                    success: false,
+                    error: error.message
+                };
+                console.log('❌ NIFTY quote test failed:', error.message);
+            }
+
+            // Test 3: Get Index List
+            try {
+                const indexList = await flattradeAPI.getIndexList();
+                testResults.tests.indexList = {
+                    success: true,
+                    count: indexList.length || 0
+                };
+                console.log('✅ Index list test successful');
+            } catch (error) {
+                testResults.tests.indexList = {
+                    success: false,
+                    error: error.message
+                };
+                console.log('❌ Index list test failed:', error.message);
+            }
+        } else {
+            testResults.message = 'Session validation failed - token may be expired';
+            testResults.authUrl = 'http://localhost:5000/api/login/url';
+            testResults.instructions = 'Visit the auth URL to re-authenticate with Flattrade';
+        }
+
+        res.json(testResults);
+        
+    } catch (error) {
+        console.error('❌ Flattrade session test error:', error.message);
+        res.status(500).json({
+            timestamp: new Date().toISOString(),
+            sessionValid: false,
+            error: error.message,
+            authUrl: 'http://localhost:5000/api/login/url',
+            instructions: 'Session test failed - please re-authenticate with Flattrade'
+        });
+    }
+};
+
 module.exports = {
-    getHealthStatus
+    getHealthStatus,
+    testFlattradeSession
 };

@@ -59,7 +59,7 @@ class PaperTradingService {
       };
 
       // Send start session request to backend
-      const response = await fetch('/api/paper-trading/start', {
+      const response = await fetch('/api/paper-trading/session/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -126,11 +126,12 @@ class PaperTradingService {
       }
 
       // Send stop session request to backend
-      const response = await fetch(`/api/paper-trading/stop/${sessionId}`, {
+      const response = await fetch('/api/paper-trading/session/stop', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ sessionId })
       });
 
       if (!response.ok) {

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 
-const TopLosersSection = () => {
+const TopLosersSection = ({ dataSource }) => {
     const { refreshRate } = useSettings();
     const [losers, setLosers] = useState([]);
     const [timestamp, setTimestamp] = useState('Never');
@@ -10,16 +10,53 @@ const TopLosersSection = () => {
     useEffect(() => {
         const fetchLosers = async () => {
             try {
-                const response = await fetch('/api/losers');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch losers data');
+                console.log('🔍 TopLosersSection fetching with dataSource:', dataSource);
+                
+                if (dataSource === 'Live') {
+                    const response = await fetch('http://localhost:5000/api/losers');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch losers data');
+                    }
+                    const data = await response.json();
+                    console.log('📊 TopLosersSection API Response:', data);
+                    
+                    // API returns data.data directly, not data.data.losers
+                    const losersData = data.data || [];
+                    
+                    // Map the data structure to match component expectations
+                    const mappedLosers = losersData.map(stock => ({
+                        name: stock.symbol || stock.name,
+                        ltp: stock.price || stock.ltp,
+                        change_pct: stock.changePercent || stock.change_pct
+                    }));
+                    
+                    setLosers(mappedLosers);
+                    setTimestamp(new Date().toLocaleTimeString());
+                } else {
+                    // Mock data
+                    const mockLosers = [
+                        { name: 'ZOMATO', ltp: 268.75, change_pct: -3.85 },
+                        { name: 'PAYTM', ltp: 945.20, change_pct: -3.45 },
+                        { name: 'NYKAA', ltp: 180.40, change_pct: -2.95 },
+                        { name: 'POLICYBZR', ltp: 1456.80, change_pct: -2.67 },
+                        { name: 'IRCTC', ltp: 825.35, change_pct: -2.25 },
+                        { name: 'DMART', ltp: 4125.90, change_pct: -1.89 }
+                    ];
+                    setLosers(mockLosers);
+                    setTimestamp('Mock data');
                 }
-                const data = await response.json();
-                setLosers(data.data.losers || []);
-                setTimestamp(new Date().toLocaleTimeString());
             } catch (error) {
                 console.error("Failed to fetch top losers:", error);
-                setLosers([]);
+                // Fallback to mock data on error
+                const fallbackLosers = [
+                    { name: 'ZOMATO', ltp: 268.75, change_pct: -3.85 },
+                    { name: 'PAYTM', ltp: 945.20, change_pct: -3.45 },
+                    { name: 'NYKAA', ltp: 180.40, change_pct: -2.95 },
+                    { name: 'POLICYBZR', ltp: 1456.80, change_pct: -2.67 },
+                    { name: 'IRCTC', ltp: 825.35, change_pct: -2.25 },
+                    { name: 'DMART', ltp: 4125.90, change_pct: -1.89 }
+                ];
+                setLosers(fallbackLosers);
                 setTimestamp('Failed to load');
             }
         };
@@ -27,7 +64,7 @@ const TopLosersSection = () => {
         fetchLosers();
         const interval = setInterval(fetchLosers, refreshRate);
         return () => clearInterval(interval);
-    }, [refreshRate]);
+    }, [refreshRate, dataSource]);
 
     const getChangeClass = (change) => {
         if (typeof change !== 'number') return '';

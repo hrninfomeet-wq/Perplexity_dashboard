@@ -20,22 +20,19 @@ const marketDataSchema = new mongoose.Schema({
     symbol: {
         type: String,
         required: true,
-        uppercase: true,
-        index: true
+        uppercase: true
     },
     
     exchange: {
         type: String,
         enum: ['NSE', 'BSE', 'MCX', 'NCDEX'],
-        default: 'NSE',
-        index: true
+        default: 'NSE'
     },
     
     // Time-series data
     timestamp: {
         type: Date,
-        required: true,
-        index: true
+        required: true
     },
     
     // OHLCV Data
@@ -188,15 +185,14 @@ marketDataSchema.virtual('spreadPercentage').get(function() {
  * For minute/hourly/daily aggregations
  */
 const aggregatedDataSchema = new mongoose.Schema({
-    symbol: { type: String, required: true, uppercase: true, index: true },
+    symbol: { type: String, required: true, uppercase: true },
     exchange: { type: String, enum: ['NSE', 'BSE', 'MCX', 'NCDEX'], default: 'NSE' },
     
     // Time period
     timeframe: {
         type: String,
         enum: ['1m', '5m', '15m', '1h', '1d'],
-        required: true,
-        index: true
+        required: true
     },
     
     startTime: { type: Date, required: true },

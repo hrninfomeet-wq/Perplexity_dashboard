@@ -35,9 +35,9 @@ const LIVE_CONFIG = {
 
     // Risk Management Settings
     RISK_LIMITS: {
-        MAX_POSITION_SIZE: 0.20,         // 20% of capital per position
+        MAX_POSITION_SIZE: 0.2,         // 20% of capital per position
         MAX_DAILY_LOSS: 0.05,           // 5% daily loss limit
-        MAX_TOTAL_EXPOSURE: 0.80,       // 80% total exposure limit
+        MAX_TOTAL_EXPOSURE: 0.8,        // 80% total exposure limit
         STOP_LOSS_BUFFER: 0.02,         // 2% buffer for stop-loss
         TAKE_PROFIT_RATIO: 2.0          // 2:1 risk-reward ratio
     },

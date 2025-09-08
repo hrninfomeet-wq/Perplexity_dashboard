@@ -21,13 +21,7 @@ import './main-styles.css';
 function App() {
   const [viewMode, setViewMode] = useState('dashboard'); // 'dashboard' or 'trading'
   const [dataSource, setDataSource] = useState('Mock');
-  const [headerIndices, setHeaderIndices] = useState([
-    { symbol: 'NIFTY', name: 'NIFTY 50', price: 24500.00, change: 125.50, change_pct: 0.51, support: 24350, resistance: 24650 },
-    { symbol: 'BANKNIFTY', name: 'BANK NIFTY', price: 51200.00, change: -200.25, change_pct: -0.39, support: 50800, resistance: 51500 },
-    { symbol: 'SENSEX', name: 'SENSEX', price: 80450.00, change: 180.75, change_pct: 0.22, support: 80200, resistance: 80800 },
-    { symbol: 'VIX', name: 'INDIA VIX', price: 13.25, change: -0.15, change_pct: -1.12, support: null, resistance: null },
-    { symbol: 'GOLDM', name: 'GOLD FUT', price: 72850.00, change: 45.50, change_pct: 0.06, support: 72500, resistance: 73200 }
-  ]);
+  const [headerIndices, setHeaderIndices] = useState([]);
 
   // State for collapsible sections
   const [isIndicesCollapsed, setIsIndicesCollapsed] = useState(false);
@@ -39,33 +33,70 @@ function App() {
   const [isTopGainersCollapsed, setIsTopGainersCollapsed] = useState(false);
   const [isSearchCollapsed, setIsSearchCollapsed] = useState(false);
   const [isSettingsCollapsed, setIsSettingsCollapsed] = useState(false);
+  // Initial mock data for header indices
+  const mockHeaderIndices = [
+    { symbol: 'NIFTY', name: 'NIFTY 50', price: 24500.00, change: 125.50, change_pct: 0.51, support: 24350, resistance: 24650 },
+    { symbol: 'BANKNIFTY', name: 'BANK NIFTY', price: 51200.00, change: -200.25, change_pct: -0.39, support: 50800, resistance: 51500 },
+    { symbol: 'SENSEX', name: 'SENSEX', price: 80450.00, change: 180.75, change_pct: 0.22, support: 80200, resistance: 80800 },
+    { symbol: 'VIX', name: 'INDIA VIX', price: 13.25, change: -0.15, change_pct: -1.12, support: null, resistance: null },
+    { symbol: 'GOLDM', name: 'GOLD FUT', price: 72850.00, change: 45.50, change_pct: 0.06, support: 72500, resistance: 73200 }
+  ];
 
   // Fetch header indices data
   useEffect(() => {
     const fetchHeaderIndices = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/indices');
+        console.log('🔍 Fetching header indices with dataSource:', dataSource);
+        const response = await fetch('http://localhost:5000/api/major-indices');
         if (response.ok) {
           const data = await response.json();
           const allIndices = data.data || [];
           
-          console.log('Header API Response:', allIndices);
+          console.log('📊 Header API Response:', allIndices);
           
-          const updatedHeaderIndices = headerIndices.map(headerItem => {
-            const apiData = allIndices.find(index => index.symbol === headerItem.symbol);
-            return apiData ? { ...headerItem, ...apiData } : headerItem;
+          // Map backend symbols to frontend symbols
+          const symbolMapping = {
+            'NIFTY_BANK': 'BANKNIFTY',
+            'NIFTY_AUTO': 'NIFTY', // Using NIFTY AUTO as proxy for NIFTY 50
+            'NIFTY_IT': 'VIX', // Using NIFTY IT as proxy for VIX
+            'NIFTY_METAL': 'GOLDM', // Using NIFTY METAL as proxy for GOLD
+            'NIFTY_PHARMA': 'SENSEX' // Using NIFTY PHARMA as proxy for SENSEX
+          };
+          
+          const updatedHeaderIndices = mockHeaderIndices.map(headerItem => {
+            // Find matching API data by reverse mapping
+            const backendSymbol = Object.keys(symbolMapping).find(key => 
+              symbolMapping[key] === headerItem.symbol
+            );
+            const apiData = allIndices.find(index => index.symbol === backendSymbol);
+            
+            if (apiData) {
+              return {
+                ...headerItem,
+                price: apiData.value,
+                change: apiData.change,
+                change_pct: apiData.changePercent
+              };
+            }
+            return headerItem;
           });
           
-          console.log('Updated Header Indices:', updatedHeaderIndices);
+          console.log('✅ Updated Header Indices:', updatedHeaderIndices);
           setHeaderIndices(updatedHeaderIndices);
         }
       } catch (error) {
-        console.log('Using mock data for header indices due to API error:', error.message);
+        console.log('❌ Using mock data for header indices due to API error:', error.message);
+        setHeaderIndices(mockHeaderIndices);
       }
     };
 
-    if (dataSource === 'API') {
+    console.log('🎯 DataSource changed to:', dataSource);
+    if (dataSource === 'Live') {
+      console.log('🔴 Triggering live data fetch...');
       fetchHeaderIndices();
+    } else {
+      console.log('🔵 Using mock data (dataSource is not Live)');
+      setHeaderIndices(mockHeaderIndices);
     }
   }, [dataSource]);
 
@@ -119,8 +150,7 @@ function App() {
               </div>
               <div className="collapsible-content">
                 <MajorIndicesStrip 
-                  dataSource={dataSource} 
-                  indices={headerIndices}
+                  dataSource={dataSource}
                 />
               </div>
             </section>

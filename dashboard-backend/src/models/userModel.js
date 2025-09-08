@@ -43,8 +43,7 @@ const userSchema = new mongoose.Schema({
     flattrade: {
         user_id: {
             type: String,
-            sparse: true,
-            unique: true
+            sparse: true
         },
         api_key: {
             type: String,
@@ -206,8 +205,7 @@ const userSchema = new mongoose.Schema({
     sessions: [{
         session_id: {
             type: String,
-            required: true,
-            unique: true
+            required: true
         },
         token: {
             type: String,
@@ -232,8 +230,7 @@ const userSchema = new mongoose.Schema({
         },
         expires_at: {
             type: Date,
-            required: true,
-            index: { expireAfterSeconds: 0 } // TTL index
+            required: true
         },
         is_active: {
             type: Boolean,

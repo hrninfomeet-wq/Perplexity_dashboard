@@ -20,16 +20,14 @@ const tradingOpportunitySchema = new mongoose.Schema({
     opportunityId: {
         type: String,
         required: true,
-        unique: true,
-        index: true
+        unique: true
     },
     
     // Security details
     symbol: {
         type: String,
         required: true,
-        uppercase: true,
-        index: true
+        uppercase: true
     },
     
     exchange: {

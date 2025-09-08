@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js --max-old-space-size=128",
-    "start-enhanced": "node startup-enhanced.js --max-old-space-size=128",
+    "start-simple": "node index-simple.js --max-old-space-size=128",
     "dev": "nodemon index.js --max-old-space-size=128",
     "dev-enhanced": "nodemon startup-enhanced.js --max-old-space-size=128",
     "dev-persistent": "node -e \"require('./index.js'); setInterval(() => {}, 1000);\"",
@@ -53,6 +53,7 @@
     "moment-timezone": "^0.6.0",
     "mongoose": "^8.18.0",
     "node-cron": "^4.2.1",
+    "node-fetch": "^3.3.2",
     "simple-statistics": "^7.8.8",
     "socket.io-client": "^4.8.1",
     "synaptic": "^1.1.4",

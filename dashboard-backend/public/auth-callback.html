@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Success</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        .message {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .details {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+        .auto-close {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✅</div>
+        <div class="message">Authentication Successful!</div>
+        <div class="details">Your Flattrade account has been connected successfully.</div>
+        <div class="auto-close">This window will close automatically...</div>
+    </div>
+
+    <script>
+        // Extract parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const client = urlParams.get('client');
+        
+        console.log('🔑 Flattrade authentication callback received');
+        console.log('📋 Authorization code:', code);
+        console.log('👤 Client ID:', client);
+
+        if (code && window.opener) {
+            // Send success message to parent window
+            const authData = {
+                type: 'FLATTRADE_AUTH_SUCCESS',
+                provider: 'flattrade',
+                data: {
+                    code: code,
+                    client: client,
+                    timestamp: new Date().toISOString()
+                }
+            };
+            
+            console.log('📤 Sending success message to parent window:', authData);
+            window.opener.postMessage(authData, window.location.origin);
+            
+            // Close the popup after a short delay
+            setTimeout(() => {
+                console.log('🚪 Closing authentication popup');
+                window.close();
+            }, 2000);
+        } else if (!code) {
+            console.error('❌ No authorization code received');
+            
+            // Send error message to parent window
+            const errorData = {
+                type: 'FLATTRADE_AUTH_ERROR',
+                provider: 'flattrade',
+                error: 'No authorization code received',
+                timestamp: new Date().toISOString()
+            };
+            
+            if (window.opener) {
+                window.opener.postMessage(errorData, window.location.origin);
+            }
+            
+            setTimeout(() => window.close(), 3000);
+        } else {
+            console.error('❌ No parent window available');
+            setTimeout(() => window.close(), 3000);
+        }
+    </script>
+</body>
+</html>

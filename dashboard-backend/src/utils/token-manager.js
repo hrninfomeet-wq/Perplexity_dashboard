@@ -212,6 +212,8 @@ class TokenManager {
     loadSession() {
         if (!fs.existsSync(this.sessionFile)) {
             console.log('📂 No existing session file found');
+            // Try to load from environment variables
+            this.loadFromEnvironment();
             return;
         }
 
@@ -222,6 +224,8 @@ class TokenManager {
             if (!sessionData.token || !sessionData.tokenExpiry) {
                 console.log('⚠️ Invalid session data, removing file');
                 fs.unlinkSync(this.sessionFile);
+                // Try to load from environment variables
+                this.loadFromEnvironment();
                 return;
             }
 
@@ -234,6 +238,8 @@ class TokenManager {
             if (this.isTokenExpired()) {
                 console.log('⚠️ Loaded session has expired, clearing...');
                 this.clearToken();
+                // Try to load from environment variables as fallback
+                this.loadFromEnvironment();
                 return;
             }
 
@@ -244,6 +250,36 @@ class TokenManager {
             if (fs.existsSync(this.sessionFile)) {
                 fs.unlinkSync(this.sessionFile);
             }
+            // Try to load from environment variables as fallback
+            this.loadFromEnvironment();
+        }
+    }
+
+    /**
+     * Load tokens from environment variables
+     */
+    loadFromEnvironment() {
+        const envToken = process.env.FLATTRADE_TOKEN;
+        const envRequestCode = process.env.FLATTRADE_REQUEST_CODE;
+
+        if (envToken) {
+            console.log('🔑 Loading authentication from environment variables...');
+            
+            // Assume tokens from .env are valid for 8 hours from now (default Flattrade session)
+            // In a real scenario, you might want to validate the token first
+            this.currentToken = envToken;
+            this.requestCode = envRequestCode || null;
+            this.tokenExpiry = Date.now() + (8 * 60 * 60 * 1000); // 8 hours
+            
+            console.log(`✅ Token loaded from environment. Expires: ${new Date(this.tokenExpiry).toLocaleString('en-IN')}`);
+            
+            // Save session for future use
+            this.saveSession();
+            
+            return true;
+        } else {
+            console.log('🔍 No authentication tokens found in environment variables');
+            return false;
         }
     }
 

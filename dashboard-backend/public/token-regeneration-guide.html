@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flattrade Token Regeneration</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .step { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .important { background: #ffe6e6; border-left: 4px solid #ff4444; }
+        .success { background: #e6ffe6; border-left: 4px solid #44ff44; }
+        code { background: #f0f0f0; padding: 2px 4px; border-radius: 3px; }
+        .button { background: #007cba; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔄 Flattrade Token Regeneration Guide</h1>
+    
+    <div class="step important">
+        <h3>📋 Current Issue</h3>
+        <p>Your Flattrade authentication token has expired. The API is rejecting all requests with:</p>
+        <code>"Invalid Input : jData is not valid json object"</code>
+    </div>
+
+    <div class="step">
+        <h3>🔧 Solution Steps</h3>
+        
+        <h4>Step 1: Access the Login URL</h4>
+        <p>Click this button to start the authentication process:</p>
+        <a href="http://localhost:5000/api/login" target="_blank" class="button">🔑 Generate New Flattrade Token</a>
+        
+        <h4>Step 2: Login to Flattrade</h4>
+        <ul>
+            <li>You'll be redirected to Flattrade's login page</li>
+            <li>Enter your Flattrade credentials</li>
+            <li>Complete any 2FA/OTP verification</li>
+            <li>Authorize the application</li>
+        </ul>
+        
+        <h4>Step 3: Automatic Token Update</h4>
+        <ul>
+            <li>After successful login, you'll see a success message</li>
+            <li>The new token will be automatically saved to your .env file</li>
+            <li>The backend server will start using the new token immediately</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3>🛠️ Manual Alternative (if button doesn't work)</h3>
+        <p>1. Open your browser and go to: <code>http://localhost:5000/api/login</code></p>
+        <p>2. Follow the login process</p>
+        <p>3. Check your backend console for the new token</p>
+    </div>
+
+    <div class="step success">
+        <h3>✅ Expected Result</h3>
+        <p>After completing authentication:</p>
+        <ul>
+            <li>✅ New token will be generated and saved</li>
+            <li>✅ API calls will start working immediately</li>
+            <li>✅ Live data will replace mock data</li>
+            <li>✅ Dashboard will show real market information</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3>📝 Technical Details</h3>
+        <p><strong>Current Token:</strong> <code>67b61ed7689948e9cb5c05d542b579e1c19578fef3ff89b13ce5647aa898afa5</code></p>
+        <p><strong>Client Code:</strong> <code>FZ08714</code></p>
+        <p><strong>Issue:</strong> Token expired - needs refresh</p>
+        <p><strong>Status:</strong> Backend will automatically update .env file with new token</p>
+    </div>
+
+    <script>
+        // Auto-refresh to check if backend is still running
+        setTimeout(function() {
+            fetch('/api/health')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        document.getElementById('status').textContent = '✅ Backend is running';
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('status').textContent = '❌ Backend might be down';
+                });
+        }, 1000);
+    </script>
+    
+    <div id="status">🔄 Checking backend status...</div>
+</body>
+</html>

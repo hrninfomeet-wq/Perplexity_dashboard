@@ -9,7 +9,7 @@ import apiPortalService from './apiPortalService';
  */
 class BackendApiService {
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+    this.baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     this.apiVersion = 'v8'; // Using latest enhanced API
     this.isInitialized = false;
     this.endpoints = {

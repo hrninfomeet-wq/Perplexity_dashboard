@@ -80,39 +80,41 @@ const TradingChart = ({ symbol, timeframe, connectionInfo }) => {
     return () => clearTimeout(timer);
   }, [symbol, timeframe, connectionInfo]);
 
+  // Helper function to render OHLC data row
+  const renderOHLCRow = (label, value) => (
+    <div className="ohlc-row">
+      <span className="ohlc-label">{label}:</span>
+      <span className="ohlc-value">{value}</span>
+    </div>
+  );
+
+  // Helper function to format currency value
+  const formatCurrency = (value) => value ? `₹${value.toFixed(2)}` : '₹0.00';
+
+  // Helper function to format volume
+  const formatVolume = (volume) => volume ? volume.toLocaleString() : '0';
+
   // Custom tooltip for candlestick chart
   const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0]?.payload;
-      return (
-        <div className="chart-tooltip">
-          <p className="tooltip-time">{label}</p>
-          <div className="tooltip-ohlc">
-            <div className="ohlc-row">
-              <span className="ohlc-label">Open:</span>
-              <span className="ohlc-value">₹{data?.open?.toFixed(2)}</span>
-            </div>
-            <div className="ohlc-row">
-              <span className="ohlc-label">High:</span>
-              <span className="ohlc-value">₹{data?.high?.toFixed(2)}</span>
-            </div>
-            <div className="ohlc-row">
-              <span className="ohlc-label">Low:</span>
-              <span className="ohlc-value">₹{data?.low?.toFixed(2)}</span>
-            </div>
-            <div className="ohlc-row">
-              <span className="ohlc-label">Close:</span>
-              <span className="ohlc-value">₹{data?.close?.toFixed(2)}</span>
-            </div>
-            <div className="ohlc-row">
-              <span className="ohlc-label">Volume:</span>
-              <span className="ohlc-value">{data?.volume?.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      );
+    if (!active || !payload || !payload.length) {
+      return null;
     }
-    return null;
+
+    const data = payload[0]?.payload;
+    if (!data) return null;
+
+    return (
+      <div className="chart-tooltip">
+        <p className="tooltip-time">{label}</p>
+        <div className="tooltip-ohlc">
+          {renderOHLCRow('Open', formatCurrency(data.open))}
+          {renderOHLCRow('High', formatCurrency(data.high))}
+          {renderOHLCRow('Low', formatCurrency(data.low))}
+          {renderOHLCRow('Close', formatCurrency(data.close))}
+          {renderOHLCRow('Volume', formatVolume(data.volume))}
+        </div>
+      </div>
+    );
   };
 
   // Get chart color based on price movement

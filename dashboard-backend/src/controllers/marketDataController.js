@@ -1,7 +1,14 @@
 // dashboard-backend/src/controllers/marketDataController.js
-const { makeFlattradeRequest } = require('../services/flattradeService');
+const FlattradeAPIService = require('../services/flattrade-api.service');
+const symbolMapping = require('../services/symbol-mapping.service');
 const nseDataService = require('../services/nseDataService');
-const { NSE_INDEX_TOKENS, FO_SECURITIES } = require('../utils/constants'); 
+const nseApiService = require('../services/nse-api.service');
+const marketMoversService = require('../services/market-movers.service');
+const optionsChainService = require('../services/options-chain.service');
+const { NSE_INDEX_TOKENS, FO_SECURITIES } = require('../utils/constants');
+
+// Initialize Flattrade API service
+const flattradeAPI = new FlattradeAPIService();
 
 // In-memory cache for calculations
 const marketCache = new Map();
@@ -566,81 +573,72 @@ const btstScanner = new AdvancedBTSTScanner();
 const scalpingAnalyzer = new AdvancedScalpingAnalyzer();
 
 // ===== CONTROLLER FUNCTIONS =====
+// Get main indices (for header)
 const getIndices = async (req, res) => {
-    const { FLATTRADE_TOKEN } = req.app.locals;
-    const cacheKey = 'indices';
-    const cachedData = marketCache.get(cacheKey);
-
-    if (cachedData && (Date.now() - cachedData.timestamp) < 5000) {
-        return res.json({ data: cachedData.data, source: 'cache' });
+  try {
+    console.log('🔍 [Controller] Fetching main indices...');
+    
+    const indicesData = await nseApiService.getMainIndices();
+    
+    if (!indicesData || indicesData.length === 0) {
+      return res.status(500).json({
+        success: false,
+        message: 'No indices data available',
+        data: []
+      });
     }
 
-    if (!FLATTRADE_TOKEN) {
-        // Return placeholder data when not authenticated
-        const indices = Object.entries(NSE_INDEX_TOKENS).map(([symbol, config]) => ({
-            name: config.name,
-            symbol: symbol,
-            price: '????',
-            change: '????',
-            change_pct: '????',
-            open: '????',
-            high: '????',
-            low: '????',
-            prev_close: '????',
-        }));
-        
-        return res.json({
-            data: indices,
-            timestamp: Date.now(),
-            source: 'unavailable'
-        });
+    res.json({
+      success: true,
+      data: indicesData,
+      source: 'nse_live',
+      timestamp: new Date().toISOString(),
+      count: indicesData.length
+    });
+    
+  } catch (error) {
+    console.error('❌ [Controller] Error fetching indices:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch indices data',
+      error: error.message,
+      data: []
+    });
+  }
+};
+
+// Get major sector indices
+const getMajorIndices = async (req, res) => {
+  try {
+    console.log('🔍 [Controller] Fetching major sector indices...');
+    
+    const sectorIndices = await nseApiService.getSectorIndices();
+    
+    if (!sectorIndices || sectorIndices.length === 0) {
+      return res.status(500).json({
+        success: false,
+        message: 'No sector indices data available',
+        data: []
+      });
     }
 
-    try {
-        const indicesPromises = Object.entries(NSE_INDEX_TOKENS).map(async ([symbol, config]) => {
-            try {
-                const quoteData = await makeFlattradeRequest('GetQuotes', { exch: 'NSE', token: config.token }, FLATTRADE_TOKEN);
-
-                const currentPrice = parseFloat(quoteData.lp || 0);
-                const prevClose = parseFloat(quoteData.c || currentPrice);
-                const change = currentPrice - prevClose;
-                const changePct = prevClose > 0 ? (change / prevClose) * 100 : 0;
-
-                return {
-                    name: config.name,
-                    symbol: symbol,
-                    price: currentPrice,
-                    change: change,
-                    change_pct: changePct,
-                    open: parseFloat(quoteData.o || 0),
-                    high: parseFloat(quoteData.h || 0),
-                    low: parseFloat(quoteData.l || 0),
-                    prev_close: prevClose,
-                };
-            } catch (error) {
-                console.error(`Error fetching index ${symbol}:`, error.message);
-                return {
-                    name: config.name,
-                    symbol: symbol,
-                    price: '????',
-                    change: '????',
-                    change_pct: '????',
-                    open: '????',
-                    high: '????',
-                    low: '????',
-                    prev_close: '????',
-                };
-            }
-        });
-
-        const indices = await Promise.all(indicesPromises);
-        marketCache.set(cacheKey, { data: indices, timestamp: Date.now() });
-        res.json({ data: indices, source: 'live' });
-
-    } catch (error) {
-        console.error('Error fetching indices data:', error.message);
-        res.status(500).json({ error: 'Failed to fetch indices data' });
-    }
+    res.json({
+      success: true,
+      data: sectorIndices,
+      source: 'nse_live',
+      timestamp: new Date().toISOString(),
+      count: sectorIndices.length
+    });
+    
+  } catch (error) {
+    console.error('❌ [Controller] Error fetching major indices:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch major indices data',
+      error: error.message,
+      data: []
+    });
+  }
 };
 
 const fetchMarketMovers = async (FLATTRADE_TOKEN) => {
@@ -730,24 +728,72 @@ const getMockMarketData = () => {
     };
 };
 
+// Get top gainers
 const getGainers = async (req, res) => {
-    const { FLATTRADE_TOKEN } = req.app.locals;
-    try {
-        const movers = await fetchMarketMovers(FLATTRADE_TOKEN);
-        res.json({ data: { gainers: movers.gainers }, source: FLATTRADE_TOKEN ? 'live' : 'unavailable' });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch gainers' });
+  try {
+    console.log('🔍 [Controller] Fetching top gainers...');
+    
+    const moversData = await marketMoversService.getTopMovers();
+    
+    if (!moversData || !moversData.gainers) {
+      return res.status(500).json({
+        success: false,
+        message: 'No gainers data available',
+        data: []
+      });
     }
+
+    res.json({
+      success: true,
+      data: moversData.gainers,
+      source: moversData.source,
+      timestamp: moversData.timestamp,
+      count: moversData.gainers.length
+    });
+    
+  } catch (error) {
+    console.error('❌ [Controller] Error fetching gainers:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch top gainers',
+      error: error.message,
+      data: []
+    });
+  }
 };
 
+// Get top losers
 const getLosers = async (req, res) => {
-    const { FLATTRADE_TOKEN } = req.app.locals;
-    try {
-        const movers = await fetchMarketMovers(FLATTRADE_TOKEN);
-        res.json({ data: { losers: movers.losers }, source: FLATTRADE_TOKEN ? 'live' : 'unavailable' });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch losers' });
+  try {
+    console.log('🔍 [Controller] Fetching top losers...');
+    
+    const moversData = await marketMoversService.getTopMovers();
+    
+    if (!moversData || !moversData.losers) {
+      return res.status(500).json({
+        success: false,
+        message: 'No losers data available',
+        data: []
+      });
     }
+
+    res.json({
+      success: true,
+      data: moversData.losers,
+      source: moversData.source,
+      timestamp: moversData.timestamp,
+      count: moversData.losers.length
+    });
+    
+  } catch (error) {
+    console.error('❌ [Controller] Error fetching losers:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch top losers',
+      error: error.message,
+      data: []
+    });
+  }
 };
 
 // New endpoint for NSE direct data testing
@@ -825,48 +871,37 @@ const getSectorPerformance = async (req, res) => {
     }
 };
 
+// Get F&O analysis
 const getFnOAnalysis = async (req, res) => {
-    try {
-        const { FLATTRADE_TOKEN } = req.app.locals;
-        const symbol = req.query.symbol || 'NIFTY';
-        
-        if (!FLATTRADE_TOKEN) {
-            return res.json({
-                data: {
-                    pcr: '????',
-                    maxPain: '????',
-                    vix: '????',
-                    recommendedCE: { strike: '????', ltp: '????' },
-                    recommendedPE: { strike: '????', ltp: '????' }
-                },
-                source: 'unavailable'
-            });
-        }
-
-        // Calculate real F&O analysis
-        const spotData = await foAnalyzer.getRealSpotPrice(symbol);
-        const spotPrice = spotData === '????' ? '????' : spotData.price;
-        
-        const [pcr, maxPain, vix, optionRecommendations] = await Promise.all([
-            foAnalyzer.calculateRealPCR(symbol),
-            foAnalyzer.calculateMaxPain(symbol, spotPrice),
-            foAnalyzer.calculateVIX(symbol),
-            foAnalyzer.getRecommendedOptions(symbol, spotPrice)
-        ]);
-
-        const analysis = {
-            pcr,
-            maxPain,
-            vix,
-            recommendedCE: optionRecommendations.recommendedCE,
-            recommendedPE: optionRecommendations.recommendedPE
-        };
-
-        res.json({ data: analysis, source: 'live', symbol });
-    } catch (error) {
-        console.error('F&O Analysis error:', error.message);
-        res.status(500).json({ error: 'Failed to fetch F&O analysis' });
+  try {
+    console.log('🔍 [Controller] Fetching F&O analysis...');
+    
+    const optionsData = await optionsChainService.getNiftyOptionsChain();
+    
+    if (!optionsData) {
+      return res.status(500).json({
+        success: false,
+        message: 'No F&O data available',
+        data: null
+      });
     }
+
+    res.json({
+      success: true,
+      data: optionsData,
+      source: optionsData.source,
+      timestamp: optionsData.timestamp
+    });
+    
+  } catch (error) {
+    console.error('❌ [Controller] Error fetching F&O analysis:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch F&O analysis',
+      error: error.message,
+      data: null
+    });
+  }
 };
 
 const getBTSTData = async (req, res) => {
@@ -960,14 +995,189 @@ const getMarketTrend = async (req, res) => {
     }
 };
 
+// Get scalping signals (enhanced with real data)
+const getScalpingSignals = async (req, res) => {
+  try {
+    console.log('🔍 [Controller] Generating scalping signals...');
+    
+    // Get live market movers for scalping analysis
+    const moversData = await marketMoversService.getTopMovers();
+    
+    // Generate scalping signals based on real market data
+    const signals = generateScalpingSignals(moversData);
+    
+    res.json({
+      success: true,
+      data: signals,
+      source: 'live_analysis',
+      timestamp: new Date().toISOString(),
+      count: signals.length
+    });
+    
+  } catch (error) {
+    console.error('❌ [Controller] Error generating scalping signals:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate scalping signals',
+      error: error.message,
+      data: []
+    });
+  }
+};
+
+// Get trading alerts (enhanced with real data)
+const getTradingAlerts = async (req, res) => {
+  try {
+    console.log('🔍 [Controller] Generating trading alerts...');
+    
+    // Get live data for alert generation
+    const [moversData, optionsData] = await Promise.allSettled([
+      marketMoversService.getTopMovers(),
+      optionsChainService.getNiftyOptionsChain()
+    ]);
+    
+    // Generate alerts based on real market conditions
+    const alerts = generateTradingAlerts(moversData.value, optionsData.value);
+    
+    res.json({
+      success: true,
+      data: alerts,
+      source: 'live_analysis',
+      timestamp: new Date().toISOString(),
+      count: alerts.length
+    });
+    
+  } catch (error) {
+    console.error('❌ [Controller] Error generating trading alerts:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate trading alerts',
+      error: error.message,
+      data: []
+    });
+  }
+};
+
+// Helper function to generate scalping signals
+function generateScalpingSignals(moversData) {
+  const signals = [];
+  
+  if (moversData && moversData.gainers) {
+    // Generate BUY signals for strong gainers with high volume
+    moversData.gainers
+      .filter(stock => stock.changePercent > 2 && stock.volume > 100000)
+      .slice(0, 5)
+      .forEach(stock => {
+        signals.push({
+          symbol: stock.symbol,
+          signal: 'BUY',
+          type: 'MOMENTUM',
+          price: stock.price,
+          target: (stock.price * 1.02).toFixed(2),
+          stopLoss: (stock.price * 0.99).toFixed(2),
+          confidence: Math.min(95, 70 + (stock.changePercent * 2)),
+          reason: `Strong momentum +${stock.changePercent.toFixed(2)}% with volume ${stock.volume.toLocaleString()}`,
+          timeframe: '5-15 minutes'
+        });
+      });
+  }
+  
+  if (moversData && moversData.losers) {
+    // Generate SELL signals for weak stocks
+    moversData.losers
+      .filter(stock => stock.changePercent < -2 && stock.volume > 100000)
+      .slice(0, 3)
+      .forEach(stock => {
+        signals.push({
+          symbol: stock.symbol,
+          signal: 'SELL',
+          type: 'BREAKDOWN',
+          price: stock.price,
+          target: (stock.price * 0.98).toFixed(2),
+          stopLoss: (stock.price * 1.01).toFixed(2),
+          confidence: Math.min(90, 60 + (Math.abs(stock.changePercent) * 2)),
+          reason: `Breakdown ${stock.changePercent.toFixed(2)}% with volume ${stock.volume.toLocaleString()}`,
+          timeframe: '5-15 minutes'
+        });
+      });
+  }
+  
+  return signals;
+}
+
+// Helper function to generate trading alerts
+function generateTradingAlerts(moversData, optionsData) {
+  const alerts = [];
+  
+  // Market sentiment alert based on options data
+  if (optionsData && optionsData.analysis) {
+    const pcr = parseFloat(optionsData.analysis.putCallRatio);
+    if (pcr > 1.3) {
+      alerts.push({
+        type: 'MARKET_SENTIMENT',
+        severity: 'HIGH',
+        message: `Bearish sentiment detected - PCR: ${pcr}`,
+        recommendation: 'Consider defensive positions',
+        timestamp: new Date().toISOString()
+      });
+    } else if (pcr < 0.7) {
+      alerts.push({
+        type: 'MARKET_SENTIMENT',
+        severity: 'HIGH',
+        message: `Bullish sentiment detected - PCR: ${pcr}`,
+        recommendation: 'Consider long positions',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+  
+  // Volume surge alerts
+  if (moversData && moversData.gainers) {
+    moversData.gainers
+      .filter(stock => stock.volume > 500000 && stock.changePercent > 3)
+      .slice(0, 3)
+      .forEach(stock => {
+        alerts.push({
+          type: 'VOLUME_SURGE',
+          severity: 'MEDIUM',
+          symbol: stock.symbol,
+          message: `Volume surge detected in ${stock.symbol}`,
+          details: `Price: ₹${stock.price}, Change: +${stock.changePercent.toFixed(2)}%, Volume: ${stock.volume.toLocaleString()}`,
+          recommendation: 'Monitor for continuation',
+          timestamp: new Date().toISOString()
+        });
+      });
+  }
+  
+  // Add market timing alerts
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  
+  if (hours === 9 && minutes >= 15 && minutes <= 30) {
+    alerts.push({
+      type: 'MARKET_TIMING',
+      severity: 'INFO',
+      message: 'Market opening session - High volatility expected',
+      recommendation: 'Use tight stop losses',
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  return alerts;
+}
+
 module.exports = {
     getIndices,
+    getMajorIndices,
     getGainers,
     getLosers,
     getNSEDirectData,
     getSectorPerformance,
     getFnOAnalysis,
     getBTSTData,
-    getScalpingData,
-    getMarketTrend
+    getScalpingData: getScalpingSignals,
+    getMarketTrend,
+    getScalpingSignals,
+    getTradingAlerts
 };

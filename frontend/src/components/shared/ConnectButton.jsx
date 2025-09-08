@@ -58,6 +58,20 @@ const ConnectButton = ({ onProviderSelect, selectedProvider, isConnected, connec
     }
   };
 
+  // Test function to check basic connectivity
+  const testBackendConnection = async () => {
+    console.log('🧪 Testing backend connection...');
+    try {
+      const response = await fetch('http://localhost:5000/api/test-connection');
+      const data = await response.json();
+      console.log('✅ Backend test result:', data);
+      alert(`Backend test successful: ${data.message}`);
+    } catch (error) {
+      console.error('❌ Backend test failed:', error);
+      alert(`Backend test failed: ${error.message}`);
+    }
+  };
+
   const getButtonText = () => {
     if (isConnecting) return 'Connecting...';
     if (isConnected && selectedProvider) {
@@ -74,6 +88,14 @@ const ConnectButton = ({ onProviderSelect, selectedProvider, isConnected, connec
 
   return (
     <div className="relative inline-block">
+      {/* Test Connection Button (temporary debugging) */}
+      <button
+        onClick={testBackendConnection}
+        className="mr-2 px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600"
+      >
+        Test Backend
+      </button>
+      
       {/* Main Connect Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}

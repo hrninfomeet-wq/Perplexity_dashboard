@@ -24,19 +24,19 @@ class APIPortalService {
       },
       upstox: {
         baseUrl: '/api/upstox',
-        authEndpoint: '/api/upstox/auth',
+        authEndpoint: '/api/login/url',
         websocketPath: '/upstox-ws',
         features: ['live_data', 'trading', 'portfolio']
       },
       fyers: {
         baseUrl: '/api/fyers',
-        authEndpoint: '/api/fyers/auth',
+        authEndpoint: '/api/login/url',
         websocketPath: '/fyers-ws',
         features: ['live_data', 'trading', 'analytics']
       },
       aliceblue: {
         baseUrl: '/api/aliceblue',
-        authEndpoint: '/api/aliceblue/auth',
+        authEndpoint: '/api/login/url',
         websocketPath: '/aliceblue-ws',
         features: ['live_data', 'trading']
       },

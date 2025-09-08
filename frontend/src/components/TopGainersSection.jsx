@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 
-const TopGainersSection = () => {
+const TopGainersSection = ({ dataSource }) => {
     const { refreshRate } = useSettings();
     const [gainers, setGainers] = useState([]);
     const [losers, setLosers] = useState([]);
@@ -16,16 +16,31 @@ const TopGainersSection = () => {
         const fetchGainers = async () => {
             try {
                 setIsLoadingGainers(true);
-                const response = await fetch('http://localhost:5000/api/gainers');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch gainers data');
-                }
-                const data = await response.json();
-                let gainersData = data.data || [];
+                console.log('🔍 TopGainersSection fetching with dataSource:', dataSource);
                 
-                // If no gainers data available, use mock data for demonstration
-                if (gainersData.length === 0) {
-                    gainersData = [
+                if (dataSource === 'Live') {
+                    const response = await fetch('http://localhost:5000/api/gainers');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch gainers data');
+                    }
+                    const data = await response.json();
+                    console.log('📊 TopGainersSection API Response:', data);
+                    
+                    // API returns data.data directly, not data.data.gainers
+                    const gainersData = data.data || [];
+                    
+                    // Map the data structure to match component expectations
+                    const mappedGainers = gainersData.map(stock => ({
+                        name: stock.symbol || stock.name,
+                        ltp: stock.price || stock.ltp,
+                        change_pct: stock.changePercent || stock.change_pct
+                    }));
+                    
+                    setGainers(mappedGainers);
+                    setGainersTimestamp(new Date().toLocaleTimeString());
+                } else {
+                    // Mock data
+                    const mockGainers = [
                         { name: 'ADANIENT', ltp: 2890.45, change_pct: 4.85 },
                         { name: 'LTIM', ltp: 6125.30, change_pct: 3.92 },
                         { name: 'WIPRO', ltp: 565.80, change_pct: 3.45 },
@@ -33,10 +48,9 @@ const TopGainersSection = () => {
                         { name: 'COALINDIA', ltp: 405.60, change_pct: 2.67 },
                         { name: 'POWERGRID', ltp: 325.40, change_pct: 2.15 }
                     ];
+                    setGainers(mockGainers);
+                    setGainersTimestamp('Mock data');
                 }
-                
-                setGainers(gainersData);
-                setGainersTimestamp(new Date().toLocaleTimeString());
             } catch (error) {
                 console.error("Failed to fetch top gainers:", error);
                 // Fallback to mock data on error
@@ -49,28 +63,46 @@ const TopGainersSection = () => {
                     { name: 'POWERGRID', ltp: 325.40, change_pct: 2.15 }
                 ]);
                 setGainersTimestamp('Mock data');
+            } finally {
+                setIsLoadingGainers(false);
             }
         };
 
         fetchGainers();
         const interval = setInterval(fetchGainers, refreshRate);
         return () => clearInterval(interval);
-    }, [refreshRate]);
+    }, [refreshRate, dataSource]);
 
     // Fetch Top Losers
     useEffect(() => {
         const fetchLosers = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/losers');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch losers data');
-                }
-                const data = await response.json();
-                let losersData = data.data.losers || [];
+                setIsLoadingLosers(true);
+                console.log('🔍 TopGainersSection fetching losers with dataSource:', dataSource);
                 
-                // If no losers data available, use mock data for demonstration
-                if (losersData.length === 0) {
-                    losersData = [
+                if (dataSource === 'Live') {
+                    const response = await fetch('http://localhost:5000/api/losers');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch losers data');
+                    }
+                    const data = await response.json();
+                    console.log('📊 TopGainersSection Losers API Response:', data);
+                    
+                    // API returns data.data directly, not data.data.losers
+                    const losersData = data.data || [];
+                    
+                    // Map the data structure to match component expectations
+                    const mappedLosers = losersData.map(stock => ({
+                        name: stock.symbol || stock.name,
+                        ltp: stock.price || stock.ltp,
+                        change_pct: stock.changePercent || stock.change_pct
+                    }));
+                    
+                    setLosers(mappedLosers);
+                    setLosersTimestamp(new Date().toLocaleTimeString());
+                } else {
+                    // Mock data
+                    const mockLosers = [
                         { name: 'ZOMATO', ltp: 268.75, change_pct: -3.85 },
                         { name: 'PAYTM', ltp: 945.20, change_pct: -3.45 },
                         { name: 'NYKAA', ltp: 180.40, change_pct: -2.95 },
@@ -78,10 +110,9 @@ const TopGainersSection = () => {
                         { name: 'IRCTC', ltp: 825.35, change_pct: -2.25 },
                         { name: 'DMART', ltp: 4125.90, change_pct: -1.89 }
                     ];
+                    setLosers(mockLosers);
+                    setLosersTimestamp('Mock data');
                 }
-                
-                setLosers(losersData);
-                setLosersTimestamp(new Date().toLocaleTimeString());
             } catch (error) {
                 console.error("Failed to fetch top losers:", error);
                 // Fallback to mock data on error
@@ -94,13 +125,15 @@ const TopGainersSection = () => {
                     { name: 'DMART', ltp: 4125.90, change_pct: -1.89 }
                 ]);
                 setLosersTimestamp('Mock data');
+            } finally {
+                setIsLoadingLosers(false);
             }
         };
 
         fetchLosers();
         const interval = setInterval(fetchLosers, refreshRate);
         return () => clearInterval(interval);
-    }, [refreshRate]);
+    }, [refreshRate, dataSource]);
 
     const getChangeClass = (change) => {
         if (typeof change !== 'number') return '';
@@ -133,9 +166,9 @@ const TopGainersSection = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {gainers.length > 0 ? gainers.slice(0, 6).map(stock => (
-                                    <tr key={`gainer-${stock.name}`} className="gainer-row">
-                                        <td><strong>{stock.name}</strong></td>
+                                {gainers.length > 0 ? gainers.slice(0, 6).map((stock, index) => (
+                                    <tr key={`gainer-${stock.name || stock.symbol || index}`} className="gainer-row">
+                                        <td><strong>{stock.name || stock.symbol || 'N/A'}</strong></td>
                                         <td className="price-positive">
                                             {typeof stock.ltp === 'number' ? `₹${stock.ltp.toFixed(2)}` : stock.ltp}
                                         </td>
@@ -177,9 +210,9 @@ const TopGainersSection = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {losers.length > 0 ? losers.slice(0, 6).map(stock => (
-                                    <tr key={`loser-${stock.name}`} className="loser-row">
-                                        <td><strong>{stock.name}</strong></td>
+                                {losers.length > 0 ? losers.slice(0, 6).map((stock, index) => (
+                                    <tr key={`loser-${stock.name || stock.symbol || index}`} className="loser-row">
+                                        <td><strong>{stock.name || stock.symbol || 'N/A'}</strong></td>
                                         <td className="price-negative">
                                             {typeof stock.ltp === 'number' ? `₹${stock.ltp.toFixed(2)}` : stock.ltp}
                                         </td>

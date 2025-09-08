@@ -1,10 +1,13 @@
 // dashboard-backend/index-simple.js
 // Simplified backend for Week 1 Day 3-4 Component Enhancement & Data Integration
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
@@ -23,9 +26,600 @@ app.use((req, res, next) => {
 
 console.log('🚀 Starting NSE Trading Dashboard Backend (Simplified)...');
 
+// Initialize Flattrade API service
+const FlattradeAPIService = require('./src/services/flattrade-api.service.js');
+const flattradeAPI = new FlattradeAPIService();
+
+// Serve static files for authentication callbacks
+app.use(express.static('public'));
+
+// Test endpoint for debugging frontend connectivity
+app.get('/api/test-connection', (req, res) => {
+    console.log('🧪 Test connection endpoint hit');
+    res.json({ 
+        success: true, 
+        message: 'Backend connection working!', 
+        timestamp: new Date().toISOString() 
+    });
+});
+
+// Authentication Routes
+// Generic authentication endpoint for all providers with token validation
+app.post('/api/auth/generate-login-url', async (req, res) => {
+    try {
+        const { provider } = req.body;
+        console.log(`🔑 Generating auth URL for provider: ${provider}`);
+        
+        // For Flattrade, check if we have a valid token first
+        if (provider?.toLowerCase() === 'flattrade') {
+            const existingToken = process.env.FLATTRADE_TOKEN;
+            
+            if (existingToken) {
+                console.log('🔍 Checking existing Flattrade token...');
+                
+                // Test the existing token by making a UserDetails API call
+                try {
+                    const jData = JSON.stringify({
+                        "uid": process.env.FLATTRADE_CLIENT_CODE,
+                        "jKey": existingToken
+                    });
+
+                    const response = await fetch('https://piconnect.flattrade.in/PiConnectTP/UserDetails', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: jData
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.stat === 'Ok') {
+                        console.log('✅ Existing Flattrade token is valid!');
+                        return res.json({ 
+                            success: true, 
+                            message: 'Already authenticated with Flattrade',
+                            tokenValid: true,
+                            userInfo: {
+                                clientName: result.uname,
+                                clientId: result.actid,
+                                email: result.email,
+                                mobile: result.m_num
+                            },
+                            provider: 'flattrade'
+                        });
+                    } else {
+                        console.log('❌ Existing token is invalid:', result.emsg);
+                    }
+                } catch (tokenError) {
+                    console.log('❌ Token validation failed:', tokenError.message);
+                }
+            }
+        }
+        
+        let authUrl, message, isDemoMode = false;
+        
+        switch (provider?.toLowerCase()) {
+            case 'flattrade':
+                const API_KEY = process.env.FLATTRADE_API_KEY;
+                if (!API_KEY) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Flattrade API key not configured. Please set FLATTRADE_API_KEY environment variable.'
+                    });
+                }
+                const redirectUri = encodeURIComponent(process.env.FLATTRADE_REDIRECT_URI || 'http://localhost:3000/api/login/callback');
+                authUrl = `https://auth.flattrade.in/?app_key=${API_KEY}&redirect_uri=${redirectUri}`;
+                message = 'Flattrade authentication URL generated successfully.';
+                isDemoMode = false;
+                break;
+                
+            case 'upstox':
+                const clientId = process.env.UPSTOX_CLIENT_ID || 'DEMO_CLIENT_ID';
+                const upstoxRedirectUri = encodeURIComponent('http://localhost:5000/auth/upstox/callback');
+                authUrl = `https://api.upstox.com/v2/login/authorization/dialog?response_type=code&client_id=${clientId}&redirect_uri=${upstoxRedirectUri}&state=upstox_auth`;
+                message = 'Upstox demo URL generated. Configure UPSTOX_CLIENT_ID and UPSTOX_REDIRECT_URI for live trading.';
+                isDemoMode = !process.env.UPSTOX_CLIENT_ID;
+                break;
+                
+            case 'fyers':
+                const fyersAppId = process.env.FYERS_APP_ID || 'DEMO_APP_ID';
+                const fyersRedirectUri = encodeURIComponent('http://localhost:5000/auth/fyers/callback');
+                authUrl = `https://api.fyers.in/api/v2/generate-authcode?client_id=${fyersAppId}&redirect_uri=${fyersRedirectUri}&response_type=code&state=fyers_auth`;
+                message = 'FYERS demo URL generated. Configure FYERS_APP_ID and FYERS_REDIRECT_URI for live trading.';
+                isDemoMode = !process.env.FYERS_APP_ID;
+                break;
+                
+            case 'aliceblue':
+                const aliceUserId = process.env.ALICE_BLUE_USER_ID || 'DEMO_USER_ID';
+                const aliceRedirectUri = encodeURIComponent('http://localhost:5000/auth/aliceblue/callback');
+                authUrl = `https://ant.aliceblueonline.com/rest/AliceBlueAPIService/api/customer/getAPIEncpkey?userId=${aliceUserId}&redirect_uri=${aliceRedirectUri}`;
+                message = 'Alice Blue demo URL generated. Configure ALICE_BLUE_USER_ID and ALICE_BLUE_API_KEY for live trading.';
+                isDemoMode = !process.env.ALICE_BLUE_USER_ID;
+                break;
+                
+            default:
+                return res.status(400).json({
+                    success: false,
+                    error: `Unsupported provider: ${provider}. Supported providers: flattrade, upstox, fyers, aliceblue`
+                });
+        }
+        
+        console.log(`🚀 Generated ${provider} auth URL`);
+        res.json({ 
+            success: true,
+            authUrl,
+            provider,
+            message,
+            isDemoMode,
+            tokenValid: false
+        });
+    } catch (error) {
+        console.error('❌ Error generating login URL:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to generate login URL'
+        });
+    }
+});
+
+// Simple token status check endpoint
+app.get('/api/auth/status', (req, res) => {
+    try {
+        const token = process.env.FLATTRADE_TOKEN;
+        const hasToken = !!(token && token.length > 0);
+        
+        console.log('🔍 Token status check:', hasToken ? '✅ Token exists' : '❌ No token');
+        
+        res.json({
+            success: true,
+            hasToken: hasToken,
+            tokenValid: hasToken, // For now, assume if token exists it's valid
+            provider: hasToken ? 'flattrade' : null,
+            message: hasToken ? 'Authentication token found' : 'No authentication token'
+        });
+    } catch (error) {
+        console.error('❌ Error checking token status:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to check token status'
+        });
+    }
+});
+
+// Flattrade token exchange endpoint
+app.post('/api/auth/flattrade/exchange-token', async (req, res) => {
+    try {
+        const { request_code } = req.body;
+        
+        if (!request_code) {
+            return res.status(400).json({
+                success: false,
+                error: 'request_code is required'
+            });
+        }
+
+        console.log('🔄 Exchanging request code for access token...');
+        
+        const crypto = require('crypto');
+        const fs = require('fs');
+        const path = require('path');
+        
+        // Prepare the token exchange request
+        const api_key = process.env.FLATTRADE_API_KEY;
+        const api_secret = process.env.FLATTRADE_API_SECRET;
+        
+        if (!api_key || !api_secret) {
+            return res.status(500).json({
+                success: false,
+                error: 'Flattrade API configuration missing'
+            });
+        }
+
+        // Create the SHA-256 hash as required by Flattrade API
+        const hashString = api_key + request_code + api_secret;
+        const api_secret_hash = crypto.createHash('sha256').update(hashString).digest('hex');
+
+        const tokenData = {
+            "api_key": api_key,
+            "request_code": request_code,
+            "api_secret": api_secret_hash
+        };
+
+        console.log('📡 Making token exchange request to Flattrade...');
+        
+        const response = await fetch('https://authapi.flattrade.in/trade/apitoken', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(tokenData)
+        });
+
+        const result = await response.json();
+        
+        if (result.stat === 'Ok' && result.token) {
+            console.log('✅ Token exchange successful!');
+            
+            // Update the .env file with the new token
+            const envPath = path.join(__dirname, '.env');
+            let envContent = fs.readFileSync(envPath, 'utf8');
+            
+            // Update or add the token in .env file
+            const tokenRegex = /^FLATTRADE_TOKEN=.*$/m;
+            const requestCodeRegex = /^FLATTRADE_REQUEST_CODE=.*$/m;
+            
+            if (tokenRegex.test(envContent)) {
+                envContent = envContent.replace(tokenRegex, `FLATTRADE_TOKEN=${result.token}`);
+            } else {
+                envContent += `\n# Auto-generated token\nFLATTRADE_TOKEN=${result.token}\n`;
+            }
+            
+            if (requestCodeRegex.test(envContent)) {
+                envContent = envContent.replace(requestCodeRegex, `FLATTRADE_REQUEST_CODE=${request_code}`);
+            } else {
+                envContent += `\n# Auto-generated token\nFLATTRADE_REQUEST_CODE=${request_code}\n`;
+            }
+            
+            fs.writeFileSync(envPath, envContent);
+            
+            // Update process.env for immediate use
+            process.env.FLATTRADE_TOKEN = result.token;
+            process.env.FLATTRADE_REQUEST_CODE = request_code;
+            
+            console.log('💾 Token saved to .env file');
+            
+            res.json({
+                success: true,
+                message: 'Authentication successful! Token saved for future use.',
+                userInfo: {
+                    clientId: result.client,
+                    status: result.status
+                },
+                tokenStored: true
+            });
+            
+        } else {
+            console.log('❌ Token exchange failed:', result);
+            res.status(400).json({
+                success: false,
+                error: result.emsg || 'Token exchange failed',
+                details: result
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Error exchanging token:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to exchange token'
+        });
+    }
+});
+
+// Flattrade callback endpoint to handle redirects from auth portal
+app.get('/api/login/callback', async (req, res) => {
+    try {
+        const { code: request_code } = req.query;
+        
+        if (!request_code) {
+            return res.status(400).send(`
+                <html>
+                    <head><title>Authentication Error</title></head>
+                    <body>
+                        <h2>Authentication Error</h2>
+                        <p>No authorization code received from Flattrade.</p>
+                        <script>
+                            if (window.opener) {
+                                window.opener.postMessage({
+                                    type: 'FLATTRADE_AUTH_ERROR',
+                                    error: 'No authorization code received'
+                                }, '*');
+                            }
+                            setTimeout(() => window.close(), 3000);
+                        </script>
+                    </body>
+                </html>
+            `);
+        }
+
+        console.log('🔄 Processing Flattrade callback with authorization code...');
+        
+        // Exchange the request code for an access token
+        const crypto = require('crypto');
+        const fs = require('fs');
+        const path = require('path');
+        
+        const api_key = process.env.FLATTRADE_API_KEY;
+        const api_secret = process.env.FLATTRADE_API_SECRET;
+        
+        if (!api_key || !api_secret) {
+            return res.status(500).send(`
+                <html>
+                    <head><title>Configuration Error</title></head>
+                    <body>
+                        <h2>Configuration Error</h2>
+                        <p>Flattrade API configuration missing.</p>
+                        <script>
+                            setTimeout(() => window.close(), 3000);
+                        </script>
+                    </body>
+                </html>
+            `);
+        }
+
+        // Create the SHA-256 hash as required by Flattrade API
+        const hashString = api_key + request_code + api_secret;
+        const api_secret_hash = crypto.createHash('sha256').update(hashString).digest('hex');
+
+        const tokenData = {
+            "api_key": api_key,
+            "request_code": request_code,
+            "api_secret": api_secret_hash
+        };
+
+        console.log('📡 Exchanging request code for access token...');
+        
+        const response = await fetch('https://authapi.flattrade.in/trade/apitoken', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(tokenData)
+        });
+
+        const result = await response.json();
+        
+        if (result.stat === 'Ok' && result.token) {
+            console.log('✅ Token exchange successful!');
+            
+            // Update the .env file with the new token
+            const envPath = path.join(__dirname, '.env');
+            let envContent = fs.readFileSync(envPath, 'utf8');
+            
+            // Update or add the token in .env file
+            const tokenRegex = /^FLATTRADE_TOKEN=.*$/m;
+            const requestCodeRegex = /^FLATTRADE_REQUEST_CODE=.*$/m;
+            
+            if (tokenRegex.test(envContent)) {
+                envContent = envContent.replace(tokenRegex, `FLATTRADE_TOKEN=${result.token}`);
+            } else {
+                envContent += `\n# Auto-generated token\nFLATTRADE_TOKEN=${result.token}\n`;
+            }
+            
+            if (requestCodeRegex.test(envContent)) {
+                envContent = envContent.replace(requestCodeRegex, `FLATTRADE_REQUEST_CODE=${request_code}`);
+            } else {
+                envContent += `\n# Auto-generated token\nFLATTRADE_REQUEST_CODE=${request_code}\n`;
+            }
+            
+            fs.writeFileSync(envPath, envContent);
+            
+            // Update process.env for immediate use
+            process.env.FLATTRADE_TOKEN = result.token;
+            process.env.FLATTRADE_REQUEST_CODE = request_code;
+            
+            console.log('💾 Token saved to .env file');
+            
+            // Show success page and close popup
+            res.send(`
+                <html>
+                    <head><title>Authentication Successful</title></head>
+                    <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+                        <h2 style="color: #4CAF50;">🎉 Authentication Successful!</h2>
+                        <p>Your Flattrade account has been connected successfully.</p>
+                        <p>Client ID: <strong>${result.client}</strong></p>
+                        <p>This window will close automatically...</p>
+                        <script>
+                            // Notify parent window of successful authentication
+                            if (window.opener) {
+                                window.opener.postMessage({
+                                    type: 'FLATTRADE_AUTH_SUCCESS',
+                                    data: {
+                                        client: '${result.client}',
+                                        status: 'Ok'
+                                    }
+                                }, '*');
+                            }
+                            setTimeout(() => window.close(), 3000);
+                        </script>
+                    </body>
+                </html>
+            `);
+            
+        } else {
+            console.log('❌ Token exchange failed:', result);
+            res.status(400).send(`
+                <html>
+                    <head><title>Authentication Failed</title></head>
+                    <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+                        <h2 style="color: #f44336;">❌ Authentication Failed</h2>
+                        <p>Error: ${result.emsg || 'Token exchange failed'}</p>
+                        <p>This window will close automatically...</p>
+                        <script>
+                            if (window.opener) {
+                                window.opener.postMessage({
+                                    type: 'FLATTRADE_AUTH_ERROR',
+                                    error: '${result.emsg || 'Token exchange failed'}'
+                                }, '*');
+                            }
+                            setTimeout(() => window.close(), 3000);
+                        </script>
+                    </body>
+                </html>
+            `);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error in callback:', error);
+        res.status(500).send(`
+            <html>
+                <head><title>Server Error</title></head>
+                <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+                    <h2 style="color: #f44336;">❌ Server Error</h2>
+                    <p>An error occurred during authentication.</p>
+                    <p>This window will close automatically...</p>
+                    <script>
+                        if (window.opener) {
+                            window.opener.postMessage({
+                                type: 'FLATTRADE_AUTH_ERROR',
+                                error: 'Server error during authentication'
+                            }, '*');
+                        }
+                        setTimeout(() => window.close(), 3000);
+                    </script>
+                </body>
+            </html>
+        `);
+    }
+});
+
+// Provider authentication routes
+app.post('/api/providers/auth/upstox', (req, res) => {
+    try {
+        // For demo purposes, use demo values or environment variables
+        const clientId = process.env.UPSTOX_CLIENT_ID || 'DEMO_CLIENT_ID';
+        const redirectUri = encodeURIComponent(process.env.UPSTOX_REDIRECT_URI || 'http://localhost:5000/auth/upstox/callback');
+        
+        const authUrl = `https://api.upstox.com/v2/login/authorization/dialog?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=upstox_auth`;
+        
+        console.log('🚀 Generated Upstox auth URL for demo');
+        res.json({
+            success: true,
+            authUrl,
+            flow: 'oauth',
+            provider: 'upstox',
+            message: 'Demo auth URL generated. Configure UPSTOX_CLIENT_ID and UPSTOX_REDIRECT_URI for live trading.',
+            isDemoMode: !process.env.UPSTOX_CLIENT_ID
+        });
+    } catch (error) {
+        console.error('❌ Upstox auth error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to initiate Upstox authentication'
+        });
+    }
+});
+
+app.post('/api/providers/auth/fyers', (req, res) => {
+    try {
+        // For demo purposes, use demo values or environment variables
+        const appId = process.env.FYERS_APP_ID || 'DEMO_APP_ID';
+        const redirectUri = encodeURIComponent(process.env.FYERS_REDIRECT_URI || 'http://localhost:5000/auth/fyers/callback');
+        
+        const authUrl = `https://api.fyers.in/api/v2/generate-authcode?client_id=${appId}&redirect_uri=${redirectUri}&response_type=code&state=fyers_auth`;
+        
+        console.log('⚡ Generated FYERS auth URL for demo');
+        res.json({
+            success: true,
+            authUrl,
+            flow: 'oauth',
+            provider: 'fyers',
+            message: 'Demo auth URL generated. Configure FYERS_APP_ID and FYERS_REDIRECT_URI for live trading.',
+            isDemoMode: !process.env.FYERS_APP_ID
+        });
+    } catch (error) {
+        console.error('❌ FYERS auth error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to initiate FYERS authentication'
+        });
+    }
+});
+
+app.post('/api/providers/auth/aliceblue', (req, res) => {
+    try {
+        // For demo purposes, use demo values or environment variables
+        const appCode = process.env.ALICEBLUE_APP_CODE || 'DEMO_APP_CODE';
+        const authUrl = `https://ant.aliceblueonline.com/?appcode=${appCode}`;
+        
+        console.log('💎 Generated Alice Blue auth URL for demo');
+        res.json({
+            success: true,
+            authUrl,
+            flow: 'oauth',
+            provider: 'aliceblue',
+            message: 'Demo auth URL generated. Configure ALICEBLUE_APP_CODE for live trading.',
+            isDemoMode: !process.env.ALICEBLUE_APP_CODE
+        });
+    } catch (error) {
+        console.error('❌ Alice Blue auth error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to initiate Alice Blue authentication'
+        });
+    }
+});
+
+// Paper trading API endpoints
+app.post('/api/paper-trading/start', (req, res) => {
+    try {
+        const { capital, strategy } = req.body;
+        
+        res.json({
+            success: true,
+            message: 'Paper trading session started',
+            data: {
+                sessionId: 'pt_' + Date.now(),
+                capital: capital || 100000,
+                strategy: strategy || 'default',
+                startTime: new Date().toISOString(),
+                status: 'active'
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Failed to start paper trading session'
+        });
+    }
+});
+
+app.post('/api/paper-trading/stop', (req, res) => {
+    try {
+        res.json({
+            success: true,
+            message: 'Paper trading session stopped',
+            data: {
+                status: 'stopped',
+                stopTime: new Date().toISOString()
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Failed to stop paper trading session'
+        });
+    }
+});
+
 // Enhanced Gainers endpoint with realistic data
 app.get('/api/gainers', async (req, res) => {
     try {
+        console.log('📈 Top gainers requested - fetching live data from Flattrade API');
+        
+        // Try to get live data from Flattrade API
+        try {
+            const rawGainersData = await flattradeAPI.getTopList('gainers', 'NSE');
+            const formattedGainers = flattradeAPI.formatMoversData(rawGainersData);
+            
+            if (formattedGainers && formattedGainers.length > 0) {
+                console.log(`✅ Live gainers data fetched: ${formattedGainers.length} stocks`);
+                console.log('📤 Response: 200 - Live gainers data sent');
+                return res.json({
+                    success: true,
+                    data: formattedGainers,
+                    count: formattedGainers.length,
+                    timestamp: Date.now(),
+                    source: 'flattrade_live_data',
+                    market_status: 'ACTIVE'
+                });
+            }
+        } catch (apiError) {
+            console.warn('⚠️ Flattrade API failed for gainers, falling back to mock data:', apiError.message);
+        }
+
+        // Fallback to mock data if API fails
         const gainersData = [
             {
                 symbol: 'RELIANCE',
@@ -84,13 +678,13 @@ app.get('/api/gainers', async (req, res) => {
             }
         ];
 
-        console.log('📤 Response: 200 - Gainers data sent');
+        console.log('📤 Response: 200 - Mock gainers data sent (fallback)');
         res.json({
             success: true,
             data: gainersData,
             count: gainersData.length,
             timestamp: Date.now(),
-            source: 'enhanced_mock',
+            source: 'mock_data_fallback',
             market_status: 'ACTIVE'
         });
     } catch (error) {
@@ -103,6 +697,30 @@ app.get('/api/gainers', async (req, res) => {
 // Enhanced Losers endpoint
 app.get('/api/losers', async (req, res) => {
     try {
+        console.log('📉 Top losers requested - fetching live data from Flattrade API');
+        
+        // Try to get live data from Flattrade API
+        try {
+            const rawLosersData = await flattradeAPI.getTopList('losers', 'NSE');
+            const formattedLosers = flattradeAPI.formatMoversData(rawLosersData);
+            
+            if (formattedLosers && formattedLosers.length > 0) {
+                console.log(`✅ Live losers data fetched: ${formattedLosers.length} stocks`);
+                console.log('📤 Response: 200 - Live losers data sent');
+                return res.json({
+                    success: true,
+                    data: formattedLosers,
+                    count: formattedLosers.length,
+                    timestamp: Date.now(),
+                    source: 'flattrade_live_data',
+                    market_status: 'ACTIVE'
+                });
+            }
+        } catch (apiError) {
+            console.warn('⚠️ Flattrade API failed for losers, falling back to mock data:', apiError.message);
+        }
+
+        // Fallback to mock data if API fails
         const losersData = [
             {
                 symbol: 'BHARTIARTL',
@@ -161,13 +779,13 @@ app.get('/api/losers', async (req, res) => {
             }
         ];
 
-        console.log('📤 Response: 200 - Losers data sent');
+        console.log('📤 Response: 200 - Mock losers data sent (fallback)');
         res.json({
             success: true,
             data: losersData,
             count: losersData.length,
             timestamp: Date.now(),
-            source: 'enhanced_mock',
+            source: 'mock_data_fallback',
             market_status: 'ACTIVE'
         });
     } catch (error) {
@@ -461,6 +1079,30 @@ app.get('/api/alerts', async (req, res) => {
 // Enhanced Market Indices endpoint
 app.get('/api/indices', async (req, res) => {
     try {
+        console.log('📈 Market indices requested - fetching live data from Flattrade API');
+        
+        // Try to get live data from Flattrade API
+        try {
+            const rawIndexData = await flattradeAPI.getIndexList();
+            const formattedIndices = flattradeAPI.formatIndexData(rawIndexData);
+            
+            if (formattedIndices && formattedIndices.length > 0) {
+                console.log(`✅ Live data fetched: ${formattedIndices.length} indices`);
+                console.log('📤 Response: 200 - Live market indices sent');
+                return res.json({
+                    success: true,
+                    data: formattedIndices,
+                    count: formattedIndices.length,
+                    timestamp: Date.now(),
+                    source: 'flattrade_live_data',
+                    market_status: 'ACTIVE'
+                });
+            }
+        } catch (apiError) {
+            console.warn('⚠️ Flattrade API failed, falling back to mock data:', apiError.message);
+        }
+
+        // Fallback to mock data if API fails
         const indices = [
             {
                 symbol: 'NIFTY 50',
@@ -536,17 +1178,119 @@ app.get('/api/indices', async (req, res) => {
             }
         ];
 
-        console.log('📤 Response: 200 - Market indices sent');
+        console.log('📤 Response: 200 - Mock market indices sent (fallback)');
         res.json({
             success: true,
             data: indices,
             count: indices.length,
             timestamp: Date.now(),
-            source: 'enhanced_analysis',
+            source: 'mock_data_fallback',
             market_status: 'ACTIVE'
         });
     } catch (error) {
         console.error('❌ Indices endpoint error:', error.message);
+        console.log('📤 Response: 500 - Internal error');
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Major Indices (Sector Indices) endpoint
+app.get('/api/major-indices', async (req, res) => {
+    try {
+        console.log('📈 Major indices requested');
+        
+        // Import our NSE API service
+        const nseApiService = require('./src/services/nse-api.service.js');
+        
+        // Try to get live data, fallback to mock if fails
+        let indices;
+        try {
+            indices = await nseApiService.getSectorIndices();
+            console.log('✅ Live sector indices data fetched');
+        } catch (error) {
+            console.warn('⚠️ Live data failed, using fallback:', error.message);
+            // Fallback sector indices data
+            indices = [
+                {
+                    symbol: 'NIFTY AUTO',
+                    name: 'NIFTY AUTO',
+                    price: 18456.30,
+                    change: 123.45,
+                    changePercent: 0.67,
+                    high: 18567.80,
+                    low: 18234.50,
+                    volume: 45678901,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    symbol: 'NIFTY BANK',
+                    name: 'NIFTY BANK',
+                    price: 44520.25,
+                    change: -89.75,
+                    changePercent: -0.20,
+                    high: 44678.90,
+                    low: 44445.60,
+                    volume: 156789012,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    symbol: 'NIFTY IT',
+                    name: 'NIFTY IT',
+                    price: 30234.80,
+                    change: 267.45,
+                    changePercent: 0.89,
+                    high: 30298.70,
+                    low: 30012.30,
+                    volume: 89012345,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    symbol: 'NIFTY PHARMA',
+                    name: 'NIFTY PHARMA',
+                    price: 13567.30,
+                    change: -45.20,
+                    changePercent: -0.33,
+                    high: 13645.80,
+                    low: 13456.70,
+                    volume: 34567890,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    symbol: 'NIFTY FMCG',
+                    name: 'NIFTY FMCG',
+                    price: 56789.45,
+                    change: 234.56,
+                    changePercent: 0.41,
+                    high: 56834.70,
+                    low: 56234.80,
+                    volume: 23456789,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    symbol: 'NIFTY METAL',
+                    name: 'NIFTY METAL',
+                    price: 7234.60,
+                    change: -78.90,
+                    changePercent: -1.08,
+                    high: 7345.80,
+                    low: 7123.40,
+                    volume: 67890123,
+                    timestamp: new Date().toISOString()
+                }
+            ];
+        }
+
+        console.log('📤 Response: 200 - Major sector indices sent');
+        res.json({
+            success: true,
+            data: indices,
+            count: indices.length,
+            timestamp: Date.now(),
+            source: indices.length > 6 ? 'nse_live' : 'fallback_data',
+            market_status: 'ACTIVE'
+        });
+    } catch (error) {
+        console.error('❌ Major indices endpoint error:', error.message);
         console.log('📤 Response: 500 - Internal error');
         res.status(500).json({ success: false, error: error.message });
     }
@@ -567,7 +1311,8 @@ app.get('/api/health', (req, res) => {
             '/api/btst',
             '/api/fno-analysis',
             '/api/alerts',
-            '/api/indices'
+            '/api/indices',
+            '/api/major-indices'
         ]
     });
 });
@@ -586,6 +1331,51 @@ app.get('/api/health', (req, res) => {
         uptime: process.uptime(),
         memory: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
         version: '2.0.0'
+    });
+});
+
+// Detailed health endpoint for system monitoring
+app.get('/api/health/detailed', (req, res) => {
+    console.log('📤 Response: 200 - Detailed health check');
+    res.json({
+        success: true,
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: {
+            used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+            total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+            external: Math.round(process.memoryUsage().external / 1024 / 1024)
+        },
+        version: '2.0.0-simplified',
+        environment: process.env.NODE_ENV || 'development',
+        flattrade: {
+            connected: !!process.env.FLATTRADE_TOKEN,
+            tokenPresent: !!process.env.FLATTRADE_TOKEN
+        },
+        endpoints: [
+            '/api/gainers',
+            '/api/losers',
+            '/api/scalping',
+            '/api/btst',
+            '/api/fno-analysis',
+            '/api/alerts',
+            '/api/indices',
+            '/api/health',
+            '/api/health/detailed'
+        ]
+    });
+});
+
+// Debug endpoint for testing connectivity
+app.get('/api/test-connection', (req, res) => {
+    console.log('🔧 Testing connection endpoint called');
+    res.json({
+        success: true,
+        message: 'Backend is running and reachable',
+        timestamp: new Date().toISOString(),
+        server: 'index-simple.js',
+        port: 5000
     });
 });
 

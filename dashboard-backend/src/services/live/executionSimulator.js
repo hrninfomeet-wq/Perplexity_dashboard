@@ -20,9 +20,9 @@ class ExecutionSimulator {
         
         // Market impact modeling
         this.marketImpactFactors = {
-            low: 0.0005,    // 0.05% market impact
-            medium: 0.001,  // 0.1% market impact
-            high: 0.002     // 0.2% market impact
+            low: 5e-4,      // 0.05% market impact
+            medium: 1e-3,   // 0.1% market impact
+            high: 2e-3      // 0.2% market impact
         };
         
         // Slippage modeling based on market conditions
